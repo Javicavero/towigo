@@ -15,11 +15,13 @@ import { STEPS_GOAL, STEPS_TODAY, TEAM, type Trend } from '../data/mock';
 import { t } from '../i18n';
 import { useNav } from '../nav';
 import { useStore, type HabitId } from '../state/store';
-import type { Scenario } from '../state/types';
+import type { ReminderKind, Scenario } from '../state/types';
 import { colors } from '../theme';
 
 const TREND_ARROW: Record<Trend, string> = { upFast: '⇈', up: '↗', flat: '→', down: '↘', downFast: '⇊' };
-const SCENARIOS: Scenario[] = ['inRange', 'high', 'low', 'goal', 'syncError'];
+const SCENARIOS: Scenario[] = ['inRange', 'rising', 'high', 'veryHigh', 'low', 'urgentLow', 'night', 'goal', 'syncError'];
+const DEMO_REMINDERS: ReminderKind[] = ['insulin', 'sport', 'sensor', 'meal', 'water'];
+const REMINDER_ICON: Record<ReminderKind, string> = { insulin: '💉', sport: '👟', sensor: '📡', meal: '🍽️', water: '💧' };
 const HABIT_ICON: Record<HabitId, IconName> = { log: 'plus', walk: 'walk', listen: 'headphones' };
 
 function hhmm(ts: number) {
@@ -50,13 +52,13 @@ export default function Home() {
   const unreadFrom = unreadAudio ? TEAM[unreadAudio.from as keyof typeof TEAM] : null;
 
   // Mensajes de Owi: concretos, con datos del propio usuario y nunca culpabilizadores.
+  // Fuera de rango, Owi acompaña pero no dice qué hacer (Fase 1, §8.2).
+  const reminder = d.mood === 'remind' || d.mood === 'sport' ? d.reminders[0] : null;
+  const vars = { name, tir: d.tir.inRange, streak: d.streak, who: unreadFrom?.short ?? '' };
   let message: string;
-  if (!d.syncOk) message = t('owi.sync', { name });
-  else if (state.scenario === 'goal') message = t('owi.goal', { name, streak: d.streak });
-  else if (d.current && d.current.v < DEFAULT_TARGET.low) message = t('owi.low', { name });
-  else if (d.current && d.current.v > DEFAULT_TARGET.high)
-    message = unreadFrom ? t('owi.highAudio', { who: unreadFrom.short }) : t('owi.high', { name });
-  else message = t('owi.inRange', { name, tir: d.tir.inRange, streak: d.streak });
+  if (reminder) message = t(reminder.text, { ...reminder.vars, name });
+  else if (d.mood === 'caringHigh' && unreadFrom) message = t('owi.highAudio', vars);
+  else message = t(`owi.say.${d.mood}`, vars);
 
   const v = d.current?.v ?? 0;
   const status = !d.current ? 'none' : !d.syncOk ? 'stale' : v < DEFAULT_TARGET.low ? 'low' : v > DEFAULT_TARGET.high ? 'high' : 'in';
@@ -93,7 +95,25 @@ export default function Home() {
           </T>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
             {SCENARIOS.map((s) => (
-              <Choice key={s} label={t(`demo.${s}`)} selected={state.scenario === s} onPress={() => dispatch({ type: 'setScenario', scenario: s })} />
+              <Choice
+                key={s}
+                label={t(`demo.${s}`)}
+                selected={state.scenario === s && !state.demoReminder}
+                onPress={() => {
+                  dispatch({ type: 'setDemoReminder', kind: null });
+                  dispatch({ type: 'setScenario', scenario: s });
+                }}
+              />
+            ))}
+          </ScrollView>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+            {DEMO_REMINDERS.map((k) => (
+              <Choice
+                key={k}
+                label={`${REMINDER_ICON[k]} ${t(`demo.rem.${k}`)}`}
+                selected={state.demoReminder === k}
+                onPress={() => dispatch({ type: 'setDemoReminder', kind: state.demoReminder === k ? null : k })}
+              />
             ))}
           </ScrollView>
         </View>
@@ -101,7 +121,26 @@ export default function Home() {
 
       <View>
         <Owi3D avatar={d.owiAvatar} mood={d.mood} height={215} accessibilityLabel={t(`owi.mood.${d.mood}`, { name: owi })} />
-        <SpeechBubble text={message} name={owi} />
+        <SpeechBubble text={message} name={owi} icon={reminder ? REMINDER_ICON[reminder.kind] : undefined}>
+          {reminder && (
+            <Row gap={8} style={{ marginTop: 8 }}>
+              <Button
+                style={{ flex: 1 }}
+                label={t(`rem.done.${reminder.kind}`)}
+                onPress={() => {
+                  dispatch({ type: 'reminderDone', id: reminder.id });
+                  if (reminder.kind === 'insulin' || reminder.kind === 'meal') go('log');
+                }}
+              />
+              <Button style={{ flex: 1 }} kind="secondary" label={t('rem.later')} onPress={() => dispatch({ type: 'snooze', id: reminder.id, minutes: 15 })} />
+            </Row>
+          )}
+        </SpeechBubble>
+        {reminder && (
+          <T v="small" color={colors.secondary} center style={{ marginTop: 6 }}>
+            {t('rem.fromPlan')}
+          </T>
+        )}
       </View>
 
       {unreadAudio && unreadFrom && (
@@ -202,6 +241,11 @@ export default function Home() {
         {status === 'low' && (
           <T v="small" color={colors.secondary}>
             {t('home.sensorAlarmNote')}
+          </T>
+        )}
+        {status === 'low' && v < 54 && (
+          <T v="label" color={colors.low}>
+            {t('home.urgentNote')}
           </T>
         )}
         <GlucoseChart series={d.series} label={t('home.chartA11y', { tir: d.tir.inRange })} />

@@ -1,6 +1,26 @@
 import type { AccessoryId } from '../data/avatarOptions';
+import type { Reading } from '../data/mock';
 
-export type Mood = 'happy' | 'concern' | 'celebrate';
+/**
+ * Estados de ánimo de Owi (§4.2). Reaccionan al dato, nunca dan indicaciones clínicas.
+ * - happy: en rango y estable          - attentive: en rango pero cambiando rápido
+ * - caringHigh: por encima (181-250)   - worriedHigh: muy por encima (>250)
+ * - caringLow: por debajo (54-69)      - worriedLow: muy por debajo (<54)
+ * - celebrate: objetivo de hábitos     - sleep: de noche y en rango
+ * - confused: no llegan datos          - remind: aviso del plan    - sport: toca deporte
+ */
+export type Mood =
+  | 'happy'
+  | 'attentive'
+  | 'caringHigh'
+  | 'worriedHigh'
+  | 'caringLow'
+  | 'worriedLow'
+  | 'celebrate'
+  | 'sleep'
+  | 'confused'
+  | 'remind'
+  | 'sport';
 
 export type HairStyle = 'corto' | 'melena' | 'rizos' | 'mono' | 'rapado';
 
@@ -15,7 +35,7 @@ export type Avatar = {
 };
 
 /** Escenarios de demostración del prototipo (datos simulados). */
-export type Scenario = 'inRange' | 'high' | 'low' | 'goal' | 'syncError';
+export type Scenario = 'inRange' | 'rising' | 'high' | 'veryHigh' | 'low' | 'urgentLow' | 'night' | 'goal' | 'syncError';
 
 export type SensorId = 'libre' | 'dexcom' | 'otro' | 'none';
 
@@ -64,7 +84,28 @@ export type AppState = {
   streakBefore: number; // días de racha antes de hoy
   freezes: number; // protectores de racha disponibles
   freezeActiveToday: boolean;
+  plan: Plan;
+  remindersDone: Record<string, string>; // id del aviso -> día en que se marcó hecho
+  snoozedUntil: Record<string, number>;
+  demoReminder: ReminderKind | null; // solo prototipo
+  dataSource: DataSource;
+  dexcom: { connected: boolean; readings: Reading[]; lastSyncAt: string | null; error: string | null };
 };
 
 /** Entrada nueva antes de asignarle id y hora (Omit distributivo sobre la unión). */
 export type NewLogEntry = LogEntry extends infer E ? (E extends LogEntry ? Omit<E, 'id' | 'at'> : never) : never;
+
+/** Avisos que el paciente (o su equipo) programa. Nunca se calculan a partir de la glucosa (Fase 1). */
+export type ReminderKind = 'insulin' | 'sport' | 'sensor' | 'meal' | 'water';
+
+export type Plan = {
+  insulin: { enabled: boolean; basalTime: string; rapidTimes: string[] };
+  sport: { enabled: boolean; days: number[]; time: string; minutes: number; activity: string };
+  sensor: { enabled: boolean; model: 'g7' | 'g6' | 'libre'; insertedAt: string };
+  meals: { enabled: boolean; times: string[] };
+  water: { enabled: boolean; times: string[] };
+};
+
+export type Reminder = { id: string; kind: ReminderKind; text: string; vars: Record<string, string | number> };
+
+export type DataSource = 'demo' | 'dexcom';

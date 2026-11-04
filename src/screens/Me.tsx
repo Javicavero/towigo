@@ -4,6 +4,8 @@
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import AvatarEditor from '../components/AvatarEditor';
+import DexcomCard from '../components/DexcomCard';
+import PlanSettings from '../components/PlanSettings';
 import { Icon } from '../components/icons';
 import Owi3D from '../components/Owi3D';
 import { Button, Card, Choice, Row, Screen, T } from '../components/ui';
@@ -62,6 +64,9 @@ export default function Me() {
           );
         })}
       </Card>
+
+      <DexcomCard />
+      <PlanSettings />
 
       <Card>
         <T v="h2">{t('me.textSize')}</T>

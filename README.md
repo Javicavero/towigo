@@ -3,7 +3,7 @@
 *Juntos, todo pesa menos.*
 
 App de acompañamiento en diabetes y obesidad (GLP-1). Este repositorio contiene el
-**prototipo navegable 0.1** para pacientes con **diabetes tipo 1**, con datos simulados.
+**prototipo navegable 0.2** para pacientes con **diabetes tipo 1**, con datos simulados.
 
 ## Qué incluye
 
@@ -21,6 +21,19 @@ App de acompañamiento en diabetes y obesidad (GLP-1). Este repositorio contiene
 - **Yo**: editar a Owi, tamaño de letra, privacidad y datos.
 - **Escenarios de demostración** en la pantalla Hoy: en rango, glucosa alta, glucosa baja,
   objetivo cumplido y fallo del sensor.
+
+## Novedades 0.2
+
+- **Nuevo Owi**: humano en 3D esculpido (`assets/owi/owi.glb`, generado con `tools/owi/build_owi.py`),
+  con cara expresiva, brazos articulados y **11 estados**: feliz, atento, cariñoso/preocupado con
+  glucosa alta, cariñoso/preocupado con glucosa baja, celebra, duerme, confundido (sin datos),
+  avisa y deporte.
+- **Avisos en el bocadillo** según *Mi plan*: insulina a su hora, deporte, cambio de sensor,
+  comidas y agua. Nunca se calculan a partir de la glucosa; con glucosa baja no se avisa de insulina.
+- **Dexcom (API oficial)**: funciones de servidor en `supabase/functions` y botón en *Yo*.
+- **iPhone**: versión web instalable (pantalla de inicio) publicada con GitHub Pages.
+- Pasos de activación: [`docs/PUESTA_EN_MARCHA.md`](docs/PUESTA_EN_MARCHA.md).
+  Encargo para el diseñador 3D: [`docs/OWI_MODELO.md`](docs/OWI_MODELO.md).
 
 ## Límites de la Fase 1 (no es producto sanitario)
 

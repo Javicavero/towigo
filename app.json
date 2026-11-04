@@ -28,7 +28,8 @@
       "themeColor": "#FFF8F1"
     },
     "plugins": [
-      "expo-font"
+      "expo-font",
+      "expo-asset"
     ]
   }
 }

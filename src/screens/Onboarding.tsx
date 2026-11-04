@@ -77,7 +77,7 @@ function Check({ checked, onToggle, label, detail }: { checked: boolean; onToggl
 }
 
 export default function Onboarding() {
-  const { state, dispatch } = useStore();
+  const { state, dispatch, d } = useStore();
   const [i, setI] = useState(0);
   const step: Step = STEPS[i];
   const next = () => setI((n) => Math.min(STEPS.length - 1, n + 1));
@@ -138,7 +138,7 @@ export default function Onboarding() {
       </Row>
 
       <Owi3D
-        avatar={state.avatar}
+        avatar={d.owiAvatar}
         mood={step === 'commit' ? 'celebrate' : 'happy'}
         height={step === 'look' ? 300 : 230}
         accessibilityLabel={t('owi.a11y', { name: owi })}

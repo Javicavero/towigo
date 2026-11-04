@@ -1,0 +1,3 @@
+# Configuración mínima para desplegar con la CLI de Supabase.
+[functions.dexcom-callback]
+verify_jwt = false

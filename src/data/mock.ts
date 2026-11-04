@@ -5,8 +5,9 @@
 import { DEFAULT_TARGET } from '../config';
 import type { Message, Scenario } from '../state/types';
 
-export type Reading = { t: number; v: number }; // t = timestamp ms, v = mg/dL
 export type Trend = 'up' | 'upFast' | 'flat' | 'down' | 'downFast';
+/** t = timestamp ms, v = mg/dL, trend = flecha que da el propio sensor (si la hay). */
+export type Reading = { t: number; v: number; trend?: Trend };
 
 function seeded(seed: number) {
   let s = seed;
@@ -32,10 +33,13 @@ export function glucoseSeries(scenario: Scenario, now = Date.now()): Reading[] {
       const d = hourOfDay - meal;
       if (d > 0 && d < 3) v += Math.sin((d / 3) * Math.PI) * (scenario === 'goal' ? 30 : 55);
     }
-    if (scenario === 'low' && hourOfDay >= 3 && hourOfDay < 5) v -= 50; // hipo nocturna
+    if ((scenario === 'low' || scenario === 'urgentLow') && hourOfDay >= 3 && hourOfDay < 5) v -= 50; // hipo nocturna
     if (scenario === 'high' && hoursAgo < 2.5) v += (2.5 - hoursAgo) * 48;
+    if (scenario === 'veryHigh' && hoursAgo < 3) v += (3 - hoursAgo) * 60;
     if (scenario === 'low' && hoursAgo < 1) v = 78 - (1 - hoursAgo) * 18;
-    if (scenario === 'inRange' && hoursAgo < 1) v = 128 + (rnd() - 0.5) * 6;
+    if (scenario === 'urgentLow' && hoursAgo < 1) v = 72 - (1 - hoursAgo) * 24;
+    if (scenario === 'rising' && hoursAgo < 0.75) v = 118 + (0.75 - hoursAgo) * 64;
+    if ((scenario === 'inRange' || scenario === 'night') && hoursAgo < 1) v = 128 + (rnd() - 0.5) * 6;
     out.push({ t: now - hoursAgo * 3600e3, v: Math.round(Math.max(45, Math.min(320, v))) });
   }
   if (scenario === 'syncError') {
@@ -45,6 +49,7 @@ export function glucoseSeries(scenario: Scenario, now = Date.now()): Reading[] {
   return out;
 }
 
+/** Tendencia calculada con las 3 últimas lecturas (si la fuente no la trae). */
 export function trendOf(series: Reading[]): Trend {
   if (series.length < 3) return 'flat';
   const a = series[series.length - 3].v;

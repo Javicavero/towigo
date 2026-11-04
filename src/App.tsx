@@ -18,6 +18,7 @@ import Me from './screens/Me';
 import Onboarding from './screens/Onboarding';
 import Progress from './screens/Progress';
 import Team from './screens/Team';
+import { useDexcomSync } from './services/useDexcomSync';
 import { StoreProvider, useStore } from './state/store';
 import { colors } from './theme';
 
@@ -90,6 +91,7 @@ function TabBar({ tab, go }: { tab: Tab; go: (t: Tab) => void }) {
 
 function Root() {
   const { state } = useStore();
+  useDexcomSync();
   const [tab, setTab] = useState<Tab>('home');
   if (!state.onboarded) return <Onboarding />;
   return (
