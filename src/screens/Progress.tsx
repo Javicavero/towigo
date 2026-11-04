@@ -4,7 +4,8 @@
  */
 import { View } from 'react-native';
 import { Icon } from '../components/icons';
-import Owi3D from '../components/Owi3D';
+import BondCard from '../components/BondCard';
+import Scene3D from '../components/Scene3D';
 import { Button, Card, ProgressBar, Row, Screen, T } from '../components/ui';
 import { ACCESSORIES } from '../data/avatarOptions';
 import { t } from '../i18n';
@@ -120,9 +121,28 @@ export default function Progress() {
         ))}
       </Card>
 
+      <Card tone="purple">
+        <T v="h2">{t('progress.owiEvolution', { owi: state.pet.name })}</T>
+        <Scene3D mode="pet" petMood={d.petMood === 'happy' ? 'happy' : d.petMood} petLevel={d.petLevel} height={210} accessibilityLabel={t('owi.a11y', { name: state.pet.name })} />
+        <Row style={{ justifyContent: 'space-between' }}>
+          {([1, 2, 3, 4] as const).map((l) => (
+            <View key={l} style={{ alignItems: 'center', flex: 1, opacity: d.petLevel >= l ? 1 : 0.45 }}>
+              <T v="title">{d.petLevel >= l ? ['🌱', '🧭', '🤝', '🌟'][l - 1] : '🔒'}</T>
+              <T v="small" center>
+                {t(`bond.lv${l}`)}
+              </T>
+              <T v="small" color={colors.secondary} center style={{ fontSize: 11 }}>
+                {t(`progress.petGift${l}`)}
+              </T>
+            </View>
+          ))}
+        </Row>
+      </Card>
+
+      <BondCard />
+
       <Card tone="green">
-        <T v="h2">{t('progress.owiRewards', { owi: state.avatar.name })}</T>
-        <Owi3D avatar={d.owiAvatar} mood={d.streak >= 7 ? 'celebrate' : 'happy'} height={200} accessibilityLabel={t('owi.a11y', { name: state.avatar.name })} />
+        <T v="h2">{t('progress.avatarRewards')}</T>
         {ACCESSORIES.map((a) => (
           <Row key={a.id} gap={12} style={{ minHeight: 44 }}>
             <T v="title">{d.unlocked[a.id] ? a.emoji : '🔒'}</T>

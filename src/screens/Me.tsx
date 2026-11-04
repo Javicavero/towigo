@@ -7,7 +7,7 @@ import AvatarEditor from '../components/AvatarEditor';
 import DexcomCard from '../components/DexcomCard';
 import PlanSettings from '../components/PlanSettings';
 import { Icon } from '../components/icons';
-import Owi3D from '../components/Owi3D';
+import Scene3D from '../components/Scene3D';
 import { Button, Card, Choice, Row, Screen, T } from '../components/ui';
 import { APP_NAME } from '../config';
 import { ACCESSORIES } from '../data/avatarOptions';
@@ -28,8 +28,8 @@ export default function Me() {
       </T>
 
       <Card>
-        <T v="h2">{t('me.owiTitle', { owi: state.avatar.name })}</T>
-        <Owi3D avatar={d.owiAvatar} mood="happy" height={260} accessibilityLabel={t('owi.a11y', { name: state.avatar.name })} />
+        <T v="h2">{t('me.owiTitle', { owi: state.pet.name })}</T>
+        <Scene3D mode="avatar" avatar={d.owiAvatar} avatarMood="happy" height={300} accessibilityLabel={t('owi.a11y', { name: state.pet.name })} />
         <T v="small" color={colors.secondary} center>
           {t('onb.dragHint')}
         </T>

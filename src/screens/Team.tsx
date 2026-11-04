@@ -30,7 +30,7 @@ function Avatar({ from, size = 40 }: { from: Message['from']; size?: number }) {
       }}
     >
       <T v="small" color={m?.fg ?? colors.ink}>
-        {isOwi ? state.avatar.name.slice(0, 2) : m?.initials ?? ''}
+        {isOwi ? state.pet.name.slice(0, 2) : m?.initials ?? ''}
       </T>
     </View>
   );
@@ -122,7 +122,7 @@ export default function Team() {
     if (!lastFromPatient) return;
     const last = state.messages[state.messages.length - 1];
     if (last.from !== 'patient') return;
-    const id = setTimeout(() => dispatch({ type: 'owiReply', text: t('team.owiBridge', { owi: state.avatar.name }) }), 1400);
+    const id = setTimeout(() => dispatch({ type: 'owiReply', text: t('team.owiBridge', { owi: state.pet.name }) }), 1400);
     return () => clearTimeout(id);
   }, [state.messages.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -175,7 +175,7 @@ export default function Team() {
               >
                 {!mine && (
                   <T v="small" color={colors.greenText}>
-                    {m.from === 'owi' ? state.avatar.name : TEAM[m.from as keyof typeof TEAM].name}
+                    {m.from === 'owi' ? state.pet.name : TEAM[m.from as keyof typeof TEAM].name}
                     {!m.read ? ` · ${t('team.new')}` : ''}
                   </T>
                 )}

@@ -1,5 +1,6 @@
-import type { ReactNode } from 'react';
+import { Children, isValidElement, type ReactNode } from 'react';
 import {
+  Animated,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -13,6 +14,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, fonts, MIN_TOUCH, radius } from '../theme';
 import { useStore } from '../state/store';
+import { Bouncy, FadeIn, tap, useProgress } from './motion';
 
 type Variant = 'display' | 'title' | 'h2' | 'body' | 'small' | 'label' | 'big';
 
@@ -61,6 +63,7 @@ export function T({
   );
 }
 
+/** Botón con relieve: se hunde al pulsarlo (sensación de juego, accesible y grande). */
 export function Button({
   label,
   onPress,
@@ -72,14 +75,21 @@ export function Button({
 }: {
   label: string;
   onPress: () => void;
-  kind?: 'primary' | 'secondary' | 'ghost' | 'coral';
+  kind?: 'primary' | 'secondary' | 'ghost' | 'coral' | 'blue';
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
   icon?: ReactNode;
   accessibilityHint?: string;
 }) {
-  const bg = { primary: colors.greenText, secondary: colors.white, ghost: 'transparent', coral: colors.coralText }[kind];
-  const fg = kind === 'primary' || kind === 'coral' ? colors.white : colors.greenText;
+  const palette = {
+    primary: [colors.greenText, colors.greenDark, colors.white],
+    coral: [colors.coralText, colors.coralShadow, colors.white],
+    blue: [colors.blue, colors.blueDark, colors.white],
+    secondary: [colors.white, colors.borderStrong, colors.greenText],
+    ghost: ['transparent', 'transparent', colors.greenText],
+  }[kind];
+  const [bg, edge, fg] = palette;
+  const depth = kind === 'ghost' ? 0 : 5;
   return (
     <Pressable
       accessibilityRole="button"
@@ -87,28 +97,54 @@ export function Button({
       accessibilityHint={accessibilityHint}
       accessibilityState={{ disabled }}
       disabled={disabled}
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.btn,
-        { backgroundColor: bg, opacity: disabled ? 0.45 : pressed ? 0.85 : 1 },
-        kind === 'secondary' && { borderWidth: 2, borderColor: colors.greenText },
-        style,
-      ]}
+      onPress={() => {
+        tap();
+        onPress();
+      }}
+      style={[{ opacity: disabled ? 0.45 : 1 }, style]}
     >
-      {icon}
-      <T v="label" color={fg} center>
-        {label}
-      </T>
+      {({ pressed }) => (
+        <View style={{ paddingTop: pressed ? depth : 0 }}>
+          <View
+            style={[
+              styles.btn,
+              {
+                backgroundColor: bg,
+                borderBottomWidth: pressed ? 0 : depth,
+                borderBottomColor: edge,
+                marginBottom: 0,
+              },
+              kind === 'secondary' && { borderWidth: 2, borderColor: colors.borderStrong, borderBottomWidth: pressed ? 2 : depth },
+            ]}
+          >
+            {icon}
+            <T v="label" color={fg} center style={{ textTransform: kind === 'ghost' ? 'none' : 'uppercase', letterSpacing: kind === 'ghost' ? 0 : 0.6 }}>
+              {label}
+            </T>
+          </View>
+        </View>
+      )}
     </Pressable>
   );
 }
 
-export function Card({ children, style, tone = 'white' }: { children: ReactNode; style?: StyleProp<ViewStyle>; tone?: 'white' | 'green' | 'coral' | 'yellow' }) {
-  const bg = { white: colors.white, green: colors.softGreen, coral: colors.softCoral, yellow: colors.softYellow }[tone];
-  return <View style={[styles.card, { backgroundColor: bg }, style]}>{children}</View>;
+type Tone = 'white' | 'green' | 'coral' | 'yellow' | 'blue' | 'purple';
+const TONES: Record<Tone, [string, string]> = {
+  white: [colors.white, colors.border],
+  green: [colors.softGreen, '#BFE6D6'],
+  coral: [colors.softCoral, '#F8C9BA'],
+  yellow: [colors.softYellow, '#F3DE9C'],
+  blue: [colors.softBlue, '#C3D6FA'],
+  purple: [colors.softPurple, '#D7CBFB'],
+};
+
+/** Tarjeta con borde inferior marcado (aspecto de "pieza" que se puede tocar). */
+export function Card({ children, style, tone = 'white' }: { children: ReactNode; style?: StyleProp<ViewStyle>; tone?: Tone }) {
+  const [bg, border] = TONES[tone];
+  return <View style={[styles.card, { backgroundColor: bg, borderColor: border }, style]}>{children}</View>;
 }
 
-/** Opción seleccionable grande (chips de respuesta, selectores). */
+/** Opción seleccionable grande (chips de respuesta, selectores), con relieve y rebote. */
 export function Choice({
   label,
   selected,
@@ -117,23 +153,22 @@ export function Choice({
   ...rest
 }: { label: string; selected?: boolean; onPress: () => void; style?: StyleProp<ViewStyle> } & Omit<PressableProps, 'style'>) {
   return (
-    <Pressable
+    <Bouncy
       accessibilityRole="button"
       accessibilityState={{ selected }}
       accessibilityLabel={label}
       onPress={onPress}
-      style={({ pressed }) => [
+      style={[
         styles.choice,
-        selected && { backgroundColor: colors.greenText, borderColor: colors.greenText },
-        pressed && { opacity: 0.85 },
+        selected && { backgroundColor: colors.softGreen, borderColor: colors.greenText, borderBottomColor: colors.greenDark },
         style,
       ]}
       {...rest}
     >
-      <T v="label" color={selected ? colors.white : colors.ink} center>
+      <T v="label" color={selected ? colors.greenDark : colors.ink} center>
         {label}
       </T>
-    </Pressable>
+    </Bouncy>
   );
 }
 
@@ -154,7 +189,10 @@ export function Swatch({ color, selected, onPress, label }: { color: string; sel
 /** Contenedor de pantalla: centrado y con ancho máximo para que en escritorio se vea como un móvil. */
 export function Screen({ children, scroll = true, padBottom = 110 }: { children: ReactNode; scroll?: boolean; padBottom?: number }) {
   const insets = useSafeAreaInsets();
-  const inner = <View style={[styles.inner, { paddingTop: insets.top + 12, paddingBottom: padBottom }]}>{children}</View>;
+  // Cada bloque entra escalonado (sensación de app viva).
+  let k = 0;
+  const animated = Children.map(children, (c) => (isValidElement(c) ? <FadeIn delay={Math.min(k++, 8) * 55}>{c}</FadeIn> : c));
+  const inner = <View style={[styles.inner, { paddingTop: insets.top + 12, paddingBottom: padBottom }]}>{animated}</View>;
   if (!scroll) return <View style={styles.flex}>{inner}</View>;
   return (
     <ScrollView style={styles.flex} contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
@@ -167,10 +205,16 @@ export function Row({ children, style, gap = 10 }: { children: ReactNode; style?
   return <View style={[{ flexDirection: 'row', alignItems: 'center', gap }, style]}>{children}</View>;
 }
 
-export function ProgressBar({ value, color = colors.owiGreen, height = 12 }: { value: number; color?: string; height?: number }) {
+export function ProgressBar({ value, color = colors.owiGreen, height = 14 }: { value: number; color?: string; height?: number }) {
+  const v = useProgress(Math.max(0, Math.min(100, value)));
   return (
     <View style={{ height, borderRadius: height, backgroundColor: colors.line, overflow: 'hidden' }}>
-      <View style={{ width: `${Math.max(0, Math.min(100, value))}%`, height: '100%', backgroundColor: color, borderRadius: height }} />
+      <Animated.View
+        style={{ width: v.interpolate({ inputRange: [0, 100], outputRange: ['0%', '100%'] }), height: '100%', backgroundColor: color, borderRadius: height }}
+      >
+        {/* brillo superior, como una pieza de juego */}
+        <View style={{ position: 'absolute', left: 6, right: 6, top: 3, height: Math.max(2, height / 4), borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.35)' }} />
+      </Animated.View>
     </View>
   );
 }
@@ -180,7 +224,7 @@ const styles = StyleSheet.create({
   inner: { width: '100%', maxWidth: 520, alignSelf: 'center', paddingHorizontal: 16, gap: 14 },
   btn: {
     minHeight: MIN_TOUCH,
-    borderRadius: radius.xl,
+    borderRadius: radius.m,
     paddingHorizontal: 22,
     paddingVertical: 12,
     alignItems: 'center',
@@ -192,18 +236,17 @@ const styles = StyleSheet.create({
     borderRadius: radius.l,
     padding: 18,
     gap: 10,
-    shadowColor: '#1E2A32',
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
+    borderWidth: 2,
+    borderBottomWidth: 5,
   },
   choice: {
     minHeight: MIN_TOUCH,
-    paddingHorizontal: 18,
+    paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: radius.xl,
+    borderRadius: radius.m,
     borderWidth: 2,
-    borderColor: colors.line,
+    borderBottomWidth: 4,
+    borderColor: colors.border,
     backgroundColor: colors.white,
     alignItems: 'center',
     justifyContent: 'center',

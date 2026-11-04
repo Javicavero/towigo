@@ -83,7 +83,7 @@ export default function LogScreen() {
     const secs = Math.max(1, Math.round((Date.now() - startedAt.current) / 1000));
     dispatch({ type: 'addLog', entry });
     setOpen(null);
-    setToast(secs <= 10 ? t('log.savedFast', { owi: state.avatar.name, s: secs }) : t('log.saved', { owi: state.avatar.name }));
+    setToast(secs <= 10 ? t('log.savedFast', { owi: state.pet.name, s: secs }) : t('log.saved', { owi: state.pet.name }));
   };
 
   const today = state.logs.filter((l) => new Date(l.at).toDateString() === new Date().toDateString());

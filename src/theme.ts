@@ -20,6 +20,24 @@ export const colors = {
   softCoral: '#FFE9E2',
   softYellow: '#FFF3D1',
   low: '#B3261E', // glucosa baja (6,5:1 sobre blanco)
+  // Paleta enérgica (interfaz): acentos y "sombras" de los botones con relieve.
+  blue: '#3A7BEA',
+  blueDark: '#2A5DB8',
+  softBlue: '#E4EEFF',
+  purple: '#7E5BEF',
+  softPurple: '#EFE9FF',
+  greenDark: '#0F5C43',
+  coralShadow: '#8E3120',
+  yellowDark: '#C99400',
+  border: '#EADFD3',
+  borderStrong: '#DCCFC0',
+};
+
+/** Degradados de cabecera. */
+export const gradients = {
+  hero: ['#1F9E78', '#2BB58A', '#55C9A3'] as const,
+  coral: ['#FF8A65', '#FF7A59'] as const,
+  night: ['#3A4A8C', '#5B6CC9'] as const,
 };
 
 export const fonts = {

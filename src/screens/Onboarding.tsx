@@ -6,9 +6,10 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, TextInput, View } from 'react-native';
 import AvatarEditor from '../components/AvatarEditor';
 import { Icon } from '../components/icons';
-import Owi3D from '../components/Owi3D';
+import Scene3D from '../components/Scene3D';
 import SpeechBubble from '../components/SpeechBubble';
-import { Button, Card, Choice, Row, Screen, T } from '../components/ui';
+import { FadeIn, Pop } from '../components/motion';
+import { Button, Card, Choice, ProgressBar, Row, Screen, T } from '../components/ui';
 import { APP_NAME, DEFAULT_AVATAR_NAME } from '../config';
 import { TEAM } from '../data/mock';
 import { t } from '../i18n';
@@ -98,7 +99,8 @@ export default function Onboarding() {
     return () => clearTimeout(id);
   }, [connecting, dispatch]);
 
-  const owi = state.avatar.name || DEFAULT_AVATAR_NAME;
+  const owi = state.pet.name || DEFAULT_AVATAR_NAME;
+  const sceneMode = step === 'look' ? 'avatar' : step === 'commit' || step === 'team' ? 'pair' : 'pet';
   const bubble: Record<Step, string> = {
     hello: t('onb.hello', { app: APP_NAME }),
     name: t('onb.askName'),
@@ -125,25 +127,27 @@ export default function Onboarding() {
         ) : (
           <View style={{ width: MIN_TOUCH }} />
         )}
-        <View
-          style={{ flexDirection: 'row', gap: 6 }}
-          accessible
-          accessibilityLabel={t('onb.progress', { n: i + 1, total: STEPS.length })}
-        >
-          {STEPS.map((s, k) => (
-            <View key={s} style={{ width: k === i ? 22 : 8, height: 8, borderRadius: 4, backgroundColor: k <= i ? colors.owiGreen : colors.line }} />
-          ))}
+        <View style={{ flex: 1, marginHorizontal: 8 }} accessible accessibilityLabel={t('onb.progress', { n: i + 1, total: STEPS.length })}>
+          <ProgressBar value={((i + 1) / STEPS.length) * 100} color={colors.owiGreen} height={16} />
         </View>
         <View style={{ width: MIN_TOUCH }} />
       </Row>
 
-      <Owi3D
-        avatar={d.owiAvatar}
-        mood={step === 'commit' ? 'celebrate' : 'happy'}
-        height={step === 'look' ? 300 : 230}
-        accessibilityLabel={t('owi.a11y', { name: owi })}
-      />
-      <SpeechBubble text={bubble[step]} name={owi} />
+      {/* Owi se presenta solo; en "look" vemos tu avatar; al final, los dos juntos. */}
+      <FadeIn key={sceneMode}>
+        <Scene3D
+          mode={sceneMode}
+          avatar={d.owiAvatar}
+          avatarMood={step === 'commit' ? 'celebrate' : 'happy'}
+          petMood={step === 'commit' ? 'celebrate' : step === 'hello' ? 'missYou' : step === 'consent' ? 'attentive' : 'happy'}
+          petLevel={d.petLevel}
+          height={step === 'look' ? 300 : 230}
+          accessibilityLabel={t('owi.a11y', { name: owi })}
+        />
+      </FadeIn>
+      <Pop trigger={step}>
+        <SpeechBubble text={bubble[step]} name={owi} arrow={sceneMode === 'pair' ? 'right' : 'center'} />
+      </Pop>
 
       <View style={{ gap: 12, marginTop: 4 }}>
         {step === 'hello' && <Button label={t('onb.helloBtn', { owi })} onPress={next} />}
@@ -180,7 +184,7 @@ export default function Onboarding() {
             <Button
               label={t('onb.keepOwi')}
               onPress={() => {
-                dispatch({ type: 'setAvatar', patch: { name: DEFAULT_AVATAR_NAME } });
+                dispatch({ type: 'setPetName', name: DEFAULT_AVATAR_NAME });
                 next();
               }}
             />
@@ -193,7 +197,7 @@ export default function Onboarding() {
               label={owiName.trim() ? t('onb.callMe', { n: owiName.trim() }) : t('onb.rename')}
               disabled={!owiName.trim()}
               onPress={() => {
-                dispatch({ type: 'setAvatar', patch: { name: owiName.trim() } });
+                dispatch({ type: 'setPetName', name: owiName.trim() });
                 next();
               }}
             />

@@ -22,17 +22,37 @@ export type Mood =
   | 'remind'
   | 'sport';
 
-export type HairStyle = 'corto' | 'melena' | 'rizos' | 'mono' | 'rapado';
+/** Emociones de Owi (la mascota): las del avatar más el reencuentro tras unos días sin abrir la app. */
+export type PetMood = Mood | 'missYou';
+/** Evolución de Owi: 1 Pequeño, 2 Explorador, 3 Compañero, 4 Leyenda. */
+export type PetLevel = 1 | 2 | 3 | 4;
 
+import type { BODY_TYPES, BOTTOMS, BROWS, FACE_SHAPES, FACIAL_HAIR, GLASSES, HAIR_STYLES, HEIGHTS, TOPS } from '../data/avatarOptions';
+
+export type HairStyle = (typeof HAIR_STYLES)[number];
+
+/** Avatar humano: se parece al usuario (§4.2, "cuanto más se parece, más confianza genera"). */
 export type Avatar = {
-  name: string;
   skin: number;
+  bodyType: (typeof BODY_TYPES)[number];
+  height: (typeof HEIGHTS)[number];
+  faceShape: (typeof FACE_SHAPES)[number];
+  eyeColor: number;
+  brows: (typeof BROWS)[number];
   hair: HairStyle;
   hairColor: number;
-  hoodie: number;
+  facialHair: (typeof FACIAL_HAIR)[number];
+  glasses: (typeof GLASSES)[number];
+  top: (typeof TOPS)[number];
+  topColor: number;
+  bottom: (typeof BOTTOMS)[number];
+  bottomColor: number;
   shoes: number;
   equipped: Record<AccessoryId, boolean>;
 };
+
+/** Owi, la mascota. */
+export type Pet = { name: string };
 
 /** Escenarios de demostración del prototipo (datos simulados). */
 export type Scenario = 'inRange' | 'rising' | 'high' | 'veryHigh' | 'low' | 'urgentLow' | 'night' | 'goal' | 'syncError';
@@ -74,6 +94,11 @@ export type AppState = {
   onboarded: boolean;
   userName: string;
   avatar: Avatar;
+  pet: Pet;
+  /** Última vez que se abrió la app (para que Owi diga "te echaba de menos"). */
+  lastOpenAt: string | null;
+  previousOpenAt: string | null;
+  remindersDoneCount: number;
   consents: Consents;
   sensor: SensorId;
   textScale: TextScale;

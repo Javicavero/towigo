@@ -3,7 +3,7 @@
 *Juntos, todo pesa menos.*
 
 App de acompañamiento en diabetes y obesidad (GLP-1). Este repositorio contiene el
-**prototipo navegable 0.2** para pacientes con **diabetes tipo 1**, con datos simulados.
+**prototipo navegable 0.3** para pacientes con **diabetes tipo 1**, con datos simulados.
 
 ## Qué incluye
 
@@ -22,9 +22,20 @@ App de acompañamiento en diabetes y obesidad (GLP-1). Este repositorio contiene
 - **Escenarios de demostración** en la pantalla Hoy: en rango, glucosa alta, glucosa baja,
   objetivo cumplido y fallo del sensor.
 
+## Novedades 0.3
+
+- **Owi es ahora un erizo**: la mascota compañera (común a todos los perfiles) que avisa, se
+  emociona (12 emociones) y **evoluciona** con tu vínculo: Pequeño → Explorador → Compañero → Leyenda.
+- **Tu avatar se parece a ti**: complexión, altura, forma de cara, color de ojos, cejas, pelo
+  (con canas), barba o bigote, gafas y ropa (sudadera, camiseta, camisa; pantalón, corto, falda).
+- **Interfaz enérgica**: botones con relieve, entradas animadas, contadores, anillo de tiempo en
+  rango, confeti, vibración al tocar (en el móvil) y transiciones entre pestañas.
+- Galería interna de personajes: añade `?galeria=1` o `?galeria=2` a la dirección.
+- Encargo para el diseñador 3D: [`docs/AVATAR_MODELO.md`](docs/AVATAR_MODELO.md).
+
 ## Novedades 0.2
 
-- **Nuevo Owi**: humano en 3D esculpido (`assets/owi/owi.glb`, generado con `tools/owi/build_owi.py`),
+- **Nuevo Owi** (entonces humano; desde la 0.3 es el avatar del usuario), en 3D esculpido,
   con cara expresiva, brazos articulados y **11 estados**: feliz, atento, cariñoso/preocupado con
   glucosa alta, cariñoso/preocupado con glucosa baja, celebra, duerme, confundido (sin datos),
   avisa y deporte.
@@ -33,7 +44,6 @@ App de acompañamiento en diabetes y obesidad (GLP-1). Este repositorio contiene
 - **Dexcom (API oficial)**: funciones de servidor en `supabase/functions` y botón en *Yo*.
 - **iPhone**: versión web instalable (pantalla de inicio) publicada con GitHub Pages.
 - Pasos de activación: [`docs/PUESTA_EN_MARCHA.md`](docs/PUESTA_EN_MARCHA.md).
-  Encargo para el diseñador 3D: [`docs/OWI_MODELO.md`](docs/OWI_MODELO.md).
 
 ## Límites de la Fase 1 (no es producto sanitario)
 

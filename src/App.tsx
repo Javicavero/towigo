@@ -6,12 +6,14 @@ import { Nunito_800ExtraBold } from '@expo-google-fonts/nunito/800ExtraBold';
 import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon, type IconName } from './components/icons';
+import { Bouncy, FadeIn } from './components/motion';
 import { T } from './components/ui';
 import { t } from './i18n';
 import { NavContext, type Tab } from './nav';
+import DevGallery from './screens/DevGallery';
 import Home from './screens/Home';
 import LogScreen from './screens/LogScreen';
 import Me from './screens/Me';
@@ -42,8 +44,8 @@ function TabBar({ tab, go }: { tab: Tab; go: (t: Tab) => void }) {
         right: 0,
         bottom: 0,
         backgroundColor: colors.white,
-        borderTopWidth: 1,
-        borderTopColor: colors.line,
+        borderTopWidth: 2,
+        borderTopColor: colors.border,
         paddingBottom: Math.max(insets.bottom, 8),
         paddingTop: 6,
       }}
@@ -54,38 +56,57 @@ function TabBar({ tab, go }: { tab: Tab; go: (t: Tab) => void }) {
           const isLog = id === 'log';
           const badge = id === 'team' && d.unreadCount > 0;
           return (
-            <Pressable
+            <Bouncy
               key={id}
               accessibilityRole="tab"
               accessibilityState={{ selected: active }}
               accessibilityLabel={t(`tab.${id}`) + (badge ? `, ${t('tab.unread', { n: d.unreadCount })}` : '')}
               onPress={() => go(id)}
-              style={{ flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 60, gap: 2 }}
+              scaleTo={0.88}
+              outerStyle={{ flex: 1 }}
+              style={{ alignItems: 'center', justifyContent: 'center', minHeight: 60, gap: 2 }}
             >
               <View
                 style={{
-                  width: isLog ? 52 : 44,
-                  height: isLog ? 52 : 34,
-                  borderRadius: 26,
-                  marginTop: isLog ? -20 : 0,
+                  width: isLog ? 58 : 52,
+                  height: isLog ? 58 : 38,
+                  borderRadius: isLog ? 18 : 14,
+                  marginTop: isLog ? -24 : 0,
                   alignItems: 'center',
                   justifyContent: 'center',
                   backgroundColor: isLog ? colors.coralText : active ? colors.softGreen : 'transparent',
+                  borderWidth: active && !isLog ? 2 : 0,
+                  borderColor: colors.greenText,
+                  borderBottomWidth: isLog ? 5 : active ? 3 : 0,
+                  borderBottomColor: isLog ? colors.coralShadow : colors.greenText,
                 }}
               >
-                <Icon name={icon} size={isLog ? 30 : 26} color={isLog ? colors.white : active ? colors.greenText : colors.secondary} stroke={isLog ? 3 : 2.2} />
+                <Icon name={icon} size={isLog ? 32 : 26} color={isLog ? colors.white : active ? colors.greenText : colors.secondary} stroke={isLog ? 3.2 : active ? 2.6 : 2.2} />
                 {badge && (
-                  <View style={{ position: 'absolute', top: 0, right: 4, width: 12, height: 12, borderRadius: 6, backgroundColor: colors.coralText, borderWidth: 2, borderColor: colors.white }} />
+                  <View style={{ position: 'absolute', top: -2, right: 2, minWidth: 18, height: 18, paddingHorizontal: 4, borderRadius: 9, backgroundColor: colors.coralText, borderWidth: 2, borderColor: colors.white, alignItems: 'center', justifyContent: 'center' }}>
+                    <T v="small" color={colors.white} style={{ fontSize: 10, lineHeight: 12 }}>
+                      {d.unreadCount}
+                    </T>
+                  </View>
                 )}
               </View>
               <T v="small" color={active ? colors.greenText : colors.secondary} style={{ fontSize: 12, lineHeight: 15 }}>
                 {t(`tab.${id}`)}
               </T>
-            </Pressable>
+            </Bouncy>
           );
         })}
       </View>
     </View>
+  );
+}
+
+/** Transición al cambiar de pestaña: la pantalla entra con un pequeño deslizamiento. */
+function TabScreen({ id, children }: { id: Tab; children: React.ReactNode }) {
+  return (
+    <FadeIn key={id} from={12} style={{ flex: 1 }}>
+      {children}
+    </FadeIn>
   );
 }
 
@@ -97,16 +118,20 @@ function Root() {
   return (
     <NavContext.Provider value={{ tab, go: setTab }}>
       <View style={{ flex: 1, backgroundColor: colors.cream }}>
-        {tab === 'home' && <Home />}
-        {tab === 'log' && <LogScreen />}
-        {tab === 'team' && <Team />}
-        {tab === 'progress' && <Progress />}
-        {tab === 'me' && <Me />}
+        <TabScreen id={tab}>
+          {tab === 'home' && <Home />}
+          {tab === 'log' && <LogScreen />}
+          {tab === 'team' && <Team />}
+          {tab === 'progress' && <Progress />}
+          {tab === 'me' && <Me />}
+        </TabScreen>
         <TabBar tab={tab} go={setTab} />
       </View>
     </NavContext.Provider>
   );
 }
+
+const SHOW_GALLERY = typeof window !== 'undefined' && typeof window.location !== 'undefined' && window.location.search.includes('galeria');
 
 export default function App() {
   const [loaded] = useFonts({ Nunito_400Regular, Nunito_600SemiBold, Nunito_700Bold, Nunito_800ExtraBold });
@@ -115,7 +140,7 @@ export default function App() {
     <SafeAreaProvider>
       <StoreProvider>
         <StatusBar style="dark" />
-        <Root />
+        {SHOW_GALLERY ? <DevGallery /> : <Root />}
       </StoreProvider>
     </SafeAreaProvider>
   );
