@@ -1068,4 +1068,5 @@ export const es: Record<string, string> = {
   'me.proSub': 'Vista para tu equipo sanitario (demo)',
   'me.proOpen': 'Abrir el panel profesional',
   'me.proNote': 'Así ven tu endocrina, tu nutricionista y tu psicóloga a sus pacientes. Lo que cambien en tu pauta u objetivos llega a tu app.',
+  'home.quickLog': 'Registrar',
 };
