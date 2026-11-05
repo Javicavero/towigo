@@ -2,19 +2,19 @@
  * "Yo": personalizar a Owi, accesibilidad y privacidad (RGPD §8.3).
  */
 import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable, TextInput, View } from 'react-native';
 import AvatarEditor from '../components/AvatarEditor';
 import DexcomCard from '../components/DexcomCard';
 import PlanSettings from '../components/PlanSettings';
 import { Icon } from '../components/icons';
-import Scene3D from '../components/Scene3D';
+import OwiAnimated from '../components/OwiAnimated';
 import { Button, Card, Choice, Row, Screen, T } from '../components/ui';
 import { APP_NAME } from '../config';
 import { ACCESSORIES } from '../data/avatarOptions';
 import { t } from '../i18n';
 import { useStore } from '../state/store';
-import type { TextScale } from '../state/types';
-import { colors, MIN_TOUCH } from '../theme';
+import type { Profile, TextScale } from '../state/types';
+import { colors, fonts, MIN_TOUCH } from '../theme';
 
 export default function Me() {
   const { state, dispatch, d } = useStore();
@@ -29,10 +29,6 @@ export default function Me() {
 
       <Card>
         <T v="h2">{t('me.owiTitle', { owi: state.pet.name })}</T>
-        <Scene3D mode="avatar" avatar={d.owiAvatar} avatarMood="happy" height={300} accessibilityLabel={t('owi.a11y', { name: state.pet.name })} />
-        <T v="small" color={colors.secondary} center>
-          {t('onb.dragHint')}
-        </T>
         <AvatarEditor />
         <T v="label">{t('me.accessories')}</T>
         {ACCESSORIES.map((a) => {
@@ -65,7 +61,37 @@ export default function Me() {
         })}
       </Card>
 
-      <DexcomCard />
+      <Card tone="purple">
+        <Row gap={12}>
+          <OwiAnimated mood="happy" level={d.petLevel} size={90} />
+          <View style={{ flex: 1, gap: 6 }}>
+            <T v="h2">{t('me.petTitle', { owi: state.pet.name })}</T>
+            <T v="small" color={colors.secondary}>
+              {t('me.petNote')}
+            </T>
+          </View>
+        </Row>
+        <TextInput
+          value={state.pet.name}
+          onChangeText={(n) => dispatch({ type: 'setPetName', name: n.slice(0, 20) || 'Owi' })}
+          accessibilityLabel={t('me.petRename')}
+          style={{ minHeight: MIN_TOUCH, borderRadius: 14, borderWidth: 2, borderColor: colors.border, backgroundColor: colors.white, paddingHorizontal: 14, fontSize: 18, fontFamily: fonts.semibold, color: colors.ink }}
+        />
+      </Card>
+
+      <Card>
+        <T v="h2">{t('me.profileTitle')}</T>
+        <Row gap={8} style={{ flexWrap: 'wrap' }}>
+          {(['t2', 'glp1', 't2_glp1'] as Profile[]).map((p) => (
+            <Choice key={p} label={t(`profile.short.${p}`)} selected={state.profile === p} onPress={() => dispatch({ type: 'setProfile', profile: p })} />
+          ))}
+        </Row>
+        <T v="small" color={colors.secondary}>
+          {t('me.profileNote')}
+        </T>
+      </Card>
+
+      {(state.sensor === 'dexcom' || state.sensor === 'libre') && <DexcomCard />}
       <PlanSettings />
 
       <Card>

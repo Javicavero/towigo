@@ -1,92 +1,88 @@
 /**
- * Registro rápido (§4.1): cada registro en menos de 10 segundos, 1-2 toques.
- * Solo se registra lo que el paciente ha hecho; Towigo no calcula ni sugiere dosis (Fase 1).
+ * Registrar (§4.1): cada registro en menos de 10 segundos.
+ * Solo se apunta lo que el paciente ha hecho; Towigo no calcula ni sugiere dosis (Fase 1).
  */
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
-import { Icon, type IconName } from '../components/icons';
+import BodyMap from '../components/BodyMap';
+import { IntakeCard, MedsCard } from '../components/cards';
+import { Burst } from '../components/motion';
 import { Button, Card, Choice, Row, Screen, T } from '../components/ui';
 import { t } from '../i18n';
+import { useNav, type LogSection } from '../nav';
 import { useStore } from '../state/store';
-import type { InsulinKind, LogEntry, NewLogEntry } from '../state/types';
-import { colors, MIN_TOUCH, radius } from '../theme';
+import { hasT2, usesGlp1, type GlucoseContext, type InjectionSite, type SymptomId } from '../state/types';
+import { colors, radius } from '../theme';
 
-type Kind = 'insulin' | 'meal' | 'feeling';
-const TILES: { kind: Kind; icon: IconName }[] = [
-  { kind: 'insulin', icon: 'syringe' },
-  { kind: 'meal', icon: 'meal' },
-  { kind: 'feeling', icon: 'smile' },
-];
-const MEALS = ['breakfast', 'lunch', 'snack', 'dinner'] as const;
-const SYMPTOMS = ['tired', 'dizzy', 'thirsty', 'headache', 'stress', 'none'] as const;
-const FACES = ['😣', '😕', '😐', '🙂', '😄'];
+const SYMPTOMS: SymptomId[] = ['nausea', 'vomitos', 'estrenimiento', 'diarrea', 'ardor', 'fatiga', 'pocoApetito', 'mareo'];
+const CONTEXTS: GlucoseContext[] = ['ayunas', 'antesComer', 'despuesComer', 'noche'];
+const ICON: Record<LogSection, string> = { injection: '💉', weight: '⚖️', glucose: '🩸', meds: '💊', effects: '🫶', intake: '🍗' };
+const fmt = (n: number, d = 1) => n.toFixed(d).replace('.', ',');
 
-function Stepper({ value, onChange }: { value: number; onChange: (n: number) => void }) {
-  const btn = (label: string, delta: number, a11y: string) => (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={a11y}
-      onPress={() => onChange(Math.max(0, Math.min(100, value + delta)))}
-      style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: colors.softGreen, alignItems: 'center', justifyContent: 'center' }}
-    >
-      <T v="title" color={colors.greenText}>
-        {label}
-      </T>
-    </Pressable>
-  );
+function Stepper({ value, onChange, steps, unit, decimals = 0, min = 0, max = 999, label }: { value: number; onChange: (n: number) => void; steps: number[]; unit: string; decimals?: number; min?: number; max?: number; label: string }) {
+  const clamp = (n: number) => Math.round(Math.max(min, Math.min(max, n)) * 100) / 100;
   return (
-    <Row style={{ justifyContent: 'center' }} gap={20}>
-      {btn('−', -1, t('log.less'))}
-      <View accessible accessibilityLabel={t('log.unitsA11y', { n: value })} style={{ minWidth: 90, alignItems: 'center' }}>
-        <T v="big">{value}</T>
+    <View style={{ gap: 8 }}>
+      <View accessible accessibilityLabel={`${label}: ${fmt(value, decimals)} ${unit}`} style={{ alignItems: 'center' }}>
+        <T v="big">{fmt(value, decimals)}</T>
         <T v="small" color={colors.secondary}>
-          {t('log.units')}
+          {unit}
         </T>
       </View>
-      {btn('+', 1, t('log.more'))}
-    </Row>
+      <Row gap={6} style={{ justifyContent: 'center', flexWrap: 'wrap' }}>
+        {[...steps].reverse().map((s) => (
+          <Choice key={`-${s}`} label={`−${fmt(s, s < 1 ? 2 : 0)}`} onPress={() => onChange(clamp(value - s))} style={{ minWidth: 60 }} />
+        ))}
+        {steps.map((s) => (
+          <Choice key={`+${s}`} label={`+${fmt(s, s < 1 ? 2 : 0)}`} onPress={() => onChange(clamp(value + s))} style={{ minWidth: 60 }} />
+        ))}
+      </Row>
+    </View>
   );
-}
-
-function describe(e: LogEntry) {
-  if (e.type === 'insulin') return t('log.item.insulin', { n: e.units, kind: t(`log.${e.kind}`) });
-  if (e.type === 'meal') return t('log.item.meal', { meal: t(`meal.${e.label}`), photo: e.hasPhoto ? ' 📷' : '' });
-  return t('log.item.feeling', { face: FACES[e.level - 1], s: e.symptoms.map((s) => t(`symptom.${s}`)).join(', ') });
 }
 
 export default function LogScreen() {
-  const { state, dispatch } = useStore();
-  const [open, setOpen] = useState<Kind | null>(null);
-  const [insulinKind, setInsulinKind] = useState<InsulinKind>('rapida');
-  const [units, setUnits] = useState(4);
-  const [meal, setMeal] = useState<(typeof MEALS)[number]>('lunch');
-  const [photo, setPhoto] = useState(false);
-  const [level, setLevel] = useState<1 | 2 | 3 | 4 | 5>(4);
-  const [symptoms, setSymptoms] = useState<string[]>([]);
+  const { state, dispatch, d } = useStore();
+  const { section } = useNav();
+  const [open, setOpen] = useState<LogSection | null>(section);
   const [toast, setToast] = useState<string | null>(null);
-  const startedAt = useRef(0);
+  const [burst, setBurst] = useState(0);
+  const started = useRef(Date.now());
+  // Inyección
+  const [site, setSite] = useState<InjectionSite | null>(null);
+  const [dose, setDose] = useState(state.glp1.currentDose);
+  // Peso
+  const [kg, setKg] = useState(d.weightNow ?? 80);
+  const [withComp, setWithComp] = useState(false);
+  const [fat, setFat] = useState(d.fatPct ?? 35);
+  const [muscle, setMuscle] = useState(d.musclePct ?? 30);
+  // Glucosa
+  const [gv, setGv] = useState(d.lastGlucose?.v ?? 120);
+  const [ctx, setCtx] = useState<GlucoseContext>('ayunas');
+  // Efectos
+  const [sym, setSym] = useState<Partial<Record<SymptomId, 1 | 2 | 3>>>({});
 
+  useEffect(() => setOpen(section), [section]);
   useEffect(() => {
     if (!toast) return;
-    const id = setTimeout(() => setToast(null), 4000);
+    const id = setTimeout(() => setToast(null), 4500);
     return () => clearTimeout(id);
   }, [toast]);
 
-  const start = (k: Kind) => {
-    setOpen(open === k ? null : k);
-    startedAt.current = Date.now();
-    setPhoto(false);
-    setSymptoms([]);
-  };
+  const glp1 = usesGlp1(state.profile);
+  const t2 = hasT2(state.profile);
+  const sections: LogSection[] = [...(glp1 ? (['injection'] as LogSection[]) : []), 'weight', ...(t2 ? (['glucose', 'meds'] as LogSection[]) : []), ...(glp1 ? (['effects'] as LogSection[]) : []), 'intake'];
 
-  const save = (entry: NewLogEntry) => {
-    const secs = Math.max(1, Math.round((Date.now() - startedAt.current) / 1000));
-    dispatch({ type: 'addLog', entry });
+  const toggle = (s: LogSection) => {
+    setOpen(open === s ? null : s);
+    started.current = Date.now();
+  };
+  const saved = (key: string, vars: Record<string, string | number> = {}) => {
+    const secs = Math.max(1, Math.round((Date.now() - started.current) / 1000));
     setOpen(null);
-    setToast(secs <= 10 ? t('log.savedFast', { owi: state.pet.name, s: secs }) : t('log.saved', { owi: state.pet.name }));
+    setBurst((b) => b + 1);
+    setToast(t(key, { ...vars, owi: state.pet.name, s: secs }));
   };
-
-  const today = state.logs.filter((l) => new Date(l.at).toDateString() === new Date().toDateString());
 
   return (
     <Screen>
@@ -94,163 +90,163 @@ export default function LogScreen() {
         {t('log.title')}
       </T>
       <T color={colors.secondary}>{t('log.subtitle')}</T>
-
       {toast && (
-        <Card tone="green" style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <Icon name="check" color={colors.greenText} stroke={3} />
-          <View accessibilityLiveRegion="polite" style={{ flex: 1 }}>
+        <Card tone="green">
+          <View accessibilityLiveRegion="polite">
             <T v="label">{toast}</T>
           </View>
         </Card>
       )}
 
-      {TILES.map(({ kind, icon }) => (
-        <Card key={kind} style={{ padding: 0, overflow: 'hidden' }}>
+      {sections.map((s) => (
+        <Card key={s} style={{ padding: 0, overflow: 'hidden' }}>
           <Pressable
             accessibilityRole="button"
-            accessibilityState={{ expanded: open === kind }}
-            accessibilityLabel={t(`log.${kind}`)}
-            onPress={() => start(kind)}
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 18, minHeight: 76 }}
+            accessibilityState={{ expanded: open === s }}
+            accessibilityLabel={t(`log.${s}`)}
+            onPress={() => toggle(s)}
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, minHeight: 76 }}
           >
             <View style={{ width: 52, height: 52, borderRadius: radius.m, backgroundColor: colors.softGreen, alignItems: 'center', justifyContent: 'center' }}>
-              <Icon name={icon} size={28} color={colors.greenText} />
+              <T v="title">{ICON[s]}</T>
             </View>
             <View style={{ flex: 1 }}>
-              <T v="h2">{t(`log.${kind}`)}</T>
+              <T v="h2">{t(`log.${s}`)}</T>
               <T v="small" color={colors.secondary}>
-                {t(`log.${kind}Hint`)}
+                {t(`log.${s}Hint`)}
               </T>
             </View>
             <T v="title" color={colors.greenText}>
-              {open === kind ? '−' : '+'}
+              {open === s ? '−' : '+'}
             </T>
           </Pressable>
 
-          {open === kind && (
-            <View style={{ paddingHorizontal: 18, paddingBottom: 18, gap: 14 }}>
-              {kind === 'insulin' && (
+          {open === s && (
+            <View style={{ paddingHorizontal: 16, paddingBottom: 16, gap: 14 }}>
+              {s === 'injection' && (
                 <>
-                  <Row gap={10}>
-                    {(['rapida', 'basal'] as InsulinKind[]).map((k) => (
-                      <Choice
-                        key={k}
-                        style={{ flex: 1 }}
-                        label={t(`log.${k}`)}
-                        selected={insulinKind === k}
-                        onPress={() => {
-                          setInsulinKind(k);
-                          setUnits(k === 'basal' ? 18 : 4);
-                        }}
-                      />
-                    ))}
-                  </Row>
-                  <Stepper value={units} onChange={setUnits} />
+                  <T v="label">{t('log.whereInjected')}</T>
+                  <BodyMap selected={site} last={d.lastInjection?.site} suggested={d.suggestedSite} onSelect={setSite} />
+                  {site && (
+                    <T v="label" center color={colors.greenText}>
+                      {t(`site.${site}`)}
+                    </T>
+                  )}
+                  <T v="label">{t('log.doseInjected')}</T>
+                  <Stepper value={dose} onChange={setDose} steps={[0.25]} unit="mg" decimals={2} max={20} label={t('log.doseInjected')} />
                   <T v="small" color={colors.secondary} center>
-                    {t('log.noDoseCalc')}
+                    {t('log.doseNote', { dose: fmt(state.glp1.currentDose, 2) })}
                   </T>
-                  <Button label={t('log.save')} onPress={() => save({ type: 'insulin', kind: insulinKind, units })} />
+                  <Button
+                    label={t('log.save')}
+                    disabled={!site}
+                    onPress={() => {
+                      if (!site) return;
+                      dispatch({ type: 'addInjection', dose, site });
+                      saved('log.savedInjection', { weeks: d.injectionWeeks + 1 });
+                      setSite(null);
+                    }}
+                  />
                 </>
               )}
 
-              {kind === 'meal' && (
+              {s === 'weight' && (
                 <>
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel={photo ? t('log.photoAdded') : t('log.takePhoto')}
-                    onPress={() => setPhoto(true)}
-                    style={{
-                      height: 130,
-                      borderRadius: radius.m,
-                      borderWidth: 2,
-                      borderStyle: photo ? 'solid' : 'dashed',
-                      borderColor: photo ? colors.greenText : colors.line,
-                      backgroundColor: photo ? colors.softGreen : colors.cream,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 6,
-                    }}
-                  >
-                    {photo ? <T v="display">🥗</T> : <Icon name="camera" size={36} color={colors.greenText} />}
+                  <Stepper value={kg} onChange={setKg} steps={[0.1, 1]} unit="kg" decimals={1} min={30} max={300} label={t('log.weight')} />
+                  <Pressable accessibilityRole="switch" accessibilityState={{ checked: withComp }} onPress={() => setWithComp((v) => !v)} style={{ minHeight: 48, justifyContent: 'center' }}>
                     <T v="label" color={colors.greenText}>
-                      {photo ? t('log.photoAdded') : t('log.takePhoto')}
+                      {withComp ? '☑' : '☐'} {t('log.withComp')}
                     </T>
                   </Pressable>
-                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                    {MEALS.map((m) => (
-                      <Choice key={m} label={t(`meal.${m}`)} selected={meal === m} onPress={() => setMeal(m)} />
-                    ))}
-                  </View>
-                  <Button label={t('log.save')} onPress={() => save({ type: 'meal', label: meal, hasPhoto: photo })} />
+                  {withComp && (
+                    <Row gap={8}>
+                      <View style={{ flex: 1 }}>
+                        <T v="small" center>
+                          {t('log.fat')}
+                        </T>
+                        <Stepper value={fat} onChange={setFat} steps={[0.5]} unit="%" decimals={1} max={70} label={t('log.fat')} />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <T v="small" center>
+                          {t('log.muscle')}
+                        </T>
+                        <Stepper value={muscle} onChange={setMuscle} steps={[0.5]} unit="%" decimals={1} max={70} label={t('log.muscle')} />
+                      </View>
+                    </Row>
+                  )}
+                  <T v="small" color={colors.secondary}>
+                    {t('log.scaleNote')}
+                  </T>
+                  <Button
+                    label={t('log.save')}
+                    onPress={() => {
+                      dispatch({ type: 'addWeight', entry: withComp ? { kg, fatPct: fat, musclePct: muscle } : { kg } });
+                      saved('log.savedWeight');
+                    }}
+                  />
                 </>
               )}
 
-              {kind === 'feeling' && (
+              {s === 'glucose' && (
                 <>
-                  <Row style={{ justifyContent: 'space-between' }} gap={4}>
-                    {FACES.map((f, i) => (
-                      <Pressable
-                        key={f}
-                        accessibilityRole="button"
-                        accessibilityLabel={t(`feeling.${i + 1}`)}
-                        accessibilityState={{ selected: level === i + 1 }}
-                        onPress={() => setLevel((i + 1) as 1 | 2 | 3 | 4 | 5)}
-                        style={{
-                          width: MIN_TOUCH + 4,
-                          height: MIN_TOUCH + 4,
-                          borderRadius: 30,
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          backgroundColor: level === i + 1 ? colors.softYellow : 'transparent',
-                          borderWidth: 2,
-                          borderColor: level === i + 1 ? colors.achievement : 'transparent',
-                        }}
-                      >
-                        <T v="title">{f}</T>
-                      </Pressable>
+                  <Stepper value={gv} onChange={setGv} steps={[1, 10]} unit="mg/dL" min={20} max={600} label={t('log.glucose')} />
+                  <Row gap={8} style={{ flexWrap: 'wrap' }}>
+                    {CONTEXTS.map((c) => (
+                      <Choice key={c} label={t(`ctx.${c}`)} selected={ctx === c} onPress={() => setCtx(c)} />
                     ))}
                   </Row>
-                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                    {SYMPTOMS.map((s) => (
-                      <Choice
-                        key={s}
-                        label={t(`symptom.${s}`)}
-                        selected={symptoms.includes(s)}
-                        onPress={() =>
-                          setSymptoms((cur) =>
-                            s === 'none' ? ['none'] : cur.includes(s) ? cur.filter((x) => x !== s) : [...cur.filter((x) => x !== 'none'), s],
-                          )
-                        }
-                      />
-                    ))}
-                  </View>
-                  <Button label={t('log.save')} onPress={() => save({ type: 'feeling', level, symptoms })} />
+                  <Button
+                    label={t('log.save')}
+                    onPress={() => {
+                      dispatch({ type: 'addGlucose', v: gv, context: ctx });
+                      saved(gv < 70 ? 'log.savedGlucoseLow' : 'log.savedGlucose');
+                    }}
+                  />
                 </>
               )}
+
+              {s === 'meds' && <MedsCard />}
+
+              {s === 'effects' && (
+                <>
+                  <T v="small" color={colors.secondary}>
+                    {t('log.effectsHow')}
+                  </T>
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                    {SYMPTOMS.map((id) => {
+                      const lv = sym[id];
+                      return (
+                        <Choice
+                          key={id}
+                          label={`${t(`sym.${id}`)}${lv ? ` · ${t(`level.${lv}`)}` : ''}`}
+                          selected={!!lv}
+                          onPress={() => setSym((cur) => ({ ...cur, [id]: lv === 3 ? undefined : (((lv ?? 0) + 1) as 1 | 2 | 3) }))}
+                        />
+                      );
+                    })}
+                  </View>
+                  <Button
+                    label={Object.keys(sym).some((k) => sym[k as SymptomId]) ? t('log.save') : t('log.noEffects')}
+                    onPress={() => {
+                      const list = (Object.entries(sym).filter(([, v]) => v) as [SymptomId, 1 | 2 | 3][]).map(([id, level]) => ({ id, level }));
+                      if (list.length) dispatch({ type: 'addSideEffect', symptoms: list });
+                      else dispatch({ type: 'addIntake' });
+                      saved(list.length ? 'log.savedEffects' : 'log.savedNoEffects');
+                      setSym({});
+                    }}
+                  />
+                  <T v="small" color={colors.secondary}>
+                    {t('log.effectsNote')}
+                  </T>
+                </>
+              )}
+
+              {s === 'intake' && <IntakeCard />}
             </View>
           )}
         </Card>
       ))}
-
-      <T v="h2" style={{ marginTop: 8 }}>
-        {t('log.today')}
-      </T>
-      {today.length === 0 ? (
-        <T color={colors.secondary}>{t('log.empty')}</T>
-      ) : (
-        today.map((e) => (
-          <Card key={e.id} style={{ paddingVertical: 12 }}>
-            <Row style={{ justifyContent: 'space-between' }}>
-              <T v="label" style={{ flex: 1 }}>
-                {describe(e)}
-              </T>
-              <T v="small" color={colors.secondary}>
-                {new Date(e.at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
-              </T>
-            </Row>
-          </Card>
-        ))
-      )}
+      <Burst fire={burst} />
     </Screen>
   );
 }

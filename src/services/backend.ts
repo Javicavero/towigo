@@ -6,7 +6,7 @@
  */
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { Platform } from 'react-native';
-import type { Reading } from '../data/mock';
+import type { Reading } from '../state/types';
 
 const URL_ = process.env.EXPO_PUBLIC_SUPABASE_URL ?? '';
 const KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';

@@ -2,33 +2,57 @@
 
 *Juntos, todo pesa menos.*
 
-App de acompañamiento en diabetes y obesidad (GLP-1). Este repositorio contiene el
-**prototipo navegable 0.3** para pacientes con **diabetes tipo 1**, con datos simulados.
+App de acompañamiento para **diabetes tipo 2** y **obesidad con tratamiento GLP-1**. Este
+repositorio contiene el **prototipo 0.5** (datos simulados) con tres caminos:
+
+| Perfil | Lo principal en "Hoy" |
+|---|---|
+| Tipo 2 | Glucosa (glucómetro o sensor), HbA1c, medicación del día, hábitos |
+| Obesidad con GLP-1 | Inyección semanal con rotación de zona, peso y composición, efectos secundarios, proteína y agua |
+| Tipo 2 + GLP-1 | Todo lo anterior; el peso pasa a un segundo plano |
 
 ## Qué incluye
+- **Owi**, el erizo compañero, en 2D animado con sus 12 emociones; avisa y evoluciona con tu vínculo.
+- **Tu avatar 2D** parecido a ti.
+- **Registrar**: inyección (mapa del cuerpo y dosis que te has puesto), peso (con grasa y músculo),
+  glucosa (con momento del día), medicación, efectos secundarios, proteína y agua.
+- **Logros y progreso**: racha de hábitos, semanas seguidas de inyección, evolución del peso y
+  de la grasa, HbA1c y evolución de Owi.
+- **Equipo**: chat y audios con endocrina, nutricionista-entrenador y psicóloga.
+- **Modo demostración** (en Hoy): cambia de perfil y de escenario (día de inyección, inyección
+  olvidada, efectos secundarios, meseta, logro, glucosa alta o baja, noche).
 
-- **Onboarding conversacional**: Owi se presenta, pregunta el nombre, deja renombrarlo,
-  personalizar su aspecto, pide los consentimientos RGPD, conecta el sensor (simulado) y
-  presenta al equipo humano.
-- **Hoy**: Owi en 3D con sus tres estados (sonríe, preocupación cariñosa con corazón y
-  celebración con confeti), glucosa actual con tendencia, gráfica de 24 h, tiempo en rango,
-  aviso claro si falla la sincronización y hábitos del día.
-- **Registrar**: insulina, comida con foto y cómo me siento, en menos de 10 segundos.
-- **Equipo**: chat con texto y mensajes de audio (simulados) con endocrina,
-  entrenador-nutricionista y psicóloga. Owi hace de puente.
-- **Logros**: racha de hábitos (nunca de glucosa), protector de racha, niveles y accesorios
-  de Owi que se desbloquean.
-- **Yo**: editar a Owi, tamaño de letra, privacidad y datos.
-- **Escenarios de demostración** en la pantalla Hoy: en rango, glucosa alta, glucosa baja,
-  objetivo cumplido y fallo del sensor.
+## Límites de la Fase 1 (no es producto sanitario)
+- La app **no calcula ni sugiere dosis** (ni de GLP-1 ni de otros fármacos): solo recuerda y apunta
+  lo que pautó el médico.
+- Ante glucosa baja, Owi acompaña y recuerda seguir el plan del equipo; no da instrucciones.
+- Los objetivos (glucosa, peso, proteína) los fija el profesional del paciente.
 
-## Novedades 0.4
+## Estructura
+```
+src/state/     Modelo de datos (tipos y almacén) para los tres perfiles
+src/data/      Datos de demostración, avisos del plan y opciones del avatar
+src/components Owi animado, avatar SVG, tarjetas, gráficas, mapa de inyección, UI base
+src/screens/   Bienvenida, Hoy, Registrar, Equipo, Logros, Yo
+supabase/      Servidor (Dexcom) para cuando se active
+docs/          Puesta en marcha y personajes
+```
+
+```bash
+npm install
+npx expo start --web
+./scripts/build-web.sh
+```
+
+## Historial
+
+### 0.4
 
 - **Owi con su diseño definitivo**: modelo 3D del erizo y sus 12 visualizaciones (feliz, atento,
   cariñoso/preocupado con glucosa alta y baja, celebra, duerme, confundido, avisa, deporte y te
   echaba de menos). Las ilustraciones aparecen también en el chat y en el bocadillo.
 
-## Novedades 0.3
+### 0.3
 
 - **Owi es ahora un erizo**: la mascota compañera (común a todos los perfiles) que avisa, se
   emociona (12 emociones) y **evoluciona** con tu vínculo: Pequeño → Explorador → Compañero → Leyenda.
@@ -39,7 +63,7 @@ App de acompañamiento en diabetes y obesidad (GLP-1). Este repositorio contiene
 - Galería interna de personajes: añade `?galeria=1` o `?galeria=2` a la dirección.
 - Encargo para el diseñador 3D: [`docs/AVATAR_MODELO.md`](docs/AVATAR_MODELO.md).
 
-## Novedades 0.2
+### 0.2
 
 - **Nuevo Owi** (entonces humano; desde la 0.3 es el avatar del usuario), en 3D esculpido,
   con cara expresiva, brazos articulados y **11 estados**: feliz, atento, cariñoso/preocupado con

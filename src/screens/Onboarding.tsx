@@ -1,24 +1,44 @@
 /**
- * Onboarding conversacional: Owi presenta la app y hace las preguntas.
- * Objetivo: menos de 2 minutos y sin formularios largos (§4.4, primera semana).
+ * Bienvenida conversacional: Owi presenta la app y pregunta lo justo (§4.4, primera semana).
+ * Tres caminos: tipo 2, obesidad con GLP-1 o tipo 2 con GLP-1.
  */
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, TextInput, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, TextInput, View } from 'react-native';
 import AvatarEditor from '../components/AvatarEditor';
+import AvatarFace from '../components/AvatarFace';
 import { Icon } from '../components/icons';
-import Scene3D from '../components/Scene3D';
-import SpeechBubble from '../components/SpeechBubble';
 import { FadeIn, Pop } from '../components/motion';
+import OwiAnimated from '../components/OwiAnimated';
+import SpeechBubble from '../components/SpeechBubble';
 import { Button, Card, Choice, ProgressBar, Row, Screen, T } from '../components/ui';
 import { APP_NAME, DEFAULT_AVATAR_NAME } from '../config';
 import { TEAM } from '../data/mock';
 import { t } from '../i18n';
 import { useStore } from '../state/store';
-import type { SensorId } from '../state/types';
+import { hasT2, usesGlp1, type Glp1Drug, type PetMood, type Profile, type SensorId } from '../state/types';
 import { colors, fonts, MIN_TOUCH, radius } from '../theme';
 
-const STEPS = ['hello', 'name', 'owiName', 'look', 'consent', 'sensor', 'team', 'commit'] as const;
+const STEPS = ['hello', 'name', 'owiName', 'profile', 'treatment', 'avatar', 'consent', 'team', 'commit'] as const;
 type Step = (typeof STEPS)[number];
+const PROFILES: { id: Profile; emoji: string }[] = [
+  { id: 't2', emoji: '🩸' },
+  { id: 'glp1', emoji: '💉' },
+  { id: 't2_glp1', emoji: '🩸💉' },
+];
+const DRUGS: Glp1Drug[] = ['semaglutida', 'tirzepatida', 'liraglutida', 'otro'];
+const SENSORS: SensorId[] = ['glucometro', 'libre', 'dexcom', 'none'];
+const DAYS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+const STEP_MOOD: Record<Step, PetMood> = {
+  hello: 'missYou',
+  name: 'attentive',
+  owiName: 'happy',
+  profile: 'attentive',
+  treatment: 'remind',
+  avatar: 'happy',
+  consent: 'caringLow',
+  team: 'caringHigh',
+  commit: 'celebrate',
+};
 
 function Input(props: React.ComponentProps<typeof TextInput>) {
   const { state } = useStore();
@@ -26,43 +46,15 @@ function Input(props: React.ComponentProps<typeof TextInput>) {
     <TextInput
       placeholderTextColor={colors.secondary}
       {...props}
-      style={{
-        minHeight: MIN_TOUCH + 4,
-        borderRadius: radius.m,
-        borderWidth: 2,
-        borderColor: colors.line,
-        backgroundColor: colors.white,
-        paddingHorizontal: 16,
-        fontSize: 18 * state.textScale,
-        fontFamily: fonts.semibold,
-        color: colors.ink,
-      }}
+      style={{ minHeight: MIN_TOUCH + 4, borderRadius: radius.m, borderWidth: 2, borderBottomWidth: 4, borderColor: colors.border, backgroundColor: colors.white, paddingHorizontal: 16, fontSize: 18 * state.textScale, fontFamily: fonts.semibold, color: colors.ink }}
     />
   );
 }
 
 function Check({ checked, onToggle, label, detail }: { checked: boolean; onToggle: () => void; label: string; detail?: string }) {
   return (
-    <Pressable
-      accessibilityRole="checkbox"
-      accessibilityState={{ checked }}
-      accessibilityLabel={label}
-      onPress={onToggle}
-      style={{ flexDirection: 'row', gap: 12, alignItems: 'flex-start', minHeight: MIN_TOUCH, paddingVertical: 6 }}
-    >
-      <View
-        style={{
-          width: 30,
-          height: 30,
-          borderRadius: 8,
-          borderWidth: 2,
-          borderColor: checked ? colors.greenText : colors.secondary,
-          backgroundColor: checked ? colors.greenText : colors.white,
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginTop: 2,
-        }}
-      >
+    <Pressable accessibilityRole="checkbox" accessibilityState={{ checked }} accessibilityLabel={label} onPress={onToggle} style={{ flexDirection: 'row', gap: 12, alignItems: 'flex-start', minHeight: MIN_TOUCH, paddingVertical: 6 }}>
+      <View style={{ width: 30, height: 30, borderRadius: 8, borderWidth: 2, borderColor: checked ? colors.greenText : colors.secondary, backgroundColor: checked ? colors.greenText : colors.white, alignItems: 'center', justifyContent: 'center', marginTop: 2 }}>
         {checked && <Icon name="check" size={20} color={colors.white} stroke={3} />}
       </View>
       <View style={{ flex: 1, gap: 2 }}>
@@ -86,42 +78,28 @@ export default function Onboarding() {
   const [name, setName] = useState(state.userName);
   const [owiName, setOwiName] = useState('');
   const [consents, setConsents] = useState(state.consents);
-  const [connecting, setConnecting] = useState<SensorId | null>(null);
-  const [connected, setConnected] = useState<SensorId | null>(null);
-
-  useEffect(() => {
-    if (!connecting) return;
-    const id = setTimeout(() => {
-      dispatch({ type: 'setSensor', sensor: connecting });
-      setConnected(connecting);
-      setConnecting(null);
-    }, 1600);
-    return () => clearTimeout(id);
-  }, [connecting, dispatch]);
-
   const owi = state.pet.name || DEFAULT_AVATAR_NAME;
-  const sceneMode = step === 'look' ? 'avatar' : step === 'commit' || step === 'team' ? 'pair' : 'pet';
+  const glp1 = usesGlp1(state.profile);
+  const t2 = hasT2(state.profile);
+
   const bubble: Record<Step, string> = {
     hello: t('onb.hello', { app: APP_NAME }),
     name: t('onb.askName'),
     owiName: t('onb.askOwiName', { name: state.userName }),
-    look: t('onb.look'),
+    profile: t('onb.profile', { name: state.userName }),
+    treatment: t(`onb.treatment.${state.profile}`),
+    avatar: t('onb.avatar'),
     consent: t('onb.consent'),
-    sensor: connected ? t('onb.sensorDone', { sensor: t(`sensor.${connected}`) }) : t('onb.sensor'),
     team: t('onb.team'),
     commit: t('onb.commit', { name: state.userName }),
   };
+  const pair = step === 'team' || step === 'commit';
 
   return (
     <Screen padBottom={40}>
       <Row style={{ justifyContent: 'space-between', minHeight: MIN_TOUCH }}>
         {i > 0 ? (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('common.back')}
-            onPress={back}
-            style={{ width: MIN_TOUCH, height: MIN_TOUCH, alignItems: 'center', justifyContent: 'center' }}
-          >
+          <Pressable accessibilityRole="button" accessibilityLabel={t('common.back')} onPress={back} style={{ width: MIN_TOUCH, height: MIN_TOUCH, alignItems: 'center', justifyContent: 'center' }}>
             <Icon name="back" size={28} />
           </Pressable>
         ) : (
@@ -133,20 +111,16 @@ export default function Onboarding() {
         <View style={{ width: MIN_TOUCH }} />
       </Row>
 
-      {/* Owi se presenta solo; en "look" vemos tu avatar; al final, los dos juntos. */}
-      <FadeIn key={sceneMode}>
-        <Scene3D
-          mode={sceneMode}
-          avatar={d.owiAvatar}
-          avatarMood={step === 'commit' ? 'celebrate' : 'happy'}
-          petMood={step === 'commit' ? 'celebrate' : step === 'hello' ? 'missYou' : step === 'consent' ? 'attentive' : 'happy'}
-          petLevel={d.petLevel}
-          height={step === 'look' ? 300 : 230}
-          accessibilityLabel={t('owi.a11y', { name: owi })}
-        />
-      </FadeIn>
+      {step !== 'avatar' && (
+        <FadeIn key={pair ? 'pair' : 'owi'}>
+          <Row style={{ justifyContent: 'center', alignItems: 'flex-end' }}>
+            {pair && <AvatarFace avatar={d.owiAvatar} size={130} expression={step === 'commit' ? 'big' : 'smile'} />}
+            <OwiAnimated mood={STEP_MOOD[step]} level={1} size={pair ? 170 : 200} label={t('owi.a11y', { name: owi })} />
+          </Row>
+        </FadeIn>
+      )}
       <Pop trigger={step}>
-        <SpeechBubble text={bubble[step]} name={owi} arrow={sceneMode === 'pair' ? 'right' : 'center'} />
+        <SpeechBubble text={bubble[step]} name={owi} arrow={pair ? 'right' : 'center'} />
       </Pop>
 
       <View style={{ gap: 12, marginTop: 4 }}>
@@ -154,20 +128,7 @@ export default function Onboarding() {
 
         {step === 'name' && (
           <>
-            <Input
-              value={name}
-              onChangeText={setName}
-              placeholder={t('onb.namePh')}
-              accessibilityLabel={t('onb.namePh')}
-              autoFocus
-              returnKeyType="next"
-              onSubmitEditing={() => {
-                if (name.trim()) {
-                  dispatch({ type: 'setName', name: name.trim() });
-                  next();
-                }
-              }}
-            />
+            <Input value={name} onChangeText={setName} placeholder={t('onb.namePh')} accessibilityLabel={t('onb.namePh')} autoFocus />
             <Button
               label={t('common.continue')}
               disabled={!name.trim()}
@@ -204,11 +165,70 @@ export default function Onboarding() {
           </>
         )}
 
-        {step === 'look' && (
+        {step === 'profile' && (
           <>
-            <T v="small" color={colors.secondary} center>
-              {t('onb.dragHint')}
-            </T>
+            {PROFILES.map((p) => (
+              <Pressable
+                key={p.id}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: state.profile === p.id }}
+                accessibilityLabel={t(`profile.${p.id}`)}
+                onPress={() => dispatch({ type: 'setProfile', profile: p.id })}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderRadius: radius.l, borderWidth: 2, borderBottomWidth: 5, borderColor: state.profile === p.id ? colors.greenText : colors.border, backgroundColor: state.profile === p.id ? colors.softGreen : colors.white }}
+              >
+                <T v="title">{p.emoji}</T>
+                <View style={{ flex: 1 }}>
+                  <T v="h2">{t(`profile.${p.id}`)}</T>
+                  <T v="small" color={colors.secondary}>
+                    {t(`profile.${p.id}Hint`)}
+                  </T>
+                </View>
+              </Pressable>
+            ))}
+            <Button label={t('common.continue')} onPress={next} />
+          </>
+        )}
+
+        {step === 'treatment' && (
+          <>
+            {glp1 && (
+              <Card>
+                <T v="label">{t('onb.whichDrug')}</T>
+                <Row gap={8} style={{ flexWrap: 'wrap' }}>
+                  {DRUGS.map((dr) => (
+                    <Choice key={dr} label={t(`drug.${dr}`)} selected={state.glp1.drug === dr} onPress={() => dispatch({ type: 'setGlp1', patch: { drug: dr } })} />
+                  ))}
+                </Row>
+                <T v="label">{t('onb.whichDay')}</T>
+                <Row gap={6} style={{ flexWrap: 'wrap' }}>
+                  {DAYS.map((dd, k) => (
+                    <Choice key={dd} label={dd} style={{ minWidth: MIN_TOUCH, paddingHorizontal: 0 }} selected={state.glp1.weekday === k} onPress={() => dispatch({ type: 'setGlp1', patch: { weekday: k } })} />
+                  ))}
+                </Row>
+                <T v="small" color={colors.secondary}>
+                  {t('onb.doseNote')}
+                </T>
+              </Card>
+            )}
+            {t2 && (
+              <Card>
+                <T v="label">{t('onb.howMeasure')}</T>
+                <Row gap={8} style={{ flexWrap: 'wrap' }}>
+                  {SENSORS.map((s) => (
+                    <Choice key={s} label={t(`sensor.${s}`)} selected={state.sensor === s} onPress={() => dispatch({ type: 'setSensor', sensor: s })} />
+                  ))}
+                </Row>
+                <T v="small" color={colors.secondary}>
+                  {t('onb.medsNote')}
+                </T>
+              </Card>
+            )}
+            <Button label={t('common.continue')} onPress={next} />
+          </>
+        )}
+
+        {step === 'avatar' && (
+          <>
             <Card>
               <AvatarEditor />
             </Card>
@@ -219,24 +239,9 @@ export default function Onboarding() {
         {step === 'consent' && (
           <>
             <Card>
-              <Check
-                checked={consents.healthData}
-                onToggle={() => setConsents((c) => ({ ...c, healthData: !c.healthData }))}
-                label={t('consent.health')}
-                detail={t('consent.healthDetail')}
-              />
-              <Check
-                checked={consents.careTeam}
-                onToggle={() => setConsents((c) => ({ ...c, careTeam: !c.careTeam }))}
-                label={t('consent.team')}
-                detail={t('consent.teamDetail')}
-              />
-              <Check
-                checked={consents.productAnalytics}
-                onToggle={() => setConsents((c) => ({ ...c, productAnalytics: !c.productAnalytics }))}
-                label={t('consent.analytics')}
-                detail={t('consent.analyticsDetail')}
-              />
+              <Check checked={consents.healthData} onToggle={() => setConsents((c) => ({ ...c, healthData: !c.healthData }))} label={t('consent.health')} detail={t('consent.healthDetail')} />
+              <Check checked={consents.careTeam} onToggle={() => setConsents((c) => ({ ...c, careTeam: !c.careTeam }))} label={t('consent.team')} detail={t('consent.teamDetail')} />
+              <Check checked={consents.productAnalytics} onToggle={() => setConsents((c) => ({ ...c, productAnalytics: !c.productAnalytics }))} label={t('consent.analytics')} detail={t('consent.analyticsDetail')} />
             </Card>
             <T v="small" color={colors.secondary}>
               {t('consent.rights')}
@@ -249,36 +254,6 @@ export default function Onboarding() {
                 next();
               }}
             />
-          </>
-        )}
-
-        {step === 'sensor' && (
-          <>
-            {connecting ? (
-              <Card tone="green" style={{ alignItems: 'center' }}>
-                <ActivityIndicator color={colors.greenText} size="large" />
-                <T v="label">{t('onb.connecting', { sensor: t(`sensor.${connecting}`) })}</T>
-                <T v="small" color={colors.secondary} center>
-                  {t('common.demoNote')}
-                </T>
-              </Card>
-            ) : connected ? (
-              <Button label={t('common.continue')} onPress={next} />
-            ) : (
-              <>
-                {(['libre', 'dexcom', 'otro'] as SensorId[]).map((s) => (
-                  <Choice key={s} label={t(`sensor.${s}`)} onPress={() => setConnecting(s)} />
-                ))}
-                <Button
-                  kind="ghost"
-                  label={t('onb.noSensor')}
-                  onPress={() => {
-                    dispatch({ type: 'setSensor', sensor: 'none' });
-                    next();
-                  }}
-                />
-              </>
-            )}
           </>
         )}
 

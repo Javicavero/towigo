@@ -12,8 +12,7 @@ import { Icon, type IconName } from './components/icons';
 import { Bouncy, FadeIn } from './components/motion';
 import { T } from './components/ui';
 import { t } from './i18n';
-import { NavContext, type Tab } from './nav';
-import DevGallery from './screens/DevGallery';
+import { NavContext, type LogSection, type Tab } from './nav';
 import Home from './screens/Home';
 import LogScreen from './screens/LogScreen';
 import Me from './screens/Me';
@@ -114,9 +113,14 @@ function Root() {
   const { state } = useStore();
   useDexcomSync();
   const [tab, setTab] = useState<Tab>('home');
+  const [section, setSection] = useState<LogSection | null>(null);
+  const go = (t: Tab, sec?: LogSection) => {
+    setSection(sec ?? null);
+    setTab(t);
+  };
   if (!state.onboarded) return <Onboarding />;
   return (
-    <NavContext.Provider value={{ tab, go: setTab }}>
+    <NavContext.Provider value={{ tab, section, go }}>
       <View style={{ flex: 1, backgroundColor: colors.cream }}>
         <TabScreen id={tab}>
           {tab === 'home' && <Home />}
@@ -125,13 +129,11 @@ function Root() {
           {tab === 'progress' && <Progress />}
           {tab === 'me' && <Me />}
         </TabScreen>
-        <TabBar tab={tab} go={setTab} />
+        <TabBar tab={tab} go={(t) => go(t)} />
       </View>
     </NavContext.Provider>
   );
 }
-
-const SHOW_GALLERY = typeof window !== 'undefined' && typeof window.location !== 'undefined' && window.location.search.includes('galeria');
 
 export default function App() {
   const [loaded] = useFonts({ Nunito_400Regular, Nunito_600SemiBold, Nunito_700Bold, Nunito_800ExtraBold });
@@ -140,7 +142,7 @@ export default function App() {
     <SafeAreaProvider>
       <StoreProvider>
         <StatusBar style="dark" />
-        {SHOW_GALLERY ? <DevGallery /> : <Root />}
+        <Root />
       </StoreProvider>
     </SafeAreaProvider>
   );
