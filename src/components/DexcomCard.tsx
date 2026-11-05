@@ -8,7 +8,7 @@ import { t } from '../i18n';
 import { backendConfigured, dexcomDisconnect, dexcomStart } from '../services/backend';
 import { useStore } from '../state/store';
 import { colors } from '../theme';
-import { Button, Card, Row, T } from './ui';
+import { Button, Row, T } from './ui';
 
 export default function DexcomCard() {
   const { state, dispatch } = useStore();
@@ -42,7 +42,7 @@ export default function DexcomCard() {
   };
 
   return (
-    <Card>
+    <View style={{ gap: 10 }}>
       <Row gap={10}>
         <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.softGreen, alignItems: 'center', justifyContent: 'center' }}>
           <T v="h2">📡</T>
@@ -75,6 +75,6 @@ export default function DexcomCard() {
       <T v="small" color={colors.secondary}>
         {t('dexcom.privacy')}
       </T>
-    </Card>
+    </View>
   );
 }

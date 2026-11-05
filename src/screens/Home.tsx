@@ -1,6 +1,7 @@
 /**
  * Pantalla "Hoy" (tipo 2 · GLP-1 · tipo 2 + GLP-1).
- * Cabecera con racha, tu avatar y Owi con su bocadillo (emociones y avisos), y tarjetas según el perfil.
+ * Estructura clara: cabecera, Owi (protagonista), "Para hoy" (tareas) y "Resumen" (datos clave).
+ * El detalle y las gráficas viven en Progreso.
  * Fase 1 (§8.2): datos, tendencias, hábitos y comunicación. Nunca indicaciones clínicas automáticas.
  */
 import { LinearGradient } from 'expo-linear-gradient';
@@ -8,40 +9,39 @@ import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AvatarBadge from '../components/AvatarBadge';
-import BondCard from '../components/BondCard';
-import { GlucoseCard, HabitsCard, InjectionCard, IntakeCard, MedsCard, SideEffectsCard, WeightCard } from '../components/cards';
+import { SummaryGrid, TodayList } from '../components/today';
 import { Icon } from '../components/icons';
 import { Burst, FadeIn, Pop } from '../components/motion';
 import OwiAnimated from '../components/OwiAnimated';
 import SpeechBubble from '../components/SpeechBubble';
-import { Button, Card, Choice, Row, T } from '../components/ui';
-import { FLAGS } from '../config';
+import { Button, Row, SectionTitle, T } from '../components/ui';
 import { TEAM } from '../data/mock';
 import { t } from '../i18n';
 import { useNav } from '../nav';
 import { useStore } from '../state/store';
-import { hasT2, usesGlp1, type PetMood, type Profile, type ReminderKind, type Scenario } from '../state/types';
+import { usesGlp1, type PetMood, type ReminderKind } from '../state/types';
 import { colors, radius } from '../theme';
 
-const PROFILES: Profile[] = ['glp1', 't2', 't2_glp1'];
-const SCENARIOS: Scenario[] = ['normal', 'injectionDay', 'missedInjection', 'sideEffects', 'plateau', 'milestone', 'highGlucose', 'lowGlucose', 'night'];
-const DEMO_REMINDERS: ReminderKind[] = ['injection', 'meds', 'weigh', 'meal', 'sport', 'water'];
-const REMINDER_ICON: Record<ReminderKind, string> = { injection: '💉', meds: '💊', weigh: '⚖️', meal: '🍽️', sport: '👟', water: '💧' };
+const REMINDER_ICON: Record<ReminderKind, string> = {
+  injection: '💉',
+  meds: '💊',
+  weigh: '⚖️',
+  meal: '🍽️',
+  sport: '👟',
+  water: '💧',
+};
 const POKE_LINES = 4;
-
 
 export default function Home() {
   const { state, dispatch, d } = useStore();
   const { go } = useNav();
   const insets = useSafeAreaInsets();
-  const [demoOpen, setDemoOpen] = useState(false);
   const [poke, setPoke] = useState<number | null>(null);
   const [burst, setBurst] = useState(0);
   const lastLevel = useRef(d.petLevel);
   const owi = state.pet.name;
   const name = state.userName || t('common.friend');
   const glp1 = usesGlp1(state.profile);
-  const t2 = hasT2(state.profile);
 
   useEffect(() => {
     if (d.petLevel > lastLevel.current) setBurst((b) => b + 1);
@@ -84,25 +84,38 @@ export default function Home() {
   else if (d.petMood === 'happy') message = glp1 ? t('owi.say.happyGlp1', vars) : t('owi.say.happyT2', vars);
   else message = t(`owi.say.${d.petMood}`, vars);
 
-  const rawDate = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+  const rawDate = new Date().toLocaleDateString('es-ES', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  });
   const date = rawDate.charAt(0).toUpperCase() + rawDate.slice(1);
-
-  // Orden de tarjetas según el perfil (tipo 2: el peso no es protagonista).
-  const cards: React.ReactNode[] = [];
-  if (glp1) cards.push(<InjectionCard key="inj" />);
-  if (t2) cards.push(<GlucoseCard key="glu" />, <MedsCard key="meds" />);
-  if (glp1) cards.push(<SideEffectsCard key="se" />);
-  cards.push(<WeightCard key="w" compact={state.profile !== 'glp1'} />);
-  if (glp1) cards.push(<IntakeCard key="intake" />);
-  cards.push(<HabitsCard key="habits" />, <BondCard key="bond" />);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.cream }}>
       <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
         {/* Cabecera clínica: fecha, título grande, racha y tu avatar como foto de perfil */}
-        <View style={{ paddingTop: insets.top + 16, paddingHorizontal: 16, paddingBottom: 8 }}>
-          <View style={{ width: '100%', maxWidth: 520, alignSelf: 'center', gap: 4 }}>
-            <Row style={{ justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <View
+          style={{
+            paddingTop: insets.top + 16,
+            paddingHorizontal: 16,
+            paddingBottom: 8,
+          }}
+        >
+          <View
+            style={{
+              width: '100%',
+              maxWidth: 520,
+              alignSelf: 'center',
+              gap: 4,
+            }}
+          >
+            <Row
+              style={{
+                justifyContent: 'space-between',
+                alignItems: 'flex-end',
+              }}
+            >
               <View style={{ flex: 1 }}>
                 <T v="small" color={colors.secondary}>
                   {date}
@@ -116,7 +129,16 @@ export default function Home() {
                   accessibilityRole="button"
                   accessibilityLabel={t('home.streakA11y', { n: d.streak })}
                   onPress={() => go('progress')}
-                  style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: colors.white, paddingHorizontal: 10, height: 36, borderRadius: 18, opacity: pressed ? 0.7 : 1 })}
+                  style={({ pressed }) => ({
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 4,
+                    backgroundColor: colors.white,
+                    paddingHorizontal: 10,
+                    height: 36,
+                    borderRadius: 18,
+                    opacity: pressed ? 0.7 : 1,
+                  })}
                 >
                   <Icon name="flame" size={18} color={colors.coralDark} />
                   <T v="label">{d.streak}</T>
@@ -125,62 +147,54 @@ export default function Home() {
               </Row>
             </Row>
             <Row gap={8}>
-              <View style={{ backgroundColor: colors.softGreen, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 }}>
+              <View
+                style={{
+                  backgroundColor: colors.softGreen,
+                  borderRadius: 8,
+                  paddingHorizontal: 8,
+                  paddingVertical: 3,
+                }}
+              >
                 <T v="small" color={colors.greenText}>
                   {t(`profile.short.${state.profile}`)}
                 </T>
               </View>
-              {FLAGS.demoScenarios && (
-                <Pressable accessibilityRole="button" onPress={() => setDemoOpen((o) => !o)}>
-                  <T v="small" color={colors.blue}>
-                    {demoOpen ? t('demo.hide') : t('demo.show')}
-                  </T>
-                </Pressable>
-              )}
             </Row>
           </View>
         </View>
 
-        <View style={{ width: '100%', maxWidth: 520, alignSelf: 'center', paddingHorizontal: 16, gap: 12, marginTop: 4 }}>
-          {FLAGS.demoScenarios && demoOpen && (
-            <FadeIn>
-              <Card style={{ gap: 8 }}>
-                <T v="small" color={colors.secondary}>
-                  {t('demo.profile')}
-                </T>
-                <Row gap={8} style={{ flexWrap: 'wrap' }}>
-                  {PROFILES.map((p) => (
-                    <Choice key={p} label={t(`profile.short.${p}`)} selected={state.profile === p} onPress={() => dispatch({ type: 'setProfile', profile: p })} />
-                  ))}
-                </Row>
-                <T v="small" color={colors.secondary}>
-                  {t('demo.title')}
-                </T>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
-                  {SCENARIOS.filter((s) => (glp1 || !['injectionDay', 'missedInjection', 'sideEffects', 'plateau'].includes(s)) && (t2 || !['highGlucose', 'lowGlucose'].includes(s))).map((s) => (
-                    <Choice key={s} label={t(`demo.${s}`)} selected={state.scenario === s && !state.demoReminder} onPress={() => dispatch({ type: 'setScenario', scenario: s })} />
-                  ))}
-                </ScrollView>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
-                  {DEMO_REMINDERS.filter((k) => (glp1 || k !== 'injection') && (t2 || k !== 'meds')).map((k) => (
-                    <Choice
-                      key={k}
-                      label={`${REMINDER_ICON[k]} ${t(`demo.rem.${k}`)}`}
-                      selected={state.demoReminder === k}
-                      onPress={() => dispatch({ type: 'setDemoReminder', kind: state.demoReminder === k ? null : k })}
-                    />
-                  ))}
-                </ScrollView>
-              </Card>
-            </FadeIn>
-          )}
-
+        <View
+          style={{
+            width: '100%',
+            maxWidth: 520,
+            alignSelf: 'center',
+            paddingHorizontal: 16,
+            gap: 12,
+            marginTop: 4,
+          }}
+        >
           {/* Tú y Owi */}
           <FadeIn>
-            <View style={{ backgroundColor: colors.white, borderRadius: radius.l, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 10, shadowOffset: { width: 0, height: 2 } }}>
+            <View
+              style={{
+                backgroundColor: colors.white,
+                borderRadius: radius.l,
+                overflow: 'hidden',
+                shadowColor: '#000',
+                shadowOpacity: 0.05,
+                shadowRadius: 10,
+                shadowOffset: { width: 0, height: 2 },
+              }}
+            >
               {/* Owi, protagonista */}
               <LinearGradient colors={[colors.softGreen, colors.white]} style={{ alignItems: 'center', paddingTop: 12 }}>
-                <OwiAnimated mood={owiMood} level={d.petLevel} size={190} onPress={() => setPoke((p) => ((p ?? -1) + 1) % POKE_LINES)} label={t(`owi.mood.${owiMood}`, { name: owi })} />
+                <OwiAnimated
+                  mood={owiMood}
+                  level={d.petLevel}
+                  size={160}
+                  onPress={() => setPoke((p) => ((p ?? -1) + 1) % POKE_LINES)}
+                  label={t(`owi.mood.${owiMood}`, { name: owi })}
+                />
               </LinearGradient>
               <View style={{ padding: 12, paddingTop: 0 }}>
                 <Pop trigger={message}>
@@ -191,7 +205,11 @@ export default function Home() {
                           style={{ flex: 1 }}
                           label={t(`rem.done.${reminder.kind}`)}
                           onPress={() => {
-                            dispatch({ type: 'reminderDone', id: reminder.id, kind: reminder.kind });
+                            dispatch({
+                              type: 'reminderDone',
+                              id: reminder.id,
+                              kind: reminder.kind,
+                            });
                             setBurst((b) => b + 1);
                             if (reminder.kind === 'injection') go('log', 'injection');
                             if (reminder.kind === 'weigh') go('log', 'weight');
@@ -199,44 +217,39 @@ export default function Home() {
                             if (reminder.kind === 'meds') go('log', 'meds');
                           }}
                         />
-                        <Button style={{ flex: 1 }} kind="secondary" label={t('rem.later')} onPress={() => dispatch({ type: 'snooze', id: reminder.id, minutes: 15 })} />
+                        <Button
+                          style={{ flex: 1 }}
+                          kind="secondary"
+                          label={t('rem.later')}
+                          onPress={() =>
+                            dispatch({
+                              type: 'snooze',
+                              id: reminder.id,
+                              minutes: 15,
+                            })
+                          }
+                        />
                       </Row>
                     )}
                   </SpeechBubble>
                 </Pop>
-                <T v="small" color={colors.secondary} center style={{ marginTop: 6 }}>
-                  {reminder ? t('rem.fromPlan') : t('home.tapOwi', { owi })}
-                </T>
+                {reminder && (
+                  <T v="small" color={colors.secondary} center style={{ marginTop: 6 }}>
+                    {t('rem.fromPlan')}
+                  </T>
+                )}
               </View>
             </View>
           </FadeIn>
 
-          {unreadAudio && unreadFrom && (
-            <FadeIn delay={60}>
-              <Card tone="blue">
-                <Row gap={12}>
-                  <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: unreadFrom.color, alignItems: 'center', justifyContent: 'center' }}>
-                    <T v="label" color={unreadFrom.fg}>
-                      {unreadFrom.initials}
-                    </T>
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <T v="label">{t('home.audioFrom', { owi, who: unreadFrom.short })}</T>
-                    <T v="small" color={colors.secondary}>
-                      {t(`role.${unreadAudio.from}`)} · {Math.round(unreadAudio.durationSec ?? 0)} s
-                    </T>
-                  </View>
-                </Row>
-                <Button kind="blue" label={t('home.listenTogether')} onPress={() => go('team')} icon={<Icon name="play" size={20} color={colors.white} />} />
-              </Card>
-            </FadeIn>
-          )}
-
-          {cards.map((c, i) => (
-            <FadeIn key={i} delay={100 + i * 60}>
-              {c}
-            </FadeIn>
-          ))}
+          <SectionTitle>{t('home.forToday')}</SectionTitle>
+          <FadeIn delay={80}>
+            <TodayList />
+          </FadeIn>
+          <SectionTitle>{t('home.summary')}</SectionTitle>
+          <FadeIn delay={140}>
+            <SummaryGrid />
+          </FadeIn>
         </View>
       </ScrollView>
       <Burst fire={burst} />

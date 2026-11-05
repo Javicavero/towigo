@@ -7,7 +7,7 @@ import { t } from '../i18n';
 import { useStore } from '../state/store';
 import { hasT2, usesGlp1, type Glp1Drug, type Plan } from '../state/types';
 import { colors, MIN_TOUCH } from '../theme';
-import { Card, Choice, Row, T } from './ui';
+import { Choice, Row, T } from './ui';
 
 const DAYS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 const DRUGS: Glp1Drug[] = ['semaglutida', 'tirzepatida', 'liraglutida', 'otro'];
@@ -47,8 +47,7 @@ export default function PlanSettings() {
   const set = <K extends keyof Plan>(k: K, patch: Partial<Plan[K]>) => dispatch({ type: 'setPlan', patch: { [k]: { ...p[k], ...patch } } as Partial<Plan> });
 
   return (
-    <Card>
-      <T v="h2">{t('plan.title')}</T>
+    <View style={{ gap: 10 }}>
       <T v="small" color={colors.secondary}>
         {t('plan.note')}
       </T>
@@ -96,6 +95,6 @@ export default function PlanSettings() {
 
       <Toggle on={p.meals.enabled} onPress={() => set('meals', { enabled: !p.meals.enabled })} label={t('plan.meals', { times: p.meals.times.join(' · ') })} />
       <Toggle on={p.water.enabled} onPress={() => set('water', { enabled: !p.water.enabled })} label={t('plan.water', { times: p.water.times.join(' · ') })} />
-    </Card>
+    </View>
   );
 }

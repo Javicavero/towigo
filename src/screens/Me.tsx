@@ -1,34 +1,55 @@
 /**
- * "Yo": personalizar a Owi, accesibilidad y privacidad (RGPD §8.3).
+ * "Yo": ajustes en secciones desplegables (estilo Ajustes de iOS): solo se abre lo que se necesita.
+ * Avatar, Owi, perfil, plan y avisos, conexiones, letra, privacidad (RGPD §8.3) y demostración.
  */
 import { useState } from 'react';
-import { Pressable, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, TextInput, View } from 'react-native';
+import AvatarBadge from '../components/AvatarBadge';
 import AvatarEditor from '../components/AvatarEditor';
 import DexcomCard from '../components/DexcomCard';
-import PlanSettings from '../components/PlanSettings';
-import { Icon } from '../components/icons';
 import OwiAnimated from '../components/OwiAnimated';
-import { Button, Card, Choice, Row, Screen, T } from '../components/ui';
-import { APP_NAME } from '../config';
+import PlanSettings from '../components/PlanSettings';
+import { Button, Card, Choice, Disclosure, Row, Screen, SectionTitle, T } from '../components/ui';
+import { APP_NAME, FLAGS } from '../config';
 import { ACCESSORIES } from '../data/avatarOptions';
 import { t } from '../i18n';
 import { useStore } from '../state/store';
-import type { Profile, TextScale } from '../state/types';
+import { hasT2, usesGlp1, type Profile, type ReminderKind, type Scenario, type TextScale } from '../state/types';
 import { colors, fonts, MIN_TOUCH } from '../theme';
+
+type Section = 'avatar' | 'owi' | 'profile' | 'plan' | 'sensor' | 'text' | 'privacy' | 'demo';
+const Emoji = ({ c }: { c: string }) => <T v="label">{c}</T>;
+const SCENARIOS: Scenario[] = ['normal', 'injectionDay', 'missedInjection', 'sideEffects', 'plateau', 'milestone', 'highGlucose', 'lowGlucose', 'night'];
+const DEMO_REMINDERS: ReminderKind[] = ['injection', 'meds', 'weigh', 'meal', 'sport', 'water'];
 
 export default function Me() {
   const { state, dispatch, d } = useStore();
+  const [open, setOpen] = useState<Section | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const toggle = (s: Section) => setOpen((o) => (o === s ? null : s));
+  const glp1 = usesGlp1(state.profile);
+  const t2 = hasT2(state.profile);
 
   return (
     <Screen>
-      <T v="title" accessibilityRole="header">
-        {t('me.title', { name: state.userName || t('common.friend') })}
+      <T v="display" accessibilityRole="header">
+        {t('tab.me')}
       </T>
-
       <Card>
-        <T v="h2">{t('me.owiTitle', { owi: state.pet.name })}</T>
+        <Row gap={14}>
+          <AvatarBadge avatar={d.owiAvatar} size={64} label={t('avatar.you', { name: state.userName })} />
+          <View style={{ flex: 1 }}>
+            <T v="h2">{state.userName || t('common.friend')}</T>
+            <T v="small" color={colors.secondary}>
+              {t(`profile.${state.profile}`)}
+            </T>
+          </View>
+        </Row>
+      </Card>
+
+      <SectionTitle>{t('me.personal')}</SectionTitle>
+      <Disclosure icon={<Emoji c="🙂" />} title={t('me.avatarTitle')} subtitle={t('me.avatarSub')} open={open === 'avatar'} onToggle={() => toggle('avatar')}>
         <AvatarEditor />
         <T v="label">{t('me.accessories')}</T>
         {ACCESSORIES.map((a) => {
@@ -42,45 +63,33 @@ export default function Me() {
               accessibilityLabel={t(`acc.${a.id}`)}
               disabled={!unlocked}
               onPress={() => dispatch({ type: 'toggleAccessory', id: a.id })}
-              style={{ flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: MIN_TOUCH, opacity: unlocked ? 1 : 0.55 }}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: MIN_TOUCH, opacity: unlocked ? 1 : 0.5 }}
             >
-              <T v="title">{unlocked ? a.emoji : '🔒'}</T>
-              <View style={{ flex: 1 }}>
-                <T v="label">{t(`acc.${a.id}`)}</T>
-                {!unlocked && (
-                  <T v="small" color={colors.secondary}>
-                    {t('progress.unlockAt', { n: a.unlockDays })}
-                  </T>
-                )}
-              </View>
-              <View style={{ width: 54, height: 32, borderRadius: 16, backgroundColor: on ? colors.greenText : colors.line, padding: 3, alignItems: on ? 'flex-end' : 'flex-start' }}>
+              <T v="label" style={{ flex: 1 }}>
+                {t(`acc.${a.id}`)} {unlocked ? '' : `· ${t('progress.unlockAt', { n: a.unlockDays })}`}
+              </T>
+              <View style={{ width: 50, height: 30, borderRadius: 15, backgroundColor: on ? colors.greenText : colors.line, padding: 2, alignItems: on ? 'flex-end' : 'flex-start' }}>
                 <View style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: colors.white }} />
               </View>
             </Pressable>
           );
         })}
-      </Card>
-
-      <Card tone="purple">
+      </Disclosure>
+      <Disclosure icon={<Emoji c="🦔" />} tint={colors.softYellow} title={t('me.petTitle', { owi: state.pet.name })} subtitle={t('me.petSub', { n: d.petLevel })} open={open === 'owi'} onToggle={() => toggle('owi')}>
         <Row gap={12}>
-          <OwiAnimated mood="happy" level={d.petLevel} size={90} />
-          <View style={{ flex: 1, gap: 6 }}>
-            <T v="h2">{t('me.petTitle', { owi: state.pet.name })}</T>
-            <T v="small" color={colors.secondary}>
-              {t('me.petNote')}
-            </T>
-          </View>
+          <OwiAnimated mood="happy" level={d.petLevel} size={80} />
+          <T v="small" color={colors.secondary} style={{ flex: 1 }}>
+            {t('me.petNote')}
+          </T>
         </Row>
         <TextInput
           value={state.pet.name}
           onChangeText={(n) => dispatch({ type: 'setPetName', name: n.slice(0, 20) || 'Owi' })}
           accessibilityLabel={t('me.petRename')}
-          style={{ minHeight: MIN_TOUCH, borderRadius: 14, borderWidth: 2, borderColor: colors.border, backgroundColor: colors.white, paddingHorizontal: 14, fontSize: 18, fontFamily: fonts.semibold, color: colors.ink }}
+          style={{ minHeight: MIN_TOUCH, borderRadius: 10, borderWidth: 1, borderColor: colors.borderStrong, backgroundColor: colors.white, paddingHorizontal: 14, fontSize: 17, fontFamily: fonts.medium, color: colors.ink }}
         />
-      </Card>
-
-      <Card>
-        <T v="h2">{t('me.profileTitle')}</T>
+      </Disclosure>
+      <Disclosure icon={<Emoji c="🩺" />} tint={colors.softBlue} title={t('me.profileTitle')} subtitle={t(`profile.short.${state.profile}`)} open={open === 'profile'} onToggle={() => toggle('profile')}>
         <Row gap={8} style={{ flexWrap: 'wrap' }}>
           {(['t2', 'glp1', 't2_glp1'] as Profile[]).map((p) => (
             <Choice key={p} label={t(`profile.short.${p}`)} selected={state.profile === p} onPress={() => dispatch({ type: 'setProfile', profile: p })} />
@@ -89,28 +98,27 @@ export default function Me() {
         <T v="small" color={colors.secondary}>
           {t('me.profileNote')}
         </T>
-      </Card>
+      </Disclosure>
 
-      {(state.sensor === 'dexcom' || state.sensor === 'libre') && <DexcomCard />}
-      <PlanSettings />
+      <SectionTitle>{t('me.treatment')}</SectionTitle>
+      <Disclosure icon={<Emoji c="⏰" />} tint={colors.softCoral} title={t('plan.title')} subtitle={t('me.planSub')} open={open === 'plan'} onToggle={() => toggle('plan')}>
+        <PlanSettings />
+      </Disclosure>
+      {(state.sensor === 'dexcom' || state.sensor === 'libre') && (
+        <Disclosure icon={<Emoji c="📡" />} tint={colors.softBlue} title={t('me.sensorTitle')} subtitle={t(`sensor.${state.sensor}`)} open={open === 'sensor'} onToggle={() => toggle('sensor')}>
+          <DexcomCard />
+        </Disclosure>
+      )}
 
-      <Card>
-        <T v="h2">{t('me.textSize')}</T>
+      <SectionTitle>{t('me.app')}</SectionTitle>
+      <Disclosure icon={<Emoji c="🔠" />} tint={colors.line} title={t('me.textSize')} subtitle={t(`me.size.${state.textScale}`)} open={open === 'text'} onToggle={() => toggle('text')}>
         <Row gap={8}>
           {([1, 1.2, 1.4] as TextScale[]).map((s) => (
             <Choice key={s} style={{ flex: 1 }} label={t(`me.size.${s}`)} selected={state.textScale === s} onPress={() => dispatch({ type: 'setTextScale', scale: s })} />
           ))}
         </Row>
-        <T v="small" color={colors.secondary}>
-          {t('me.textSizeNote')}
-        </T>
-      </Card>
-
-      <Card>
-        <Row gap={10}>
-          <Icon name="shield" color={colors.greenText} />
-          <T v="h2">{t('me.privacy')}</T>
-        </Row>
+      </Disclosure>
+      <Disclosure icon={<Emoji c="🔒" />} tint={colors.softGreen} title={t('me.privacy')} subtitle={t('me.privacySub')} open={open === 'privacy'} onToggle={() => toggle('privacy')}>
         <T v="small" color={colors.secondary}>
           {t('me.privacyNote')}
         </T>
@@ -143,7 +151,34 @@ export default function Me() {
         ) : (
           <Button kind="ghost" label={t('me.delete')} onPress={() => setConfirmDelete(true)} />
         )}
-      </Card>
+      </Disclosure>
+
+      {FLAGS.demoScenarios && (
+        <Disclosure icon={<Emoji c="🎬" />} tint={colors.softPurple} title={t('demo.section')} subtitle={t('demo.sectionSub')} open={open === 'demo'} onToggle={() => toggle('demo')}>
+          <T v="label">{t('demo.profile')}</T>
+          <Row gap={8} style={{ flexWrap: 'wrap' }}>
+            {(['glp1', 't2', 't2_glp1'] as Profile[]).map((p) => (
+              <Choice key={p} label={t(`profile.short.${p}`)} selected={state.profile === p} onPress={() => dispatch({ type: 'setProfile', profile: p })} />
+            ))}
+          </Row>
+          <T v="label">{t('demo.title')}</T>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {SCENARIOS.filter((s) => (glp1 || !['injectionDay', 'missedInjection', 'sideEffects', 'plateau'].includes(s)) && (t2 || !['highGlucose', 'lowGlucose'].includes(s))).map((s) => (
+              <Choice key={s} label={t(`demo.${s}`)} selected={state.scenario === s && !state.demoReminder} onPress={() => dispatch({ type: 'setScenario', scenario: s })} />
+            ))}
+          </View>
+          <T v="label">{t('demo.reminders')}</T>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+            {DEMO_REMINDERS.filter((k) => (glp1 || k !== 'injection') && (t2 || k !== 'meds')).map((k) => (
+              <Choice key={k} label={t(`demo.rem.${k}`)} selected={state.demoReminder === k} onPress={() => dispatch({ type: 'setDemoReminder', kind: state.demoReminder === k ? null : k })} />
+            ))}
+          </ScrollView>
+          <T v="small" color={colors.secondary}>
+            {t('demo.hint')}
+          </T>
+          <Button kind="ghost" label={t('me.restartDemo')} onPress={() => dispatch({ type: 'reset' })} />
+        </Disclosure>
+      )}
 
       <View style={{ gap: 4, alignItems: 'center', marginTop: 8 }}>
         <T v="small" color={colors.secondary} center>
@@ -153,7 +188,6 @@ export default function Me() {
           {t('me.phase1')}
         </T>
       </View>
-      <Button kind="ghost" label={t('me.restartDemo')} onPress={() => dispatch({ type: 'reset' })} />
     </Screen>
   );
 }

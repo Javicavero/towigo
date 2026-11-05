@@ -230,3 +230,122 @@ const styles = StyleSheet.create({
   swatch: { width: 48, height: 48, borderRadius: 24, borderWidth: 3, padding: 3 },
   swatchInner: { flex: 1, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(0,0,0,0.12)' },
 });
+
+/** Título de sección (estilo iOS agrupado). */
+export function SectionTitle({ children, action }: { children: ReactNode; action?: ReactNode }) {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 10, paddingHorizontal: 4 }}>
+      <T v="h2" accessibilityRole="header">
+        {children}
+      </T>
+      {action}
+    </View>
+  );
+}
+
+/** Grupo de filas dentro de una tarjeta blanca, separadas por líneas finas. */
+export function ListGroup({ children }: { children: ReactNode }) {
+  const items = Children.toArray(children).filter(Boolean);
+  return (
+    <View style={[styles.card, { padding: 0, gap: 0 }]}>
+      {items.map((c, i) => (
+        <View key={i} style={i > 0 ? { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.borderStrong, marginLeft: 60 } : undefined}>
+          <View style={i > 0 ? { marginLeft: -60 } : undefined}>{c}</View>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+/** Fila de lista: icono, título, subtítulo y a la derecha una marca de hecho o una flecha. */
+export function ListRow({
+  icon,
+  tint = colors.softGreen,
+  title,
+  subtitle,
+  done,
+  right,
+  onPress,
+}: {
+  icon: ReactNode;
+  tint?: string;
+  title: string;
+  subtitle?: string;
+  done?: boolean;
+  right?: ReactNode;
+  onPress?: () => void;
+}) {
+  return (
+    <Pressable
+      accessibilityRole={onPress ? 'button' : undefined}
+      accessibilityLabel={`${title}${subtitle ? `. ${subtitle}` : ''}${done ? '. Hecho' : ''}`}
+      disabled={!onPress}
+      onPress={() => {
+        tap();
+        onPress?.();
+      }}
+      style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, paddingVertical: 12, minHeight: 60, backgroundColor: pressed ? '#F5F5F7' : 'transparent' })}
+    >
+      <View style={{ width: 34, height: 34, borderRadius: 9, backgroundColor: tint, alignItems: 'center', justifyContent: 'center' }}>{icon}</View>
+      <View style={{ flex: 1 }}>
+        <T v="label" color={done ? colors.secondary : colors.ink} style={done ? { textDecorationLine: 'line-through' } : undefined}>
+          {title}
+        </T>
+        {subtitle ? (
+          <T v="small" color={colors.secondary}>
+            {subtitle}
+          </T>
+        ) : null}
+      </View>
+      {right ??
+        (done ? (
+          <View style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: colors.greenText, alignItems: 'center', justifyContent: 'center' }}>
+            <T v="small" color={colors.white}>
+              ✓
+            </T>
+          </View>
+        ) : onPress ? (
+          <T v="h2" color={colors.borderStrong}>
+            ›
+          </T>
+        ) : null)}
+    </Pressable>
+  );
+}
+
+/** Control segmentado (como en iOS). */
+export function Segmented<K extends string>({ options, value, onChange }: { options: { id: K; label: string }[]; value: K; onChange: (k: K) => void }) {
+  return (
+    <View accessibilityRole="tablist" style={{ flexDirection: 'row', backgroundColor: '#E4E4E9', borderRadius: 10, padding: 2 }}>
+      {options.map((o) => {
+        const sel = o.id === value;
+        return (
+          <Pressable
+            key={o.id}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: sel }}
+            onPress={() => {
+              tap();
+              onChange(o.id);
+            }}
+            style={{ flex: 1, minHeight: 36, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: sel ? colors.white : 'transparent', shadowColor: '#000', shadowOpacity: sel ? 0.08 : 0, shadowRadius: 3, shadowOffset: { width: 0, height: 1 } }}
+          >
+            <T v="label" color={sel ? colors.ink : colors.secondary}>
+              {o.label}
+            </T>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
+/** Sección desplegable (ajustes): solo se abre lo que el usuario quiere ver. */
+export function Disclosure({ icon, tint, title, subtitle, open, onToggle, children }: { icon: ReactNode; tint?: string; title: string; subtitle?: string; open: boolean; onToggle: () => void; children: ReactNode }) {
+  return (
+    <View style={[styles.card, { padding: 0, gap: 0, overflow: 'hidden' }]}>
+      <ListRow icon={icon} tint={tint} title={title} subtitle={subtitle} onPress={onToggle} right={<T v="h2" color={colors.secondary}>{open ? '⌃' : '⌄'}</T>} />
+      {open && <View style={{ paddingHorizontal: 14, paddingBottom: 16, gap: 12, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.borderStrong, paddingTop: 12 }}>{children}</View>}
+    </View>
+  );
+}
