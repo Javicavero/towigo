@@ -40,7 +40,10 @@ export function InjectionCard() {
   const title = done ? t('inj.doneToday') : d.injectionOverdue ? t('inj.overdueTitle') : days === 0 ? t('inj.today') : days === 1 ? t('inj.tomorrow') : t('inj.inDays', { n: days });
   return (
     <Card tone={done ? 'green' : days === 0 || d.injectionOverdue ? 'yellow' : 'white'}>
-      <Header icon="💉" tone={colors.softBlue} title={t('inj.title')} right={<T v="label" color={colors.blue}>{t('inj.weeks', { n: d.injectionWeeks })}</T>} />
+      <Header icon="💉" tone={colors.softBlue} title={t('inj.title')} />
+      <T v="small" color={colors.blue}>
+        {t('inj.weeks', { n: d.injectionWeeks })}
+      </T>
       <Pop trigger={title}>
         <T v="title">{title}</T>
       </Pop>
@@ -314,7 +317,7 @@ export function HabitsCard() {
               accessibilityLabel={`${t(`habit.${h}`)}: ${ok ? t('common.done') : t('common.pending')}`}
               onPress={() => go(hb.to)}
               outerStyle={{ flex: 1 }}
-              style={{ alignItems: 'center', gap: 6, padding: 10, borderRadius: radius.m, backgroundColor: ok ? hb.tone : hb.bg, borderBottomWidth: 4, borderBottomColor: ok ? 'rgba(0,0,0,0.25)' : 'rgba(0,0,0,0.06)' }}
+              style={{ alignItems: 'center', gap: 6, padding: 10, borderRadius: radius.m, backgroundColor: ok ? hb.tone : hb.bg}}
             >
               <Pop trigger={ok}>
                 <Icon name={ok ? 'check' : hb.icon} size={28} color={ok ? colors.white : hb.tone} stroke={ok ? 3 : 2.2} />

@@ -7,11 +7,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import AvatarFace, { type AvatarExpression } from '../components/AvatarFace';
+import AvatarBadge from '../components/AvatarBadge';
 import BondCard from '../components/BondCard';
 import { GlucoseCard, HabitsCard, InjectionCard, IntakeCard, MedsCard, SideEffectsCard, WeightCard } from '../components/cards';
 import { Icon } from '../components/icons';
-import { Bouncy, Burst, FadeIn, Pop, Pulse } from '../components/motion';
+import { Burst, FadeIn, Pop } from '../components/motion';
 import OwiAnimated from '../components/OwiAnimated';
 import SpeechBubble from '../components/SpeechBubble';
 import { Button, Card, Choice, Row, T } from '../components/ui';
@@ -21,7 +21,7 @@ import { t } from '../i18n';
 import { useNav } from '../nav';
 import { useStore } from '../state/store';
 import { hasT2, usesGlp1, type PetMood, type Profile, type ReminderKind, type Scenario } from '../state/types';
-import { colors, gradients, radius } from '../theme';
+import { colors, radius } from '../theme';
 
 const PROFILES: Profile[] = ['glp1', 't2', 't2_glp1'];
 const SCENARIOS: Scenario[] = ['normal', 'injectionDay', 'missedInjection', 'sideEffects', 'plateau', 'milestone', 'highGlucose', 'lowGlucose', 'night'];
@@ -29,8 +29,6 @@ const DEMO_REMINDERS: ReminderKind[] = ['injection', 'meds', 'weigh', 'meal', 's
 const REMINDER_ICON: Record<ReminderKind, string> = { injection: '💉', meds: '💊', weigh: '⚖️', meal: '🍽️', sport: '👟', water: '💧' };
 const POKE_LINES = 4;
 
-const avatarExpr = (m: PetMood): AvatarExpression =>
-  m === 'celebrate' || m === 'happy' || m === 'sport' ? 'big' : m === 'sleep' ? 'sleep' : m.startsWith('caring') || m.startsWith('worried') ? 'calm' : 'smile';
 
 export default function Home() {
   const { state, dispatch, d } = useStore();
@@ -101,42 +99,49 @@ export default function Home() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.cream }}>
       <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
-        <LinearGradient colors={d.isNight && d.petMood === 'sleep' ? [...gradients.night] : [...gradients.hero]} style={{ paddingTop: insets.top + 14, paddingBottom: 64, paddingHorizontal: 16 }}>
-          <View style={{ width: '100%', maxWidth: 520, alignSelf: 'center', gap: 10 }}>
-            <Row style={{ justifyContent: 'space-between' }}>
+        {/* Cabecera clínica: fecha, título grande, racha y tu avatar como foto de perfil */}
+        <View style={{ paddingTop: insets.top + 16, paddingHorizontal: 16, paddingBottom: 8 }}>
+          <View style={{ width: '100%', maxWidth: 520, alignSelf: 'center', gap: 4 }}>
+            <Row style={{ justifyContent: 'space-between', alignItems: 'flex-end' }}>
               <View style={{ flex: 1 }}>
-                <T v="small" color="rgba(255,255,255,0.9)">
-                  {date} · {t(`profile.short.${state.profile}`)}
+                <T v="small" color={colors.secondary}>
+                  {date}
                 </T>
-                <T v="title" color={colors.white} accessibilityRole="header">
+                <T v="display" accessibilityRole="header">
                   {t('home.hello', { name })}
                 </T>
               </View>
-              <Bouncy
-                accessibilityRole="button"
-                accessibilityLabel={t('home.streakA11y', { n: d.streak })}
-                onPress={() => go('progress')}
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(255,255,255,0.22)', paddingHorizontal: 12, minHeight: 44, borderRadius: 22 }}
-              >
-                <Pulse active={d.todayDone} scale={1.18}>
-                  <Icon name="flame" size={22} color={colors.achievement} />
-                </Pulse>
-                <T v="h2" color={colors.white}>
-                  {d.streak}
-                </T>
-              </Bouncy>
+              <Row gap={8}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={t('home.streakA11y', { n: d.streak })}
+                  onPress={() => go('progress')}
+                  style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: colors.white, paddingHorizontal: 10, height: 36, borderRadius: 18, opacity: pressed ? 0.7 : 1 })}
+                >
+                  <Icon name="flame" size={18} color={colors.coralDark} />
+                  <T v="label">{d.streak}</T>
+                </Pressable>
+                <AvatarBadge avatar={d.owiAvatar} size={44} onPress={() => go('me')} label={t('avatar.you', { name })} />
+              </Row>
             </Row>
-            {FLAGS.demoScenarios && (
-              <Pressable accessibilityRole="button" onPress={() => setDemoOpen((o) => !o)} style={{ alignSelf: 'flex-start' }}>
-                <T v="small" color="rgba(255,255,255,0.95)" style={{ textDecorationLine: 'underline' }}>
-                  {demoOpen ? t('demo.hide') : t('demo.show')}
+            <Row gap={8}>
+              <View style={{ backgroundColor: colors.softGreen, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 }}>
+                <T v="small" color={colors.greenText}>
+                  {t(`profile.short.${state.profile}`)}
                 </T>
-              </Pressable>
-            )}
+              </View>
+              {FLAGS.demoScenarios && (
+                <Pressable accessibilityRole="button" onPress={() => setDemoOpen((o) => !o)}>
+                  <T v="small" color={colors.blue}>
+                    {demoOpen ? t('demo.hide') : t('demo.show')}
+                  </T>
+                </Pressable>
+              )}
+            </Row>
           </View>
-        </LinearGradient>
+        </View>
 
-        <View style={{ width: '100%', maxWidth: 520, alignSelf: 'center', paddingHorizontal: 16, gap: 14, marginTop: -50 }}>
+        <View style={{ width: '100%', maxWidth: 520, alignSelf: 'center', paddingHorizontal: 16, gap: 12, marginTop: 4 }}>
           {FLAGS.demoScenarios && demoOpen && (
             <FadeIn>
               <Card style={{ gap: 8 }}>
@@ -172,14 +177,14 @@ export default function Home() {
 
           {/* Tú y Owi */}
           <FadeIn>
-            <View style={{ backgroundColor: colors.white, borderRadius: radius.xl, borderWidth: 2, borderBottomWidth: 5, borderColor: colors.border, overflow: 'hidden' }}>
-              <LinearGradient colors={['#E9F8F2', '#FFFFFF']} style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', paddingTop: 10, gap: 4 }}>
-                <AvatarFace avatar={d.owiAvatar} size={128} expression={avatarExpr(d.petMood)} label={t('avatar.you', { name })} />
-                <OwiAnimated mood={owiMood} level={d.petLevel} size={170} onPress={() => setPoke((p) => ((p ?? -1) + 1) % POKE_LINES)} label={t(`owi.mood.${owiMood}`, { name: owi })} />
+            <View style={{ backgroundColor: colors.white, borderRadius: radius.l, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 10, shadowOffset: { width: 0, height: 2 } }}>
+              {/* Owi, protagonista */}
+              <LinearGradient colors={[colors.softGreen, colors.white]} style={{ alignItems: 'center', paddingTop: 12 }}>
+                <OwiAnimated mood={owiMood} level={d.petLevel} size={190} onPress={() => setPoke((p) => ((p ?? -1) + 1) % POKE_LINES)} label={t(`owi.mood.${owiMood}`, { name: owi })} />
               </LinearGradient>
               <View style={{ padding: 12, paddingTop: 0 }}>
                 <Pop trigger={message}>
-                  <SpeechBubble text={message} name={owi} icon={reminder ? REMINDER_ICON[reminder.kind] : undefined} arrow="right">
+                  <SpeechBubble text={message} name={owi} icon={reminder ? REMINDER_ICON[reminder.kind] : undefined} arrow="center">
                     {reminder && (
                       <Row gap={8} style={{ marginTop: 10 }}>
                         <Button

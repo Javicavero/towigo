@@ -22,30 +22,28 @@ export default function SpeechBubble({
   /** Emoción de Owi: muestra su ilustración junto al nombre. */
   mood?: PetMood;
 }) {
-  const border = icon ? colors.achievement : colors.border;
+  // Burbuja de chat sobria: gris claro; los avisos llevan un tinte amarillo suave.
+  const bg = icon ? colors.softYellow : colors.cream;
   return (
     <View style={{ alignItems: arrow === 'center' ? 'center' : arrow === 'right' ? 'flex-end' : 'flex-start' }}>
       <View style={{ marginHorizontal: 48, width: 22, height: 14, alignItems: 'center', justifyContent: 'flex-end' }}>
-        <View style={{ width: 18, height: 18, backgroundColor: colors.white, borderLeftWidth: 2, borderTopWidth: 2, borderColor: border, transform: [{ rotate: '45deg' }], marginBottom: -10 }} />
+        <View style={{ width: 18, height: 18, backgroundColor: bg, transform: [{ rotate: '45deg' }], marginBottom: -10 }} />
       </View>
       <View
         accessibilityLiveRegion="polite"
         style={{
-          backgroundColor: colors.white,
+          backgroundColor: bg,
           borderRadius: radius.l,
           paddingVertical: 14,
           paddingHorizontal: 18,
           width: '100%',
           gap: 4,
-          borderWidth: 2,
-          borderBottomWidth: 4,
-          borderColor: border,
         }}
       >
         {name ? (
           <Row gap={6}>
             {mood && <OwiSticker mood={mood} size={26} />}
-            <T v="small" color={colors.purple} style={{ textTransform: 'uppercase', letterSpacing: 0.6 }}>
+            <T v="small" color={colors.greenText}>
               {name}
             </T>
           </Row>

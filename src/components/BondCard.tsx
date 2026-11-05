@@ -16,11 +16,11 @@ export default function BondCard({ compact }: { compact?: boolean }) {
   return (
     <Card tone="purple">
       <Row gap={12}>
-        <View style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: colors.purple, alignItems: 'center', justifyContent: 'center', borderBottomWidth: 4, borderBottomColor: '#5B3CC4' }}>
+        <View style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: colors.purple, alignItems: 'center', justifyContent: 'center'}}>
           <T v="title">{BADGE[d.petLevel]}</T>
         </View>
         <View style={{ flex: 1 }}>
-          <T v="small" color={colors.purple} style={{ textTransform: 'uppercase', letterSpacing: 0.6 }}>
+          <T v="small" color={colors.purple}>
             {t('bond.title', { owi: state.pet.name })}
           </T>
           <T v="h2">{t('bond.level', { n: d.petLevel, name: t(`bond.lv${d.petLevel}`) })}</T>

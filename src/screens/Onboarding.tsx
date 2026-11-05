@@ -46,7 +46,7 @@ function Input(props: React.ComponentProps<typeof TextInput>) {
     <TextInput
       placeholderTextColor={colors.secondary}
       {...props}
-      style={{ minHeight: MIN_TOUCH + 4, borderRadius: radius.m, borderWidth: 2, borderBottomWidth: 4, borderColor: colors.border, backgroundColor: colors.white, paddingHorizontal: 16, fontSize: 18 * state.textScale, fontFamily: fonts.semibold, color: colors.ink }}
+      style={{ minHeight: MIN_TOUCH + 4, borderRadius: radius.m, borderWidth: 1, borderColor: colors.borderStrong, backgroundColor: colors.white, paddingHorizontal: 16, fontSize: 18 * state.textScale, fontFamily: fonts.semibold, color: colors.ink }}
     />
   );
 }
@@ -174,7 +174,7 @@ export default function Onboarding() {
                 accessibilityState={{ selected: state.profile === p.id }}
                 accessibilityLabel={t(`profile.${p.id}`)}
                 onPress={() => dispatch({ type: 'setProfile', profile: p.id })}
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderRadius: radius.l, borderWidth: 2, borderBottomWidth: 5, borderColor: state.profile === p.id ? colors.greenText : colors.border, backgroundColor: state.profile === p.id ? colors.softGreen : colors.white }}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderRadius: radius.l, borderWidth: 2, borderColor: state.profile === p.id ? colors.greenText : 'transparent', backgroundColor: state.profile === p.id ? colors.softGreen : colors.white }}
               >
                 <T v="title">{p.emoji}</T>
                 <View style={{ flex: 1 }}>

@@ -100,7 +100,7 @@ export default function Progress() {
           <T v="h2">{t('progress.injTitle', { n: d.injectionWeeks })}</T>
           <Row gap={6} style={{ flexWrap: 'wrap' }}>
             {weeks.map((w) => (
-              <View key={w.id} accessible accessibilityLabel={new Date(w.at).toLocaleDateString('es-ES')} style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: colors.blue, alignItems: 'center', justifyContent: 'center', borderBottomWidth: 3, borderBottomColor: colors.blueDark }}>
+              <View key={w.id} accessible accessibilityLabel={new Date(w.at).toLocaleDateString('es-ES')} style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: colors.blue, alignItems: 'center', justifyContent: 'center'}}>
                 <Icon name="check" size={18} color={colors.white} stroke={3} />
               </View>
             ))}
@@ -137,7 +137,7 @@ export default function Progress() {
             {state.hba1c.map((h) => (
               <View key={h.at} style={{ alignItems: 'center', gap: 4 }}>
                 <T v="label">{fmt(h.v)} %</T>
-                <View style={{ width: 44, height: (h.v - 5) * 34, borderRadius: 10, backgroundColor: colors.coral, borderBottomWidth: 4, borderBottomColor: colors.coralShadow }} />
+                <View style={{ width: 44, height: (h.v - 5) * 34, borderRadius: 10, backgroundColor: colors.coral}} />
                 <T v="small" color={colors.secondary}>
                   {new Date(h.at).toLocaleDateString('es-ES', { month: 'short', year: '2-digit' })}
                 </T>
