@@ -11,6 +11,7 @@ import { Glyph } from '../components/icons';
 import OwiAnimated from '../components/OwiAnimated';
 import OwiSticker from '../components/OwiSticker';
 import PlanSettings from '../components/PlanSettings';
+import ScreenHeader from '../components/ScreenHeader';
 import { CrewSettings } from '../components/crew';
 import { ReportCard } from '../components/program';
 import { buildWidgetSnapshot } from '../widgets/snapshot';
@@ -40,9 +41,7 @@ export default function Me() {
 
   return (
     <Screen>
-      <T v="display" accessibilityRole="header">
-        {t('tab.me')}
-      </T>
+      <ScreenHeader title={t('tab.me')} mood="happy" />
       <Card>
         <Row gap={14}>
           <AvatarBadge avatar={d.owiAvatar} size={64} label={t('avatar.you', { name: state.userName })} />

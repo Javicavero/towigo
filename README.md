@@ -46,6 +46,11 @@ npx expo start --web
 
 ## Historial
 
+### 1.1 (Owi protagonista y animado)
+- **Owi animado en 3D tipo GIF**: 12 emociones con movimientos propios (saluda, salta y gira al celebrar, corre, duerme respirando, se rasca la cabeza, abraza el corazón, tiembla…), renderizadas fotograma a fotograma desde el modelo 3D (`tools/owi/anim`) y reproducidas en 2D (`OwiSprite`). Bucles perfectos a 20 fps; respeta "Reducir movimiento". Vista previa: `docs/owi-animaciones.gif`.
+- **Hoy**: escenario a pantalla completa con Owi dentro de los anillos del día, fondo que cambia con su emoción, halo que respira, su frase con tus datos y acciones rápidas. Al tocarlo, salta y gira.
+- Owi animado en la cabecera de Registrar, Progreso, Equipo y Yo (te habla y celebra cada registro) y protagonista en la bienvenida.
+
 ### 1.0 (profesional y premium)
 - **Towigo Pro** (`#pro`): panel del equipo sanitario con pacientes priorizados y motivos, ficha clínica (AGP, tiempo en rangos, GMI, CV, adherencia GLP-1, peso y composición, efectos, ánimo), editor de pauta y objetivos que llega a la app del paciente, bandeja de mensajes con plantillas y audios, y notas de consulta. Ver `docs/PANEL_PROFESIONAL.md`.
 - **Diseño premium + tech**: paleta nueva, modo oscuro automático (o elegido en Yo → Apariencia), tipografía más fina, anillos del día, Owi como asistente discreto y tono adulto, sin confeti.

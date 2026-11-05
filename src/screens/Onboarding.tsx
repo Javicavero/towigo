@@ -9,6 +9,7 @@ import AvatarFace from '../components/AvatarFace';
 import { Glyph, Icon, type IconName } from '../components/icons';
 import { FadeIn, Pop } from '../components/motion';
 import OwiAnimated from '../components/OwiAnimated';
+import { LinearGradient } from 'expo-linear-gradient';
 import SpeechBubble from '../components/SpeechBubble';
 import { Button, Card, Choice, ProgressBar, Row, Screen, T } from '../components/ui';
 import { APP_NAME, DEFAULT_AVATAR_NAME } from '../config';
@@ -30,12 +31,12 @@ const DRUGS: Glp1Drug[] = ['semaglutida', 'tirzepatida', 'liraglutida', 'otro'];
 const SENSORS: SensorId[] = ['glucometro', 'libre', 'dexcom', 'none'];
 const DAYS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 const STEP_MOOD: Record<Step, PetMood> = {
-  hello: 'missYou',
+  hello: 'happy',
   name: 'attentive',
-  owiName: 'happy',
+  owiName: 'confused',
   profile: 'attentive',
   treatment: 'remind',
-  avatar: 'happy',
+  avatar: 'remind',
   consent: 'caringLow',
   team: 'caringHigh',
   commit: 'celebrate',
@@ -114,10 +115,14 @@ export default function Onboarding() {
 
       {step !== 'avatar' && (
         <FadeIn key={pair ? 'pair' : 'owi'}>
-          <Row style={{ justifyContent: 'center', alignItems: 'flex-end' }}>
-            {pair && <AvatarFace avatar={d.owiAvatar} size={130} expression={step === 'commit' ? 'big' : 'smile'} />}
-            <OwiAnimated mood={STEP_MOOD[step]} level={1} size={pair ? 170 : 200} label={t('owi.a11y', { name: owi })} />
-          </Row>
+          <View style={{ borderRadius: 28, overflow: 'hidden' }}>
+            <LinearGradient colors={[colors.softGreen, colors.cream]} style={{ alignItems: 'center', paddingTop: 8 }}>
+              <Row style={{ justifyContent: 'center', alignItems: 'flex-end' }}>
+                {pair && <AvatarFace avatar={d.owiAvatar} size={130} expression={step === 'commit' ? 'big' : 'smile'} />}
+                <OwiAnimated mood={STEP_MOOD[step]} level={1} size={pair ? 200 : 250} label={t('owi.a11y', { name: owi })} />
+              </Row>
+            </LinearGradient>
+          </View>
         </FadeIn>
       )}
       <Pop trigger={step}>

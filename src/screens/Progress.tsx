@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import { GlucoseCard, HabitsCard } from '../components/cards';
 import BondCard from '../components/BondCard';
+import ScreenHeader from '../components/ScreenHeader';
 import { MoodHistory } from '../components/checkin';
 import { DayLog, DayTimeline, TirBar } from '../components/t1';
 import { JourneyCard, MaintenanceCard, ReportCard, StrengthCard, TitrationCard } from '../components/program';
@@ -59,9 +60,7 @@ export default function Progress() {
 
   return (
     <Screen>
-      <T v="display" accessibilityRole="header">
-        {t('progress.title')}
-      </T>
+      <ScreenHeader title={t('progress.title')} line={t('progress.owiLine', { n: d.streak })} />
       <Segmented
         options={[
           { id: 'habits', label: t('progress.tab.habits') },

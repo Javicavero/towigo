@@ -8,6 +8,7 @@ import BodyMap from '../components/BodyMap';
 import { Glyph, type IconName } from '../components/icons';
 import { IntakeCard, MedsCard } from '../components/cards';
 import { StrengthCard } from '../components/program';
+import ScreenHeader from '../components/ScreenHeader';
 import FoodPhoto from '../components/FoodPhoto';
 import { Button, Card, Choice, Row, Screen, T } from '../components/ui';
 import { t } from '../i18n';
@@ -112,16 +113,11 @@ export default function LogScreen() {
 
   return (
     <Screen>
-      <T v="title" accessibilityRole="header">
-        {t('log.title')}
-      </T>
-      <T color={colors.secondary}>{t('log.subtitle')}</T>
+      <ScreenHeader title={t('log.title')} subtitle={t('log.subtitle')} mood={toast ? 'celebrate' : 'attentive'} line={toast ?? t('log.owiLine')} />
       {toast && (
-        <Card tone="green">
-          <View accessibilityLiveRegion="polite">
-            <T v="label">{toast}</T>
-          </View>
-        </Card>
+        <View accessibilityLiveRegion="polite" style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden' }}>
+          <T v="small">{toast}</T>
+        </View>
       )}
 
       {sections.map((s) => (

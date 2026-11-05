@@ -2,6 +2,7 @@
  * Chat asíncrono con el equipo humano: texto y mensajes de audio (§4.3).
  * Owi hace de puente, nunca sustituye al equipo.
  */
+import ScreenHeader from '../components/ScreenHeader';
 import { useEffect, useState } from "react";
 import { Pressable, TextInput, View } from "react-native";
 import { Icon } from '../components/icons';
@@ -136,9 +137,7 @@ export default function Team() {
 
   return (
     <Screen padBottom={110} stickToEnd>
-      <T v="title" accessibilityRole="header">
-        {t('team.title')}
-      </T>
+      <ScreenHeader title={t('team.title')} mood="caringLow" />
       <Row gap={10} style={{ flexWrap: 'wrap' }}>
         {(Object.keys(TEAM) as (keyof typeof TEAM)[]).map((k) => (
           <Row key={k} gap={8} style={{ backgroundColor: colors.white, paddingRight: 14, paddingLeft: 4, paddingVertical: 4, borderRadius: 26 }}>

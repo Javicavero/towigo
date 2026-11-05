@@ -1069,4 +1069,6 @@ export const es: Record<string, string> = {
   'me.proOpen': 'Abrir el panel profesional',
   'me.proNote': 'Así ven tu endocrina, tu nutricionista y tu psicóloga a sus pacientes. Lo que cambien en tu pauta u objetivos llega a tu app.',
   'home.quickLog': 'Registrar',
+  'log.owiLine': 'Elige qué registrar o escríbemelo en el chat: lo apunto yo.',
+  'progress.owiLine': '{n} días de constancia. Aquí tienes tu evolución, sin juicios: solo datos.',
 };
