@@ -7,8 +7,15 @@ Towigo tiene dos personajes:
 2. **Owi**: la mascota, un **erizo** compañero, común a todos los perfiles (tipo 1, tipo 2,
    GLP-1). Es quien avisa y quien tiene emociones; evoluciona con el vínculo del usuario.
 
-Los dos son **provisionales**. El avatar se genera por código (`tools/avatar/build_avatar.py`
-→ `assets/avatar/avatar.glb`) y Owi se dibuja en la app (`src/components/three/Hedgehog.tsx`).
+El avatar es **provisional** y se genera por código (`tools/avatar/build_avatar.py` →
+`assets/avatar/avatar.glb`).
+
+**Owi ya tiene diseño propio**: modelo 3D `assets/owi/source/erizo_owi_3d.glb` y 12
+ilustraciones de referencia (`assets/owi/<emoción>.png`, usadas también como pegatinas 2D en
+el chat y el bocadillo). `tools/owi/prepare_owi.py` lo prepara para la app (`assets/owi/owi.glb`):
+recupera la mitad izquierda que el archivo original tenía sin enlazar, lo orienta (Y arriba,
+mirando a +Z) y separa los brazos para animarlos. Ojos, cejas y boca los dibuja la app según la
+emoción, copiando las ilustraciones.
 Un diseñador 3D puede sustituirlos sin tocar la lógica si respeta lo siguiente.
 
 ## Avatar humano (glTF binario `.glb`)
@@ -30,6 +37,7 @@ Ojos, párpados, cejas, boca y gafas los dibuja la app (expresiones). Complexió
 forma de cara se aplican escalando.
 
 ## Owi (erizo)
+- Para una nueva versión del modelo: mismos nombres de piezas (quill_*, face_body, belly, ear, nose, foot, toe, left_arm, right_arm), nombres únicos por lado y sin ojos ni boca fijos.
 - Personaje original, blandito y expresivo. Púas marrones suaves, cara y barriga crema,
   ojos grandes, hocico con nariz negra, orejas pequeñas, bracitos y pies.
 - 12 emociones: feliz, atento, cariñoso/preocupado (glucosa alta y baja), celebra, duerme

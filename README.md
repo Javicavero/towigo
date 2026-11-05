@@ -22,6 +22,12 @@ App de acompañamiento en diabetes y obesidad (GLP-1). Este repositorio contiene
 - **Escenarios de demostración** en la pantalla Hoy: en rango, glucosa alta, glucosa baja,
   objetivo cumplido y fallo del sensor.
 
+## Novedades 0.4
+
+- **Owi con su diseño definitivo**: modelo 3D del erizo y sus 12 visualizaciones (feliz, atento,
+  cariñoso/preocupado con glucosa alta y baja, celebra, duerme, confundido, avisa, deporte y te
+  echaba de menos). Las ilustraciones aparecen también en el chat y en el bocadillo.
+
 ## Novedades 0.3
 
 - **Owi es ahora un erizo**: la mascota compañera (común a todos los perfiles) que avisa, se

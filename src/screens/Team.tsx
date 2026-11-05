@@ -5,6 +5,7 @@
 import { useEffect, useState } from "react";
 import { Pressable, TextInput, View } from "react-native";
 import { Icon } from '../components/icons';
+import OwiSticker from '../components/OwiSticker';
 import { Card, Row, Screen, T } from '../components/ui';
 import { TEAM } from '../data/mock';
 import { t } from '../i18n';
@@ -17,6 +18,7 @@ const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).p
 function Avatar({ from, size = 40 }: { from: Message['from']; size?: number }) {
   const { state } = useStore();
   const isOwi = from === 'owi';
+  if (isOwi) return <OwiSticker mood="happy" size={size + 6} />;
   const m = isOwi ? null : from === 'patient' ? null : TEAM[from];
   return (
     <View

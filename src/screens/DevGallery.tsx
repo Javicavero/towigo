@@ -1,5 +1,6 @@
 /** Galería interna (abrir con ?galeria): todas las emociones de Owi, sus niveles y variantes de avatar. */
-import { ScrollView, Text, View } from 'react-native';
+import { Image, ScrollView, Text, View } from 'react-native';
+import { OWI_STICKERS } from '../components/OwiSticker';
 import Scene3D from '../components/Scene3D';
 import { defaultAvatar } from '../state/store';
 import type { Avatar, PetLevel, PetMood } from '../state/types';
@@ -16,13 +17,28 @@ const AVATARS: Partial<Avatar>[] = [
 
 export default function DevGallery() {
   // El navegador limita las escenas 3D simultáneas: ?galeria=1 (Owi) y ?galeria=2 (niveles y avatares).
-  const page = typeof window !== 'undefined' && window.location.search.includes('galeria=2') ? 2 : 1;
+  const q = typeof window !== 'undefined' ? window.location.search : '';
+  const page = q.includes('galeria=3') ? 3 : q.includes('galeria=2') ? 2 : 1;
   const cell = { width: 170, alignItems: 'center' as const, margin: 4, backgroundColor: '#FFF8F1', borderRadius: 12 };
   return (
     <ScrollView style={{ flex: 1, backgroundColor: '#fff' }} contentContainerStyle={{ flexDirection: 'row', flexWrap: 'wrap', padding: 8 }}>
+      {page === 3 &&
+        (['happy', 'worriedHigh', 'attentive', 'caringHigh', 'sport', 'missYou'] as PetMood[]).map((m) => (
+          <View key={m} style={{ width: 340, margin: 4, backgroundColor: '#FFF8F1', borderRadius: 12, flexDirection: 'row', alignItems: 'center' }}>
+            <View style={{ width: 230 }}>
+              <Scene3D mode="pet" petMood={m} petLevel={4} height={260} interactive={false} />
+            </View>
+            <Image source={OWI_STICKERS[m]} style={{ width: 100, height: 100 }} />
+          </View>
+        ))}
       {page === 1 && MOODS.map((m) => (
         <View key={m} style={cell} testID={`pet-${m}`}>
-          <Scene3D mode="pet" petMood={m} petLevel={3} height={170} interactive={false} />
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View style={{ width: 120 }}>
+              <Scene3D mode="pet" petMood={m} petLevel={1} height={150} interactive={false} />
+            </View>
+            <Image source={OWI_STICKERS[m]} style={{ width: 48, height: 48 }} />
+          </View>
           <Text>{m}</Text>
         </View>
       ))}

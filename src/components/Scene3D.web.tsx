@@ -66,7 +66,9 @@ export default function Scene3D({ mode, avatar, avatarMood = 'happy', petMood = 
           <Suspense fallback={null}>
             {showHuman && <Human avatar={avatar} mood={avatarMood} position={mode === 'pair' ? [-0.75, 0, 0] : [0, 0, 0]} facing={mode === 'pair' ? 0.18 : 0} />}
           </Suspense>
-          {showPet && <Hedgehog mood={petMood} level={petLevel} size={mode === 'pair' ? 1.4 : 1} position={mode === 'pair' ? [1.35, 0, 0.35] : [0, 0, 0]} facing={mode === 'pair' ? -0.35 : 0} showEffects />}
+          <Suspense fallback={null}>
+            {showPet && <Hedgehog mood={petMood} level={petLevel} size={mode === 'pair' ? 1.4 : 1} position={mode === 'pair' ? [1.35, 0, 0.35] : [0, 0, 0]} facing={mode === 'pair' ? -0.35 : 0} showEffects />}
+          </Suspense>
           {/* Sombras suaves en el suelo */}
           {showHuman && (
             <mesh rotation={[-Math.PI / 2, 0, 0]} position={[mode === 'pair' ? -0.75 : 0, 0.005, 0]}>

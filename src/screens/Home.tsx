@@ -184,7 +184,7 @@ export default function Home() {
               </LinearGradient>
               <View style={{ padding: 12, paddingTop: 0 }}>
                 <Pop trigger={message}>
-                  <SpeechBubble text={message} name={owi} icon={reminder ? REMINDER_ICON[reminder.kind] : undefined} arrow="right">
+                  <SpeechBubble text={message} name={owi} mood={petMood} icon={reminder ? REMINDER_ICON[reminder.kind] : undefined} arrow="right">
                     {reminder && (
                       <Row gap={8} style={{ marginTop: 10 }}>
                         <Button

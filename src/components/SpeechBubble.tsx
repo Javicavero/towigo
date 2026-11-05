@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import { View } from 'react-native';
 import { colors, radius } from '../theme';
+import type { PetMood } from '../state/types';
+import OwiSticker from './OwiSticker';
 import { Row, T } from './ui';
 
 /** Bocadillo de Owi. La flecha apunta hacia quien habla. Región "viva" para lectores de pantalla. */
@@ -10,12 +12,15 @@ export default function SpeechBubble({
   icon,
   children,
   arrow = 'center',
+  mood,
 }: {
   text: string;
   name?: string;
   icon?: string;
   children?: ReactNode;
   arrow?: 'left' | 'center' | 'right';
+  /** Emoción de Owi: muestra su ilustración junto al nombre. */
+  mood?: PetMood;
 }) {
   const border = icon ? colors.achievement : colors.border;
   return (
@@ -38,9 +43,12 @@ export default function SpeechBubble({
         }}
       >
         {name ? (
-          <T v="small" color={colors.purple} style={{ textTransform: 'uppercase', letterSpacing: 0.6 }}>
-            {name}
-          </T>
+          <Row gap={6}>
+            {mood && <OwiSticker mood={mood} size={26} />}
+            <T v="small" color={colors.purple} style={{ textTransform: 'uppercase', letterSpacing: 0.6 }}>
+              {name}
+            </T>
+          </Row>
         ) : null}
         <Row gap={10} style={{ alignItems: 'flex-start' }}>
           {icon ? <T v="title">{icon}</T> : null}
