@@ -57,7 +57,7 @@ export function CrewSettings() {
         <View key={c.id} style={{ backgroundColor: colors.cream, borderRadius: 12, padding: 12, gap: 6 }}>
           <Row gap={10}>
             <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#5B4BC4', alignItems: 'center', justifyContent: 'center' }}>
-              <T v="label" color={colors.white}>
+              <T v="label" color={"#FFFFFF"}>
                 {c.name.slice(0, 1).toUpperCase()}
               </T>
             </View>

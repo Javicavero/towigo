@@ -22,9 +22,10 @@ import { ACCESSORIES } from '../data/avatarOptions';
 import { t } from '../i18n';
 import { useStore } from '../state/store';
 import { hasDiabetes, hasT2, usesGlp1, type Profile, type ReminderKind, type Scenario, type TextScale } from '../state/types';
-import { colors, fonts, MIN_TOUCH } from '../theme';
+import { colors, fonts, MIN_TOUCH, readAppearancePref, setAppearancePref, type Appearance_ } from '../theme';
+import { openPro } from '../pro/openPro';
 
-type Section = 'crew' | 'avatar' | 'owi' | 'widgets' | 'profile' | 'plan' | 'report' | 'sensor' | 'text' | 'privacy' | 'demo';
+type Section = 'appearance' | 'pro' | 'crew' | 'avatar' | 'owi' | 'widgets' | 'profile' | 'plan' | 'report' | 'sensor' | 'text' | 'privacy' | 'demo';
 const SCENARIOS: Scenario[] = ['normal', 'injectionDay', 'missedInjection', 'sideEffects', 'plateau', 'milestone', 'highGlucose', 'lowGlucose', 'night'];
 const DEMO_REMINDERS: ReminderKind[] = ['injection', 'insulin', 'meds', 'weigh', 'meal', 'sport', 'water'];
 
@@ -130,6 +131,22 @@ export default function Me() {
       )}
 
       <SectionTitle>{t('me.app')}</SectionTitle>
+      <Disclosure icon={<Glyph name="steth" bg="#0B7266" />} title={t('me.pro')} subtitle={t('me.proSub')} open={open === 'pro'} onToggle={() => toggle('pro')}>
+        <T v="small" color={colors.secondary}>
+          {t('me.proNote')}
+        </T>
+        <Button label={t('me.proOpen')} onPress={openPro} />
+      </Disclosure>
+      <Disclosure icon={<Glyph name="widget" bg="#2F3440" />} title={t('me.appearance')} subtitle={t(`me.appearance.${readAppearancePref()}`)} open={open === 'appearance'} onToggle={() => toggle('appearance')}>
+        <Row gap={8}>
+          {(['system', 'light', 'dark'] as Appearance_[]).map((a) => (
+            <Choice key={a} style={{ flex: 1 }} label={t(`me.appearance.${a}`)} selected={readAppearancePref() === a} onPress={() => setAppearancePref(a)} />
+          ))}
+        </Row>
+        <T v="small" color={colors.secondary}>
+          {t('me.appearanceNote')}
+        </T>
+      </Disclosure>
       <Disclosure icon={<Glyph name="textSize" bg="#5F6670" />} title={t('me.textSize')} subtitle={t(`me.size.${state.textScale}`)} open={open === 'text'} onToggle={() => toggle('text')}>
         <Row gap={8}>
           {([1, 1.2, 1.4] as TextScale[]).map((s) => (

@@ -3,7 +3,10 @@
  * Idioma principal: español (España). Inglés después del MVP; luego pt, de, fr.
  * Las claves ausentes en un idioma caen al español.
  */
-import { es } from './es';
+import { es as base } from './es';
+import { proEs } from './pro.es';
+
+const es: Record<string, string> = { ...base, ...proEs };
 
 export type Locale = 'es' | 'en';
 type Dict = Record<string, string>;

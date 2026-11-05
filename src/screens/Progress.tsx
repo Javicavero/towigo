@@ -190,7 +190,7 @@ export default function Progress() {
                   justifyContent: 'center',
                 }}
               >
-                <Icon name="check" size={18} color={colors.white} stroke={3} />
+                <Icon name="check" size={18} color={colors.onAccent} stroke={3} />
               </View>
             ))}
           </Row>

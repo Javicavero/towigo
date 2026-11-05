@@ -13,20 +13,20 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors, fonts, MIN_TOUCH, radius } from '../theme';
+import { colors, fonts, isDark, MIN_TOUCH, radius } from '../theme';
 import { useStore } from '../state/store';
 import { FadeIn, tap, useProgress } from './motion';
 
 type Variant = 'display' | 'title' | 'h2' | 'body' | 'small' | 'label' | 'big';
 
 const VARIANTS: Record<Variant, TextStyle> = {
-  display: { fontSize: 34, lineHeight: 40, fontFamily: fonts.bold, letterSpacing: -0.6 },
-  big: { fontSize: 48, lineHeight: 54, fontFamily: fonts.bold, letterSpacing: -1 },
-  title: { fontSize: 28, lineHeight: 34, fontFamily: fonts.bold, letterSpacing: -0.5 },
-  h2: { fontSize: 19, lineHeight: 25, fontFamily: fonts.semibold, letterSpacing: -0.2 },
+  display: { fontSize: 32, lineHeight: 38, fontFamily: fonts.semibold, letterSpacing: -0.9 },
+  big: { fontSize: 52, lineHeight: 58, fontFamily: fonts.semibold, letterSpacing: -1.8 },
+  title: { fontSize: 26, lineHeight: 32, fontFamily: fonts.semibold, letterSpacing: -0.7 },
+  h2: { fontSize: 18, lineHeight: 24, fontFamily: fonts.semibold, letterSpacing: -0.3 },
   body: { fontSize: 16, lineHeight: 23, fontFamily: fonts.regular },
-  small: { fontSize: 13, lineHeight: 18, fontFamily: fonts.medium },
-  label: { fontSize: 15, lineHeight: 20, fontFamily: fonts.semibold },
+  small: { fontSize: 13, lineHeight: 18, fontFamily: fonts.regular, letterSpacing: -0.05 },
+  label: { fontSize: 15, lineHeight: 20, fontFamily: fonts.medium, letterSpacing: -0.15 },
 };
 
 /** Texto que respeta el tamaño de letra elegido por el usuario (accesibilidad §4.7). */
@@ -83,9 +83,9 @@ export function Button({
   accessibilityHint?: string;
 }) {
   const [bg, fg] = {
-    primary: [colors.greenText, colors.white],
-    coral: [colors.coralText, colors.white],
-    blue: [colors.blue, colors.white],
+    primary: [colors.greenText, colors.onAccent],
+    coral: [colors.coralText, colors.onAccent],
+    blue: [colors.blue, colors.onAccent],
     secondary: [colors.softGreen, colors.greenText],
     ghost: ['transparent', colors.greenText],
   }[kind];
@@ -146,7 +146,7 @@ export function Choice({
       style={({ pressed }) => [styles.choice, selected && { backgroundColor: colors.greenText }, pressed && { opacity: 0.75 }, style]}
       {...rest}
     >
-      <T v="label" color={selected ? colors.white : colors.ink} center>
+      <T v="label" color={selected ? colors.onAccent : colors.ink} center>
         {label}
       </T>
     </Pressable>
@@ -219,19 +219,21 @@ const styles = StyleSheet.create({
   },
   card: {
     borderRadius: radius.l,
-    padding: 16,
-    gap: 10,
+    padding: 18,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: isDark ? colors.line : 'rgba(18,19,22,0.05)',
     shadowColor: '#000000',
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: isDark ? 0 : 0.04,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 4 },
   },
   choice: {
     minHeight: 44,
     paddingHorizontal: 14,
     paddingVertical: 9,
     borderRadius: radius.m,
-    backgroundColor: '#EEEEF3',
+    backgroundColor: colors.chip,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -308,7 +310,7 @@ export function ListRow({
       {right ??
         (done ? (
           <View style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: colors.greenText, alignItems: 'center', justifyContent: 'center' }}>
-            <T v="small" color={colors.white}>
+            <T v="small" color={colors.onAccent}>
               ✓
             </T>
           </View>

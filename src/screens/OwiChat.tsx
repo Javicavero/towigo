@@ -116,7 +116,7 @@ export default function OwiChat() {
           return (
             <FadeIn key={m.id} from={6}>
               <View style={{ alignSelf: me ? 'flex-end' : 'flex-start', maxWidth: '86%', backgroundColor: me ? colors.greenText : colors.white, borderRadius: 18, borderBottomRightRadius: me ? 6 : 18, borderBottomLeftRadius: me ? 18 : 6, paddingHorizontal: 14, paddingVertical: 10, gap: 2 }}>
-                <T color={me ? colors.white : colors.ink}>{m.text}</T>
+                <T color={me ? colors.onAccent : colors.ink}>{m.text}</T>
                 <T v="small" color={me ? '#D7F0E6' : colors.secondary} style={{ fontSize: 11, alignSelf: 'flex-end' }}>
                   {hhmm(m.at)}
                 </T>
@@ -167,7 +167,7 @@ export default function OwiChat() {
                 onPress={() => onChip(c)}
                 style={({ pressed }) => ({ paddingHorizontal: 14, minHeight: 40, justifyContent: 'center', borderRadius: 20, backgroundColor: c.action || c.open ? colors.greenText : colors.white, borderWidth: 1, borderColor: colors.borderStrong, opacity: pressed ? 0.7 : 1 })}
               >
-                <T v="label" color={c.action || c.open ? colors.white : colors.ink}>
+                <T v="label" color={c.action || c.open ? colors.onAccent : colors.ink}>
                   {c.label}
                 </T>
               </Pressable>
@@ -186,7 +186,7 @@ export default function OwiChat() {
             style={{ flex: 1, minHeight: MIN_TOUCH, borderRadius: 22, backgroundColor: colors.white, paddingHorizontal: 16, fontSize: 16, fontFamily: fonts.regular, color: colors.ink, borderWidth: 1, borderColor: colors.borderStrong }}
           />
           <Pressable accessibilityRole="button" accessibilityLabel={t('chat.send')} onPress={() => send(text)} style={{ width: MIN_TOUCH, height: MIN_TOUCH, borderRadius: MIN_TOUCH / 2, backgroundColor: colors.greenText, alignItems: 'center', justifyContent: 'center' }}>
-            <Icon name="send" size={22} color={colors.white} />
+            <Icon name="send" size={22} color={colors.onAccent} />
           </Pressable>
         </Row>
         <T v="small" color={colors.secondary} center style={{ marginTop: 6, fontSize: 11 }}>

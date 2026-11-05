@@ -9,7 +9,6 @@ import { Glyph, type IconName } from '../components/icons';
 import { IntakeCard, MedsCard } from '../components/cards';
 import { StrengthCard } from '../components/program';
 import FoodPhoto from '../components/FoodPhoto';
-import { Burst } from '../components/motion';
 import { Button, Card, Choice, Row, Screen, T } from '../components/ui';
 import { t } from '../i18n';
 import { useNav, type LogSection } from '../nav';
@@ -60,7 +59,6 @@ export default function LogScreen() {
   const { section } = useNav();
   const [open, setOpen] = useState<LogSection | null>(section);
   const [toast, setToast] = useState<string | null>(null);
-  const [burst, setBurst] = useState(0);
   const started = useRef(Date.now());
   // Inyección
   const [site, setSite] = useState<InjectionSite | null>(null);
@@ -109,7 +107,6 @@ export default function LogScreen() {
   const saved = (key: string, vars: Record<string, string | number> = {}) => {
     const secs = Math.max(1, Math.round((Date.now() - started.current) / 1000));
     setOpen(null);
-    setBurst((b) => b + 1);
     setToast(t(key, { ...vars, owi: state.pet.name, s: secs }));
   };
 
@@ -341,7 +338,6 @@ export default function LogScreen() {
           )}
         </Card>
       ))}
-      <Burst fire={burst} />
     </Screen>
   );
 }

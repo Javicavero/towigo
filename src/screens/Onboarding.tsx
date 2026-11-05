@@ -56,7 +56,7 @@ function Check({ checked, onToggle, label, detail }: { checked: boolean; onToggl
   return (
     <Pressable accessibilityRole="checkbox" accessibilityState={{ checked }} accessibilityLabel={label} onPress={onToggle} style={{ flexDirection: 'row', gap: 12, alignItems: 'flex-start', minHeight: MIN_TOUCH, paddingVertical: 6 }}>
       <View style={{ width: 30, height: 30, borderRadius: 8, borderWidth: 2, borderColor: checked ? colors.greenText : colors.secondary, backgroundColor: checked ? colors.greenText : colors.white, alignItems: 'center', justifyContent: 'center', marginTop: 2 }}>
-        {checked && <Icon name="check" size={20} color={colors.white} stroke={3} />}
+        {checked && <Icon name="check" size={20} color={colors.onAccent} stroke={3} />}
       </View>
       <View style={{ flex: 1, gap: 2 }}>
         <T v="label">{label}</T>

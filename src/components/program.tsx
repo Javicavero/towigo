@@ -126,7 +126,7 @@ export function TitrationCard() {
                   borderColor: colors.blue,
                 }}
               >
-                {done && <Icon name="check" size={14} color={colors.white} stroke={3} />}
+                {done && <Icon name="check" size={14} color={colors.onAccent} stroke={3} />}
               </View>
               <T v={cur ? 'label' : 'body'} style={{ flex: 1 }} color={done ? colors.secondary : colors.ink}>
                 {f2(s.dose)} mg
@@ -178,7 +178,7 @@ export function JourneyCard() {
                   borderColor: next ? colors.greenText : colors.borderStrong,
                 }}
               >
-                {ok ? <Icon name="check" size={20} color={colors.white} stroke={3} /> : <T v="label">{m}</T>}
+                {ok ? <Icon name="check" size={20} color={colors.onAccent} stroke={3} /> : <T v="label">{m}</T>}
               </View>
               <T v="small" center color={ok || next ? colors.ink : colors.secondary}>
                 {t(`journey.m${m}`)}

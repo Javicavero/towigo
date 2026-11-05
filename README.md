@@ -46,6 +46,10 @@ npx expo start --web
 
 ## Historial
 
+### 1.0 (profesional y premium)
+- **Towigo Pro** (`#pro`): panel del equipo sanitario con pacientes priorizados y motivos, ficha clínica (AGP, tiempo en rangos, GMI, CV, adherencia GLP-1, peso y composición, efectos, ánimo), editor de pauta y objetivos que llega a la app del paciente, bandeja de mensajes con plantillas y audios, y notas de consulta. Ver `docs/PANEL_PROFESIONAL.md`.
+- **Diseño premium + tech**: paleta nueva, modo oscuro automático (o elegido en Yo → Apariencia), tipografía más fina, anillos del día, Owi como asistente discreto y tono adulto, sin confeti.
+
 ### 0.10 (tipo 1, Owi más listo, Gluroo)
 - **Tipo 1** como cuarto camino: sensor con tendencia, el día en una sola gráfica (glucosa + insulina + carbohidratos, al estilo Gluroo), tiempo en rango, registro de insulina rápida/lenta y carbohidratos, aviso de la lenta según el plan. Nunca calcula bolos ni dosis.
 - **Chat con Owi**: apunta lo que le escribes ("4 u de rápida hace 15 min", "45 g de carbos", "peso 98,5"), resume cómo vas, explica conceptos y prepara preguntas para la consulta (se añaden al informe PDF). Se niega a dar dosis y remite al 112 en urgencias. Con el servidor activo, las preguntas abiertas van a la IA (`supabase/functions/owi-chat`).

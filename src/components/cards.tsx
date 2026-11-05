@@ -22,7 +22,7 @@ function Header({ icon, tone, title, right }: { icon: IconName | string; tone: s
   return (
     <Row gap={10}>
       <View style={{ width: 34, height: 34, borderRadius: 9, backgroundColor: tone, alignItems: 'center', justifyContent: 'center' }}>
-        <Icon name={icon as IconName} size={22} color={colors.white} stroke={2.3} />
+        <Icon name={icon as IconName} size={22} color={"#FFFFFF"} stroke={2.3} />
       </View>
       <T v="h2" style={{ flex: 1 }}>
         {title}
@@ -200,7 +200,7 @@ export function MedsCard() {
           style={{ flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 54, paddingHorizontal: 12, borderRadius: radius.m, backgroundColor: m.taken ? colors.softGreen : colors.cream, borderWidth: 2, borderColor: m.taken ? colors.greenText : colors.border }}
         >
           <View style={{ width: 30, height: 30, borderRadius: 8, borderWidth: 2, borderColor: colors.greenText, backgroundColor: m.taken ? colors.greenText : colors.white, alignItems: 'center', justifyContent: 'center' }}>
-            {m.taken && <Icon name="check" size={20} color={colors.white} stroke={3} />}
+            {m.taken && <Icon name="check" size={20} color={colors.onAccent} stroke={3} />}
           </View>
           <View style={{ flex: 1 }}>
             <T v="label">
@@ -324,9 +324,9 @@ export function HabitsCard() {
               style={{ alignItems: 'center', gap: 6, padding: 10, borderRadius: radius.m, backgroundColor: ok ? hb.tone : hb.bg}}
             >
               <Pop trigger={ok}>
-                <Icon name={ok ? 'check' : hb.icon} size={28} color={ok ? colors.white : hb.tone} stroke={ok ? 3 : 2.2} />
+                <Icon name={ok ? 'check' : hb.icon} size={28} color={ok ? colors.onAccent : hb.tone} stroke={ok ? 3 : 2.2} />
               </Pop>
-              <T v="small" color={ok ? colors.white : colors.ink} center>
+              <T v="small" color={ok ? colors.onAccent : colors.ink} center>
                 {t(`habit.${h}`)}
               </T>
             </Bouncy>

@@ -18,12 +18,14 @@ import LogScreen from './screens/LogScreen';
 import Me from './screens/Me';
 import Onboarding from './screens/Onboarding';
 import OwiChat from './screens/OwiChat';
+import ProApp from './pro/ProApp';
+import { isProRoute } from './pro/openPro';
 import Progress from './screens/Progress';
 import Team from './screens/Team';
 import { useDexcomSync } from './services/useDexcomSync';
 import { useWidgetSync } from './widgets/useWidgetSync';
 import { StoreProvider, useStore } from './state/store';
-import { colors } from './theme';
+import { colors, isDark } from './theme';
 
 const TABS: { id: Tab; icon: IconName }[] = [
   { id: 'home', icon: 'home' },
@@ -44,9 +46,9 @@ function TabBar({ tab, go }: { tab: Tab; go: (t: Tab) => void }) {
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: '#F9F9F9',
+        backgroundColor: colors.tabBar,
         borderTopWidth: 0.5,
-        borderTopColor: colors.borderStrong,
+        borderTopColor: colors.line,
         paddingBottom: Math.max(insets.bottom, 6),
         paddingTop: 6,
       }}
@@ -55,7 +57,7 @@ function TabBar({ tab, go }: { tab: Tab; go: (t: Tab) => void }) {
         {TABS.map(({ id, icon }) => {
           const active = tab === id;
           const badge = id === 'team' && d.unreadCount > 0;
-          const c = active ? colors.greenText : '#8E8E93';
+          const c = active ? colors.greenText : colors.secondary;
           return (
             <Pressable
               key={id}
@@ -69,7 +71,7 @@ function TabBar({ tab, go }: { tab: Tab; go: (t: Tab) => void }) {
                 <Icon name={icon} size={26} color={c} stroke={active ? 2.4 : 2} />
                 {badge && (
                   <View style={{ position: 'absolute', top: -4, right: -10, minWidth: 18, height: 18, paddingHorizontal: 4, borderRadius: 9, backgroundColor: '#E5483A', alignItems: 'center', justifyContent: 'center' }}>
-                    <T v="small" color={colors.white} style={{ fontSize: 11, lineHeight: 13 }}>
+                    <T v="small" color={colors.onAccent} style={{ fontSize: 11, lineHeight: 13 }}>
                       {d.unreadCount}
                     </T>
                   </View>
@@ -119,6 +121,7 @@ function Root() {
     const sub = Linking.addEventListener('url', (e) => open(e.url));
     return () => sub.remove();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  if (isProRoute()) return <ProApp />;
   if (!state.onboarded) return <Onboarding />;
   return (
     <NavContext.Provider value={{ tab, section, go }}>
@@ -143,7 +146,7 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <StoreProvider>
-        <StatusBar style="dark" />
+        <StatusBar style={isDark ? 'light' : 'dark'} />
         <Root />
       </StoreProvider>
     </SafeAreaProvider>

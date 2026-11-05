@@ -58,7 +58,7 @@ function AudioBubble({ m, mine }: { m: Message; mine: boolean }) {
     }, 100);
     return () => clearInterval(id);
   }, [playing, dur]);
-  const fg = mine ? colors.white : colors.ink;
+  const fg = mine ? colors.onAccent : colors.ink;
   const bars = 22;
   return (
     <View style={{ gap: 8 }}>
@@ -79,7 +79,7 @@ function AudioBubble({ m, mine }: { m: Message; mine: boolean }) {
             justifyContent: 'center',
           }}
         >
-          <Icon name={playing ? 'pause' : 'play'} size={22} color={mine ? colors.greenText : colors.white} />
+          <Icon name={playing ? 'pause' : 'play'} size={22} color={mine ? colors.greenText : colors.onAccent} />
         </Pressable>
         <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 2, height: 32 }} accessibilityElementsHidden importantForAccessibility="no">
           {Array.from({ length: bars }, (_, i) => (
@@ -99,7 +99,7 @@ function AudioBubble({ m, mine }: { m: Message; mine: boolean }) {
         </T>
       </Row>
       {m.text ? (
-        <T v="small" color={mine ? colors.white : colors.secondary}>
+        <T v="small" color={mine ? colors.onAccent : colors.secondary}>
           {t('team.transcript')}: {t(m.text)}
         </T>
       ) : null}
@@ -181,7 +181,7 @@ export default function Team() {
                     {!m.read ? ` · ${t('team.new')}` : ''}
                   </T>
                 )}
-                {m.kind === 'audio' ? <AudioBubble m={m} mine={mine} /> : <T color={mine ? colors.white : colors.ink}>{t(m.text ?? '')}</T>}
+                {m.kind === 'audio' ? <AudioBubble m={m} mine={mine} /> : <T color={mine ? colors.onAccent : colors.ink}>{t(m.text ?? '')}</T>}
                 <T v="small" color={mine ? 'rgba(255,255,255,0.85)' : colors.secondary} style={{ alignSelf: 'flex-end', fontSize: 11 * state.textScale }}>
                   {new Date(m.at).toLocaleString('es-ES', { weekday: 'short', hour: '2-digit', minute: '2-digit' })}
                 </T>
@@ -222,7 +222,7 @@ export default function Team() {
                 }}
                 style={{ width: MIN_TOUCH, height: MIN_TOUCH, borderRadius: MIN_TOUCH / 2, backgroundColor: colors.greenText, alignItems: 'center', justifyContent: 'center' }}
               >
-                <Icon name="send" size={22} color={colors.white} />
+                <Icon name="send" size={22} color={colors.onAccent} />
               </Pressable>
             </Row>
           </Row>
@@ -244,7 +244,7 @@ export default function Team() {
                 onPress={send}
                 style={{ width: MIN_TOUCH, height: MIN_TOUCH, borderRadius: MIN_TOUCH / 2, backgroundColor: colors.greenText, alignItems: 'center', justifyContent: 'center' }}
               >
-                <Icon name="send" size={22} color={colors.white} />
+                <Icon name="send" size={22} color={colors.onAccent} />
               </Pressable>
             ) : (
               <Pressable
@@ -253,7 +253,7 @@ export default function Team() {
                 onPress={() => setRecording(true)}
                 style={{ width: MIN_TOUCH, height: MIN_TOUCH, borderRadius: MIN_TOUCH / 2, backgroundColor: colors.coralText, alignItems: 'center', justifyContent: 'center' }}
               >
-                <Icon name="mic" size={24} color={colors.white} />
+                <Icon name="mic" size={24} color={colors.onAccent} />
               </Pressable>
             )}
           </Row>
