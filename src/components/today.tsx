@@ -207,6 +207,8 @@ export function SummaryGrid() {
         onPress={() => go('progress')}
       />,
     );
+  if (glp1 && d.musclePct !== null)
+    tiles.push(<Tile key="mus" label={t('sum.muscle')} color={colors.blue} value={fmt1(d.musclePct)} unit="%" sub={t('sum.muscleSub')} onPress={() => go('progress')} />);
   tiles.push(
     <Tile
       key="steps"

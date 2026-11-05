@@ -617,4 +617,6 @@ export const es: Record<string, string> = {
   'demo.sectionSub': 'Para enseñar la app (datos simulados)',
   'demo.reminders': 'Probar un aviso de Owi',
   'demo.hint': 'Cambia el perfil o el escenario y vuelve a la pestaña Hoy para verlo.',
+  'sum.muscle': 'Músculo',
+  'sum.muscleSub': 'Cuídalo con proteína',
 };
