@@ -5,6 +5,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import BodyMap from '../components/BodyMap';
+import { Glyph, type IconName } from '../components/icons';
 import { IntakeCard, MedsCard } from '../components/cards';
 import { Burst } from '../components/motion';
 import { Button, Card, Choice, Row, Screen, T } from '../components/ui';
@@ -16,7 +17,14 @@ import { colors, radius } from '../theme';
 
 const SYMPTOMS: SymptomId[] = ['nausea', 'vomitos', 'estrenimiento', 'diarrea', 'ardor', 'fatiga', 'pocoApetito', 'mareo'];
 const CONTEXTS: GlucoseContext[] = ['ayunas', 'antesComer', 'despuesComer', 'noche'];
-const ICON: Record<LogSection, string> = { injection: '💉', weight: '⚖️', glucose: '🩸', meds: '💊', effects: '🫶', intake: '🍗' };
+const ICON: Record<LogSection, [IconName, string]> = {
+  injection: ['syringe', '#1E63C7'],
+  weight: ['scale', '#5B4BC4'],
+  glucose: ['drop', '#C8372D'],
+  meds: ['pill', '#17785A'],
+  effects: ['heart', '#B7791F'],
+  intake: ['protein', '#D9542F'],
+};
 const fmt = (n: number, d = 1) => n.toFixed(d).replace('.', ',');
 
 function Stepper({ value, onChange, steps, unit, decimals = 0, min = 0, max = 999, label }: { value: number; onChange: (n: number) => void; steps: number[]; unit: string; decimals?: number; min?: number; max?: number; label: string }) {
@@ -107,9 +115,7 @@ export default function LogScreen() {
             onPress={() => toggle(s)}
             style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, minHeight: 76 }}
           >
-            <View style={{ width: 52, height: 52, borderRadius: radius.m, backgroundColor: colors.softGreen, alignItems: 'center', justifyContent: 'center' }}>
-              <T v="title">{ICON[s]}</T>
-            </View>
+            <Glyph name={ICON[s][0]} bg={ICON[s][1]} size={44} />
             <View style={{ flex: 1 }}>
               <T v="h2">{t(`log.${s}`)}</T>
               <T v="small" color={colors.secondary}>

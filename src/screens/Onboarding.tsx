@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { Pressable, TextInput, View } from 'react-native';
 import AvatarEditor from '../components/AvatarEditor';
 import AvatarFace from '../components/AvatarFace';
-import { Icon } from '../components/icons';
+import { Glyph, Icon, type IconName } from '../components/icons';
 import { FadeIn, Pop } from '../components/motion';
 import OwiAnimated from '../components/OwiAnimated';
 import SpeechBubble from '../components/SpeechBubble';
@@ -20,10 +20,10 @@ import { colors, fonts, MIN_TOUCH, radius } from '../theme';
 
 const STEPS = ['hello', 'name', 'owiName', 'profile', 'treatment', 'avatar', 'consent', 'team', 'commit'] as const;
 type Step = (typeof STEPS)[number];
-const PROFILES: { id: Profile; emoji: string }[] = [
-  { id: 't2', emoji: '🩸' },
-  { id: 'glp1', emoji: '💉' },
-  { id: 't2_glp1', emoji: '🩸💉' },
+const PROFILES: { id: Profile; icon: IconName; bg: string }[] = [
+  { id: 't2', icon: 'drop', bg: '#C8372D' },
+  { id: 'glp1', icon: 'syringe', bg: '#1E63C7' },
+  { id: 't2_glp1', icon: 'steth', bg: '#17785A' },
 ];
 const DRUGS: Glp1Drug[] = ['semaglutida', 'tirzepatida', 'liraglutida', 'otro'];
 const SENSORS: SensorId[] = ['glucometro', 'libre', 'dexcom', 'none'];
@@ -176,7 +176,7 @@ export default function Onboarding() {
                 onPress={() => dispatch({ type: 'setProfile', profile: p.id })}
                 style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderRadius: radius.l, borderWidth: 2, borderColor: state.profile === p.id ? colors.greenText : 'transparent', backgroundColor: state.profile === p.id ? colors.softGreen : colors.white }}
               >
-                <T v="title">{p.emoji}</T>
+                <Glyph name={p.icon} bg={p.bg} size={40} />
                 <View style={{ flex: 1 }}>
                   <T v="h2">{t(`profile.${p.id}`)}</T>
                   <T v="small" color={colors.secondary}>

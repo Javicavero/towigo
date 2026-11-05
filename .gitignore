@@ -42,3 +42,9 @@ yarn-error.*
 
 # Python
 __pycache__/
+
+# Proyectos nativos generados (Continuous Native Generation)
+ios/
+android/
+targets/*/Assets.xcassets
+targets/*/Info.plist

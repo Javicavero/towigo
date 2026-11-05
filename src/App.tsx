@@ -5,8 +5,8 @@ import { Inter_600SemiBold } from '@expo-google-fonts/inter/600SemiBold';
 import { Inter_700Bold } from '@expo-google-fonts/inter/700Bold';
 import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Linking, Pressable, View } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon, type IconName } from './components/icons';
 import { FadeIn } from './components/motion';
@@ -20,6 +20,7 @@ import Onboarding from './screens/Onboarding';
 import Progress from './screens/Progress';
 import Team from './screens/Team';
 import { useDexcomSync } from './services/useDexcomSync';
+import { useWidgetSync } from './widgets/useWidgetSync';
 import { StoreProvider, useStore } from './state/store';
 import { colors } from './theme';
 
@@ -96,12 +97,27 @@ function TabScreen({ id, children }: { id: Tab; children: React.ReactNode }) {
 function Root() {
   const { state } = useStore();
   useDexcomSync();
+  useWidgetSync();
   const [tab, setTab] = useState<Tab>('home');
   const [section, setSection] = useState<LogSection | null>(null);
   const go = (t: Tab, sec?: LogSection) => {
     setSection(sec ?? null);
     setTab(t);
   };
+  // Enlaces desde los widgets: towigo://hoy, towigo://registrar/inyeccion, towigo://registrar/medicacion
+  useEffect(() => {
+    const open = (url?: string | null) => {
+      if (!url || !url.startsWith('towigo://')) return;
+      const path = url.replace('towigo://', '');
+      if (path.startsWith('registrar/inyeccion')) go('log', 'injection');
+      else if (path.startsWith('registrar/medicacion')) go('log', 'meds');
+      else if (path.startsWith('registrar')) go('log');
+      else go('home');
+    };
+    Linking.getInitialURL().then(open).catch(() => {});
+    const sub = Linking.addEventListener('url', (e) => open(e.url));
+    return () => sub.remove();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   if (!state.onboarded) return <Onboarding />;
   return (
     <NavContext.Provider value={{ tab, section, go }}>

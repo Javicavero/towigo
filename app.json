@@ -9,7 +9,12 @@
     "backgroundColor": "#FFF8F1",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "app.towigo"
+      "bundleIdentifier": "app.towigo",
+      "entitlements": {
+        "com.apple.security.application-groups": [
+          "group.app.towigo"
+        ]
+      }
     },
     "android": {
       "package": "app.towigo",
@@ -29,7 +34,28 @@
     },
     "plugins": [
       "expo-font",
-      "expo-asset"
-    ]
+      "expo-asset",
+      "@bacons/apple-targets",
+      [
+        "react-native-android-widget",
+        {
+          "widgets": [
+            {
+              "name": "Owi",
+              "label": "Owi · Towigo",
+              "description": "Owi te acompaña desde tu pantalla: su ánimo, tu racha y lo que toca hoy.",
+              "minWidth": "250dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 2,
+              "previewImage": "./assets/owi/happy.png",
+              "updatePeriodMillis": 1800000,
+              "resizeMode": "horizontal|vertical"
+            }
+          ]
+        }
+      ]
+    ],
+    "scheme": "towigo"
   }
 }

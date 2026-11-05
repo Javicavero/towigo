@@ -4,10 +4,9 @@ import { t } from '../i18n';
 import { PET_LEVEL_AT, useStore } from '../state/store';
 import type { PetLevel } from '../state/types';
 import { colors } from '../theme';
+import { Glyph } from './icons';
 import { useCountUp } from './motion';
 import { Card, ProgressBar, Row, T } from './ui';
-
-const BADGE: Record<PetLevel, string> = { 1: '🌱', 2: '🧭', 3: '🤝', 4: '🌟' };
 
 export default function BondCard({ compact }: { compact?: boolean }) {
   const { state, d } = useStore();
@@ -16,9 +15,7 @@ export default function BondCard({ compact }: { compact?: boolean }) {
   return (
     <Card tone="purple">
       <Row gap={12}>
-        <View style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: colors.purple, alignItems: 'center', justifyContent: 'center'}}>
-          <T v="title">{BADGE[d.petLevel]}</T>
-        </View>
+        <Glyph name="trophy" bg={colors.purple} size={40} />
         <View style={{ flex: 1 }}>
           <T v="small" color={colors.purple}>
             {t('bond.title', { owi: state.pet.name })}

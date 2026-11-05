@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import { GlucoseCard, HabitsCard } from '../components/cards';
 import BondCard from '../components/BondCard';
-import { Icon } from '../components/icons';
+import { Glyph, Icon, type IconName } from '../components/icons';
 import OwiAnimated from '../components/OwiAnimated';
 import OwiSticker from '../components/OwiSticker';
 import TrendChart from '../components/TrendChart';
@@ -37,20 +37,21 @@ export default function Progress() {
   const weeks = [...state.injections].sort((a, b) => a.at.localeCompare(b.at)).slice(-12);
 
   const achievements = [
-    { id: 'firstLog', done: d.habitsToday.log, emoji: '✍️' },
-    ...(glp1 ? [{ id: 'injections4', done: d.injectionWeeks >= 4, emoji: '💉' }] : []),
+    { id: 'firstLog', done: d.habitsToday.log, icon: 'plus' as IconName, bg: '#D9542F' },
+    ...(glp1 ? [{ id: 'injections4', done: d.injectionWeeks >= 4, icon: 'syringe' as IconName, bg: '#1E63C7' }] : []),
     ...(t2
       ? [
           {
             id: 'medsWeek',
             done: d.medsToday.length > 0 && d.medsToday.every((m) => m.taken),
-            emoji: '💊',
+            icon: 'pill' as IconName,
+            bg: '#17785A',
           },
         ]
       : []),
-    { id: 'lost5', done: d.lostPct >= 5, emoji: '⚖️' },
-    { id: 'week', done: d.streak >= 7, emoji: '🔥' },
-    { id: 'firstAudio', done: d.habitsToday.listen, emoji: '🎧' },
+    { id: 'lost5', done: d.lostPct >= 5, icon: 'scale' as IconName, bg: '#5B4BC4' },
+    { id: 'week', done: d.streak >= 7, icon: 'flame' as IconName, bg: '#D9542F' },
+    { id: 'firstAudio', done: d.habitsToday.listen, icon: 'headphones' as IconName, bg: '#1E63C7' },
   ];
 
   return (
@@ -255,7 +256,7 @@ export default function Progress() {
           <T v="h2">{t('progress.achievements')}</T>
           {achievements.map((a) => (
             <Row key={a.id} gap={12} style={{ minHeight: 48, opacity: a.done ? 1 : 0.55 }}>
-              <T v="title">{a.emoji}</T>
+              <Glyph name={a.icon} bg={a.done ? a.bg : colors.borderStrong} size={34} />
               <View style={{ flex: 1 }}>
                 <T v="label">{t(`ach.${a.id}`)}</T>
                 <T v="small" color={colors.secondary}>
@@ -283,7 +284,13 @@ export default function Progress() {
                   opacity: d.petLevel >= l ? 1 : 0.4,
                 }}
               >
-                {d.petLevel >= l ? <OwiSticker mood={LEVEL_MOOD[l]} size={48} /> : <T v="title">🔒</T>}
+                {d.petLevel >= l ? (
+                  <OwiSticker mood={LEVEL_MOOD[l]} size={48} />
+                ) : (
+                  <View style={{ height: 48, justifyContent: 'center' }}>
+                    <Icon name="lock" size={26} color={colors.borderStrong} />
+                  </View>
+                )}
                 <T v="small" center>
                   {t(`bond.lv${l}`)}
                 </T>
@@ -303,7 +310,7 @@ export default function Progress() {
           <T v="h2">{t('progress.avatarRewards')}</T>
           {ACCESSORIES.map((a) => (
             <Row key={a.id} gap={12} style={{ minHeight: 44 }}>
-              <T v="title">{d.unlocked[a.id] ? a.emoji : '🔒'}</T>
+              <Glyph name={d.unlocked[a.id] ? 'trophy' : 'lock'} bg={d.unlocked[a.id] ? colors.achievement : colors.borderStrong} size={34} />
               <View style={{ flex: 1 }}>
                 <T v="label">{t(`acc.${a.id}`)}</T>
                 <T v="small" color={colors.secondary}>

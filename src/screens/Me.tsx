@@ -7,8 +7,12 @@ import { Pressable, ScrollView, TextInput, View } from 'react-native';
 import AvatarBadge from '../components/AvatarBadge';
 import AvatarEditor from '../components/AvatarEditor';
 import DexcomCard from '../components/DexcomCard';
+import { Glyph } from '../components/icons';
 import OwiAnimated from '../components/OwiAnimated';
+import OwiSticker from '../components/OwiSticker';
 import PlanSettings from '../components/PlanSettings';
+import { buildWidgetSnapshot } from '../widgets/snapshot';
+import WidgetPreview from '../widgets/WidgetPreview';
 import { Button, Card, Choice, Disclosure, Row, Screen, SectionTitle, T } from '../components/ui';
 import { APP_NAME, FLAGS } from '../config';
 import { ACCESSORIES } from '../data/avatarOptions';
@@ -17,8 +21,7 @@ import { useStore } from '../state/store';
 import { hasT2, usesGlp1, type Profile, type ReminderKind, type Scenario, type TextScale } from '../state/types';
 import { colors, fonts, MIN_TOUCH } from '../theme';
 
-type Section = 'avatar' | 'owi' | 'profile' | 'plan' | 'sensor' | 'text' | 'privacy' | 'demo';
-const Emoji = ({ c }: { c: string }) => <T v="label">{c}</T>;
+type Section = 'avatar' | 'owi' | 'widgets' | 'profile' | 'plan' | 'sensor' | 'text' | 'privacy' | 'demo';
 const SCENARIOS: Scenario[] = ['normal', 'injectionDay', 'missedInjection', 'sideEffects', 'plateau', 'milestone', 'highGlucose', 'lowGlucose', 'night'];
 const DEMO_REMINDERS: ReminderKind[] = ['injection', 'meds', 'weigh', 'meal', 'sport', 'water'];
 
@@ -49,7 +52,7 @@ export default function Me() {
       </Card>
 
       <SectionTitle>{t('me.personal')}</SectionTitle>
-      <Disclosure icon={<Emoji c="🙂" />} title={t('me.avatarTitle')} subtitle={t('me.avatarSub')} open={open === 'avatar'} onToggle={() => toggle('avatar')}>
+      <Disclosure icon={<Glyph name="user" bg="#5F6670" />} title={t('me.avatarTitle')} subtitle={t('me.avatarSub')} open={open === 'avatar'} onToggle={() => toggle('avatar')}>
         <AvatarEditor />
         <T v="label">{t('me.accessories')}</T>
         {ACCESSORIES.map((a) => {
@@ -75,7 +78,7 @@ export default function Me() {
           );
         })}
       </Disclosure>
-      <Disclosure icon={<Emoji c="🦔" />} tint={colors.softYellow} title={t('me.petTitle', { owi: state.pet.name })} subtitle={t('me.petSub', { n: d.petLevel })} open={open === 'owi'} onToggle={() => toggle('owi')}>
+      <Disclosure icon={<OwiSticker mood="happy" size={34} />} title={t('me.petTitle', { owi: state.pet.name })} subtitle={t('me.petSub', { n: d.petLevel })} open={open === 'owi'} onToggle={() => toggle('owi')}>
         <Row gap={12}>
           <OwiAnimated mood="happy" level={d.petLevel} size={80} />
           <T v="small" color={colors.secondary} style={{ flex: 1 }}>
@@ -89,7 +92,14 @@ export default function Me() {
           style={{ minHeight: MIN_TOUCH, borderRadius: 10, borderWidth: 1, borderColor: colors.borderStrong, backgroundColor: colors.white, paddingHorizontal: 14, fontSize: 17, fontFamily: fonts.medium, color: colors.ink }}
         />
       </Disclosure>
-      <Disclosure icon={<Emoji c="🩺" />} tint={colors.softBlue} title={t('me.profileTitle')} subtitle={t(`profile.short.${state.profile}`)} open={open === 'profile'} onToggle={() => toggle('profile')}>
+      <Disclosure icon={<Glyph name="widget" bg="#5B4BC4" />} title={t('me.widgets')} subtitle={t('me.widgetsSub')} open={open === 'widgets'} onToggle={() => toggle('widgets')}>
+        <WidgetPreview s={buildWidgetSnapshot(state, d)} />
+        <T v="small">{t('me.widgetsHow')}</T>
+        <T v="small" color={colors.secondary}>
+          {t('me.widgetsNote')}
+        </T>
+      </Disclosure>
+      <Disclosure icon={<Glyph name="steth" bg="#1E63C7" />} title={t('me.profileTitle')} subtitle={t(`profile.short.${state.profile}`)} open={open === 'profile'} onToggle={() => toggle('profile')}>
         <Row gap={8} style={{ flexWrap: 'wrap' }}>
           {(['t2', 'glp1', 't2_glp1'] as Profile[]).map((p) => (
             <Choice key={p} label={t(`profile.short.${p}`)} selected={state.profile === p} onPress={() => dispatch({ type: 'setProfile', profile: p })} />
@@ -101,24 +111,24 @@ export default function Me() {
       </Disclosure>
 
       <SectionTitle>{t('me.treatment')}</SectionTitle>
-      <Disclosure icon={<Emoji c="⏰" />} tint={colors.softCoral} title={t('plan.title')} subtitle={t('me.planSub')} open={open === 'plan'} onToggle={() => toggle('plan')}>
+      <Disclosure icon={<Glyph name="clock" bg="#D9542F" />} title={t('plan.title')} subtitle={t('me.planSub')} open={open === 'plan'} onToggle={() => toggle('plan')}>
         <PlanSettings />
       </Disclosure>
       {(state.sensor === 'dexcom' || state.sensor === 'libre') && (
-        <Disclosure icon={<Emoji c="📡" />} tint={colors.softBlue} title={t('me.sensorTitle')} subtitle={t(`sensor.${state.sensor}`)} open={open === 'sensor'} onToggle={() => toggle('sensor')}>
+        <Disclosure icon={<Glyph name="signal" bg="#1E63C7" />} title={t('me.sensorTitle')} subtitle={t(`sensor.${state.sensor}`)} open={open === 'sensor'} onToggle={() => toggle('sensor')}>
           <DexcomCard />
         </Disclosure>
       )}
 
       <SectionTitle>{t('me.app')}</SectionTitle>
-      <Disclosure icon={<Emoji c="🔠" />} tint={colors.line} title={t('me.textSize')} subtitle={t(`me.size.${state.textScale}`)} open={open === 'text'} onToggle={() => toggle('text')}>
+      <Disclosure icon={<Glyph name="textSize" bg="#5F6670" />} title={t('me.textSize')} subtitle={t(`me.size.${state.textScale}`)} open={open === 'text'} onToggle={() => toggle('text')}>
         <Row gap={8}>
           {([1, 1.2, 1.4] as TextScale[]).map((s) => (
             <Choice key={s} style={{ flex: 1 }} label={t(`me.size.${s}`)} selected={state.textScale === s} onPress={() => dispatch({ type: 'setTextScale', scale: s })} />
           ))}
         </Row>
       </Disclosure>
-      <Disclosure icon={<Emoji c="🔒" />} tint={colors.softGreen} title={t('me.privacy')} subtitle={t('me.privacySub')} open={open === 'privacy'} onToggle={() => toggle('privacy')}>
+      <Disclosure icon={<Glyph name="lock" bg="#17785A" />} title={t('me.privacy')} subtitle={t('me.privacySub')} open={open === 'privacy'} onToggle={() => toggle('privacy')}>
         <T v="small" color={colors.secondary}>
           {t('me.privacyNote')}
         </T>
@@ -154,7 +164,7 @@ export default function Me() {
       </Disclosure>
 
       {FLAGS.demoScenarios && (
-        <Disclosure icon={<Emoji c="🎬" />} tint={colors.softPurple} title={t('demo.section')} subtitle={t('demo.sectionSub')} open={open === 'demo'} onToggle={() => toggle('demo')}>
+        <Disclosure icon={<Glyph name="demo" bg="#5B4BC4" />} title={t('demo.section')} subtitle={t('demo.sectionSub')} open={open === 'demo'} onToggle={() => toggle('demo')}>
           <T v="label">{t('demo.profile')}</T>
           <Row gap={8} style={{ flexWrap: 'wrap' }}>
             {(['glp1', 't2', 't2_glp1'] as Profile[]).map((p) => (

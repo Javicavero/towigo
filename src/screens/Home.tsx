@@ -10,7 +10,7 @@ import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AvatarBadge from '../components/AvatarBadge';
 import { SummaryGrid, TodayList } from '../components/today';
-import { Icon } from '../components/icons';
+import { Glyph, Icon, type IconName } from '../components/icons';
 import { Burst, FadeIn, Pop } from '../components/motion';
 import OwiAnimated from '../components/OwiAnimated';
 import SpeechBubble from '../components/SpeechBubble';
@@ -22,13 +22,13 @@ import { useStore } from '../state/store';
 import { usesGlp1, type PetMood, type ReminderKind } from '../state/types';
 import { colors, radius } from '../theme';
 
-const REMINDER_ICON: Record<ReminderKind, string> = {
-  injection: '💉',
-  meds: '💊',
-  weigh: '⚖️',
-  meal: '🍽️',
-  sport: '👟',
-  water: '💧',
+const REMINDER_ICON: Record<ReminderKind, [IconName, string]> = {
+  injection: ['syringe', '#1E63C7'],
+  meds: ['pill', '#17785A'],
+  weigh: ['scale', '#5B4BC4'],
+  meal: ['meal', '#D9542F'],
+  sport: ['walk', '#17785A'],
+  water: ['drop', '#1E63C7'],
 };
 const POKE_LINES = 4;
 
@@ -198,7 +198,7 @@ export default function Home() {
               </LinearGradient>
               <View style={{ padding: 12, paddingTop: 0 }}>
                 <Pop trigger={message}>
-                  <SpeechBubble text={message} name={owi} icon={reminder ? REMINDER_ICON[reminder.kind] : undefined} arrow="center">
+                  <SpeechBubble text={message} name={owi} icon={reminder ? <Glyph name={REMINDER_ICON[reminder.kind][0]} bg={REMINDER_ICON[reminder.kind][1]} size={30} /> : undefined} arrow="center">
                     {reminder && (
                       <Row gap={8} style={{ marginTop: 10 }}>
                         <Button

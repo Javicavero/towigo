@@ -28,7 +28,7 @@ const MOTION: Record<PetMood, Motion> = {
 
 /** Tamaño según la evolución (crece con el vínculo). */
 const LEVEL_SCALE: Record<PetLevel, number> = { 1: 0.82, 2: 0.9, 3: 0.96, 4: 1 };
-const LEVEL_BADGE: Record<PetLevel, string | null> = { 1: null, 2: '🧣', 3: '🧢', 4: '🏅' };
+
 
 export default function OwiAnimated({
   mood,
@@ -93,7 +93,6 @@ export default function OwiAnimated({
   transforms.push({ rotate: wiggle.interpolate({ inputRange: [-1, 1], outputRange: ['-12deg', '12deg'] }) });
 
   const s = size * LEVEL_SCALE[level];
-  const badge = LEVEL_BADGE[level];
   return (
     <Pressable
       accessibilityRole={onPress ? 'button' : 'image'}
@@ -114,11 +113,6 @@ export default function OwiAnimated({
       {/* sombra en el suelo */}
       <View style={{ position: 'absolute', bottom: size * 0.02, width: s * 0.55, height: s * 0.07, borderRadius: s, backgroundColor: 'rgba(30,42,50,0.10)' }} />
       <Animated.Image key={mood} source={OWI_STICKERS[mood]} resizeMode="contain" style={{ width: s, height: s, transform: transforms }} />
-      {badge && (
-        <View style={{ position: 'absolute', right: size * 0.06, bottom: size * 0.06, backgroundColor: '#FFFFFF', borderRadius: 16, paddingHorizontal: 6, paddingVertical: 2, borderWidth: 2, borderColor: '#EFE9FF' }}>
-          <Animated.Text style={{ fontSize: size * 0.1 }}>{badge}</Animated.Text>
-        </View>
-      )}
     </Pressable>
   );
 }

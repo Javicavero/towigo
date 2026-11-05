@@ -20,8 +20,8 @@ const hhmm = (t0: string) => new Date(t0).toLocaleTimeString('es-ES', { hour: '2
 function Header({ icon, tone, title, right }: { icon: IconName | string; tone: string; title: string; right?: React.ReactNode }) {
   return (
     <Row gap={10}>
-      <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: tone, alignItems: 'center', justifyContent: 'center' }}>
-        {icon.length <= 2 ? <T v="h2">{icon}</T> : <Icon name={icon as IconName} size={22} color={colors.white} />}
+      <View style={{ width: 34, height: 34, borderRadius: 9, backgroundColor: tone, alignItems: 'center', justifyContent: 'center' }}>
+        <Icon name={icon as IconName} size={22} color={colors.white} stroke={2.3} />
       </View>
       <T v="h2" style={{ flex: 1 }}>
         {title}
@@ -40,7 +40,7 @@ export function InjectionCard() {
   const title = done ? t('inj.doneToday') : d.injectionOverdue ? t('inj.overdueTitle') : days === 0 ? t('inj.today') : days === 1 ? t('inj.tomorrow') : t('inj.inDays', { n: days });
   return (
     <Card tone={done ? 'green' : days === 0 || d.injectionOverdue ? 'yellow' : 'white'}>
-      <Header icon="💉" tone={colors.softBlue} title={t('inj.title')} />
+      <Header icon="syringe" tone="#1E63C7" title={t('inj.title')} />
       <T v="small" color={colors.blue}>
         {t('inj.weeks', { n: d.injectionWeeks })}
       </T>
@@ -59,7 +59,7 @@ export function InjectionCard() {
       )}
       <Row gap={8} style={{ flexWrap: 'wrap' }}>
         <View style={{ backgroundColor: colors.softCoral, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 6 }}>
-          <T v="small">📍 {t('inj.nextSite', { site: t(`site.${d.suggestedSite}`) })}</T>
+          <T v="small">{t('inj.nextSite', { site: t(`site.${d.suggestedSite}`) })}</T>
         </View>
         {d.lastInjection && (
           <View style={{ backgroundColor: colors.line, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 6 }}>
@@ -84,7 +84,7 @@ export function WeightCard({ compact }: { compact?: boolean }) {
   const progress = startToGoal > 0 ? Math.min(100, ((startToGoal - Math.max(0, toGoal)) / startToGoal) * 100) : 0;
   return (
     <Card>
-      <Header icon="⚖️" tone={colors.softPurple} title={t('weight.title')} right={<T v="h2">{fmt1(d.weightNow)} kg</T>} />
+      <Header icon="scale" tone="#5B4BC4" title={t('weight.title')} right={<T v="h2">{fmt1(d.weightNow)} kg</T>} />
       <Row gap={8} style={{ flexWrap: 'wrap' }}>
         <View style={{ backgroundColor: colors.softGreen, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 6 }}>
           <T v="label" color={colors.greenText}>
@@ -93,7 +93,7 @@ export function WeightCard({ compact }: { compact?: boolean }) {
         </View>
         {d.musclePct !== null && !compact && (
           <View style={{ backgroundColor: colors.softBlue, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 6 }}>
-            <T v="small">💪 {t('weight.muscle', { n: fmt1(d.musclePct) })}</T>
+            <T v="small">{t('weight.muscle', { n: fmt1(d.musclePct) })}</T>
           </View>
         )}
       </Row>
@@ -130,7 +130,7 @@ export function GlucoseCard() {
   const c = STATUS_COLOR[d.glucoseStatus];
   return (
     <Card>
-      <Header icon="🩸" tone={colors.softCoral} title={t('glu.title')} right={<T v="label" color={colors.greenText}>{t('glu.inTarget', { n: d.glucoseInTargetPct })}</T>} />
+      <Header icon="drop" tone="#C8372D" title={t('glu.title')} right={<T v="label" color={colors.greenText}>{t('glu.inTarget', { n: d.glucoseInTargetPct })}</T>} />
       {g ? (
         <View accessible accessibilityLabel={t('glu.a11y', { v: g.v, ctx: t(`ctx.${g.context}`), status: t(`gstatus.${d.glucoseStatus}`) })} style={{ gap: 6 }}>
           <Row gap={8} style={{ alignItems: 'flex-end' }}>
@@ -163,7 +163,6 @@ export function GlucoseCard() {
       </Row>
       {d.hba1cNow !== null && (
         <Row gap={10} style={{ backgroundColor: colors.softYellow, borderRadius: 14, padding: 10 }}>
-          <T v="title">🧪</T>
           <View style={{ flex: 1 }}>
             <T v="label">{t('glu.hba1c', { v: fmt1(d.hba1cNow) })}</T>
             {d.hba1cPrev !== null && (
@@ -186,7 +185,7 @@ export function MedsCard() {
   const taken = d.medsToday.filter((m) => m.taken).length;
   return (
     <Card>
-      <Header icon="💊" tone={colors.softGreen} title={t('meds.title')} right={<T v="label" color={colors.greenText}>{taken}/{d.medsToday.length}</T>} />
+      <Header icon="pill" tone="#17785A" title={t('meds.title')} right={<T v="label" color={colors.greenText}>{taken}/{d.medsToday.length}</T>} />
       {d.medsToday.map((m) => (
         <Bouncy
           key={`${m.med.id}${m.time}`}
@@ -223,7 +222,7 @@ export function SideEffectsCard() {
   const today = d.sideEffectsToday[0];
   return (
     <Card tone={d.worstSymptomToday >= 2 ? 'coral' : 'white'}>
-      <Header icon="🫶" tone={colors.softYellow} title={t('se.title')} />
+      <Header icon="heart" tone="#B7791F" title={t('se.title')} />
       {today ? (
         <>
           <T>{t('se.todayYouSaid', { list: today.symptoms.map((s) => t(`sym.${s.id}`).toLowerCase()).join(', ') })}</T>
@@ -255,7 +254,7 @@ export function IntakeCard() {
   const w = Math.min(100, (d.waterToday / state.goals.waterGlasses) * 100);
   return (
     <Card>
-      <Header icon="🍗" tone={colors.softCoral} title={t('intake.title')} />
+      <Header icon="protein" tone="#D9542F" title={t('intake.title')} />
       <View style={{ gap: 6 }}>
         <Row style={{ justifyContent: 'space-between' }}>
           <T v="label">{t('intake.protein')}</T>

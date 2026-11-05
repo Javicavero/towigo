@@ -8,6 +8,7 @@ import { t } from '../i18n';
 import { backendConfigured, dexcomDisconnect, dexcomStart } from '../services/backend';
 import { useStore } from '../state/store';
 import { colors } from '../theme';
+import { Glyph } from './icons';
 import { Button, Row, T } from './ui';
 
 export default function DexcomCard() {
@@ -44,9 +45,7 @@ export default function DexcomCard() {
   return (
     <View style={{ gap: 10 }}>
       <Row gap={10}>
-        <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.softGreen, alignItems: 'center', justifyContent: 'center' }}>
-          <T v="h2">📡</T>
-        </View>
+        <Glyph name="signal" bg="#1E63C7" />
         <View style={{ flex: 1 }}>
           <T v="h2">Dexcom</T>
           <T v="small" color={live ? colors.greenText : colors.secondary}>

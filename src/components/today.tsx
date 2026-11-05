@@ -11,10 +11,10 @@ import { useStore } from '../state/store';
 import { hasT2, usesGlp1 } from '../state/types';
 import { colors, radius } from '../theme';
 import { Pressable } from 'react-native';
+import { Glyph } from './icons';
 import { tap } from './motion';
 import { ListGroup, ListRow, T } from './ui';
 
-const Emoji = ({ c }: { c: string }) => <T v="label">{c}</T>;
 const fmt1 = (n: number) => n.toFixed(1).replace('.', ',');
 
 export function TodayList() {
@@ -31,8 +31,7 @@ export function TodayList() {
     rows.push(
       <ListRow
         key="inj"
-        icon={<Emoji c="💉" />}
-        tint={colors.softBlue}
+        icon={<Glyph name="syringe" bg="#1E63C7" />}
         title={d.injectedToday ? t('today.injDone') : d.injectionOverdue ? t('today.injOverdue') : t('today.inj')}
         subtitle={d.injectedToday ? undefined : t('inj.nextSite', { site: t(`site.${d.suggestedSite}`) })}
         done={d.injectedToday}
@@ -44,7 +43,7 @@ export function TodayList() {
     rows.push(
       <ListRow
         key="meds"
-        icon={<Emoji c="💊" />}
+        icon={<Glyph name="pill" bg="#17785A" />}
         title={t('today.meds')}
         subtitle={t('today.medsSub', { a: taken, b: d.medsToday.length })}
         done={taken === d.medsToday.length}
@@ -55,15 +54,14 @@ export function TodayList() {
   if (t2) {
     const measured = state.glucose.some((g) => g.at.slice(0, 10) === today);
     rows.push(
-      <ListRow key="glu" icon={<Emoji c="🩸" />} tint={colors.softCoral} title={t('today.glucose')} done={measured} onPress={() => go('log', 'glucose')} />,
+      <ListRow key="glu" icon={<Glyph name="drop" bg="#C8372D" />} title={t('today.glucose')} done={measured} onPress={() => go('log', 'glucose')} />,
     );
   }
   if (glp1)
     rows.push(
       <ListRow
         key="se"
-        icon={<Emoji c="🫶" />}
-        tint={colors.softYellow}
+        icon={<Glyph name="heart" bg="#B7791F" />}
         title={t('today.feel')}
         subtitle={d.sideEffectsToday.length ? undefined : t('today.feelSub')}
         done={d.sideEffectsToday.length > 0}
@@ -72,14 +70,13 @@ export function TodayList() {
     );
   if (state.plan.weigh.enabled && state.plan.weigh.weekday === weekday) {
     const weighed = state.weights.some((w) => w.at.slice(0, 10) === today);
-    rows.push(<ListRow key="w" icon={<Emoji c="⚖️" />} tint={colors.softPurple} title={t('today.weigh')} done={weighed} onPress={() => go('log', 'weight')} />);
+    rows.push(<ListRow key="w" icon={<Glyph name="scale" bg="#5B4BC4" />} title={t('today.weigh')} done={weighed} onPress={() => go('log', 'weight')} />);
   }
   if (glp1)
     rows.push(
       <ListRow
         key="p"
-        icon={<Emoji c="🍗" />}
-        tint={colors.softCoral}
+        icon={<Glyph name="protein" bg="#D9542F" />}
         title={t('today.protein')}
         subtitle={t('today.proteinSub', {
           a: d.proteinToday,
@@ -93,8 +90,7 @@ export function TodayList() {
     rows.push(
       <ListRow
         key="a"
-        icon={<Emoji c="🎧" />}
-        tint={colors.softBlue}
+        icon={<Glyph name="headphones" bg="#1E63C7" />}
         title={t('today.audio', {
           who: TEAM[unread.from as keyof typeof TEAM].short,
         })}

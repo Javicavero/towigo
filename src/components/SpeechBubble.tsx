@@ -16,7 +16,7 @@ export default function SpeechBubble({
 }: {
   text: string;
   name?: string;
-  icon?: string;
+  icon?: ReactNode;
   children?: ReactNode;
   arrow?: 'left' | 'center' | 'right';
   /** Emoción de Owi: muestra su ilustración junto al nombre. */
@@ -49,7 +49,7 @@ export default function SpeechBubble({
           </Row>
         ) : null}
         <Row gap={10} style={{ alignItems: 'flex-start' }}>
-          {icon ? <T v="title">{icon}</T> : null}
+          {icon ?? null}
           <T v="h2" style={{ flex: 1 }}>
             {text}
           </T>

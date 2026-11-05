@@ -260,7 +260,7 @@ export function ListGroup({ children }: { children: ReactNode }) {
 /** Fila de lista: icono, título, subtítulo y a la derecha una marca de hecho o una flecha. */
 export function ListRow({
   icon,
-  tint = colors.softGreen,
+  tint,
   title,
   subtitle,
   done,
@@ -286,7 +286,7 @@ export function ListRow({
       }}
       style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, paddingVertical: 12, minHeight: 60, backgroundColor: pressed ? '#F5F5F7' : 'transparent' })}
     >
-      <View style={{ width: 34, height: 34, borderRadius: 9, backgroundColor: tint, alignItems: 'center', justifyContent: 'center' }}>{icon}</View>
+      <View style={{ width: 34, height: 34, borderRadius: 9, backgroundColor: tint ?? 'transparent', alignItems: 'center', justifyContent: 'center' }}>{icon}</View>
       <View style={{ flex: 1 }}>
         <T v="label" color={done ? colors.secondary : colors.ink} style={done ? { textDecorationLine: 'line-through' } : undefined}>
           {title}
