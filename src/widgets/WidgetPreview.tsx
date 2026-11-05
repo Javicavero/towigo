@@ -8,6 +8,7 @@ import { Image, Text, View } from 'react-native';
 import { OWI_STICKERS } from '../components/OwiSticker';
 import { t } from '../i18n';
 import { fonts } from '../theme';
+import type { LiveActivity } from './liveActivity';
 import type { WidgetSnapshot } from './snapshot';
 
 const INK = '#1C1C1E';
@@ -75,7 +76,56 @@ function Lock({ s }: { s: WidgetSnapshot }) {
   );
 }
 
-export default function WidgetPreview({ s }: { s: WidgetSnapshot }) {
+const TONE = { green: '#2BB58A', coral: '#FF8A65', low: '#FF6B5E' } as const;
+
+/** Dynamic Island (compacta y ampliada), Live Activity en bloqueo y Apple Watch. */
+function Live({ la, owiName }: { la: NonNullable<LiveActivity>; owiName: string }) {
+  const st = la.state;
+  const mood = st.mood as keyof typeof OWI_STICKERS;
+  const c = TONE[st.tone];
+  return (
+    <View style={{ gap: 10, alignItems: 'center', width: '100%' }}>
+      {/* Isla compacta */}
+      <View style={{ height: 36, width: 230, borderRadius: 18, backgroundColor: '#000', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 8 }}>
+        <Image source={OWI_STICKERS[mood]} style={{ width: 26, height: 26 }} resizeMode="contain" />
+        <Text style={{ fontFamily: fonts.bold, fontSize: 14, color: c }}>{st.value}</Text>
+      </View>
+      {/* Isla ampliada */}
+      <View style={{ width: 320, borderRadius: 36, backgroundColor: '#000', padding: 14, gap: 6 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Image source={OWI_STICKERS[mood]} style={{ width: 52, height: 52 }} resizeMode="contain" />
+          <Text style={{ fontFamily: fonts.bold, fontSize: 24, color: c }}>{st.value}</Text>
+        </View>
+        <Text style={{ fontFamily: fonts.semibold, fontSize: 15, color: '#FFF' }}>{st.title}</Text>
+        <Text style={{ fontFamily: fonts.regular, fontSize: 13, color: '#B0B0B5' }}>{st.detail}</Text>
+      </View>
+      {/* Bloqueo */}
+      <View style={{ width: 320, borderRadius: 22, backgroundColor: '#FFF', padding: 12, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+        <Image source={OWI_STICKERS[mood]} style={{ width: 56, height: 56 }} resizeMode="contain" />
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontFamily: fonts.semibold, fontSize: 12, color: GREEN }}>{owiName}</Text>
+          <Text style={{ fontFamily: fonts.semibold, fontSize: 15, color: INK }}>{st.title}</Text>
+          <Text numberOfLines={1} style={{ fontFamily: fonts.regular, fontSize: 12, color: SUB }}>
+            {st.detail}
+          </Text>
+        </View>
+        <Text style={{ fontFamily: fonts.bold, fontSize: 22, color: st.tone === 'green' ? GREEN : st.tone === 'low' ? '#B3261E' : '#D9542F' }}>{st.value}</Text>
+      </View>
+      {/* Apple Watch (Smart Stack) */}
+      <View style={{ width: 176, height: 96, borderRadius: 30, backgroundColor: '#000', borderWidth: 4, borderColor: '#2C2C2E', padding: 10, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+        <Image source={OWI_STICKERS[mood]} style={{ width: 40, height: 40 }} resizeMode="contain" />
+        <View style={{ flex: 1 }}>
+          <Text numberOfLines={1} style={{ fontFamily: fonts.semibold, fontSize: 11, color: '#FFF' }}>
+            {st.title}
+          </Text>
+          <Text style={{ fontFamily: fonts.bold, fontSize: 18, color: c }}>{st.value}</Text>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+export default function WidgetPreview({ s, la }: { s: WidgetSnapshot; la?: LiveActivity }) {
   const label = (txt: string) => <Text style={{ fontFamily: fonts.semibold, fontSize: 12, color: 'rgba(255,255,255,0.9)', alignSelf: 'flex-start' }}>{txt}</Text>;
   return (
     <LinearGradient colors={['#2E5E7E', '#3F8F7A', '#7FBF9A']} style={{ borderRadius: 20, padding: 14, gap: 10, alignItems: 'center' }}>
@@ -86,6 +136,8 @@ export default function WidgetPreview({ s }: { s: WidgetSnapshot }) {
         <Small s={s} />
         <Medium s={s} />
       </View>
+      {label(t('widget.live'))}
+      {la ? <Live la={la} owiName={s.owiName} /> : <Text style={{ fontFamily: fonts.regular, fontSize: 13, color: '#FFFFFF', textAlign: 'center' }}>{t('widget.liveNone')}</Text>}
     </LinearGradient>
   );
 }

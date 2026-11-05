@@ -65,3 +65,19 @@ export function consumeDexcomReturn(): string | null {
   window.history.replaceState(null, '', u.toString());
   return r;
 }
+
+/**
+ * Chat con Owi (IA en el servidor, con las reglas de la Fase 1). Solo se usa si el backend está activado;
+ * si falla, el chat sigue funcionando con el "cerebro" local (src/owi/brain.ts).
+ */
+export async function owiAsk(message: string, context: Record<string, unknown>, history: { from: 'me' | 'owi'; text: string }[]): Promise<string> {
+  const { reply } = await call<{ reply: string }>('owi-chat', { message, context, history: history.slice(-10) });
+  return reply;
+}
+
+export type FoodEstimate = { items: { name: string; portion: string }[]; carbs_g: number; protein_g: number; confidence: 'baja' | 'media' | 'alta'; note: string };
+
+/** Foto o descripción de comida → estimación aproximada (IA en el servidor). */
+export async function foodEstimate(input: { imageBase64?: string; mediaType?: string; description?: string }): Promise<FoodEstimate> {
+  return call('food-estimate', input);
+}

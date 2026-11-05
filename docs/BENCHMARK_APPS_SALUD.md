@@ -38,8 +38,24 @@ _Noviembre 2026. Respeta los límites de la Fase 1: sin cálculo ni sugerencia d
 
 Siguiente sprint: **1 (informe PDF), 2 (proteína y fuerza), 4 (escalado pautado) y 6 (programa de constancia)**. Son las que más diferencian a Towigo de MeAgain y del resto, y son seguras en la Fase 1.
 
+## Gluroo (tipo 1): lo que hemos copiado y adaptado
+
+| Lo que hace bien Gluroo | En Towigo |
+|---|---|
+| Registrar escribiendo como en un chat ("dosed 2u 15m ago") | Chat con Owi que entiende "4 u de rápida hace 15 min", "45 g de carbos", "peso 98,5" y pide confirmación |
+| GluCrew: varias personas acompañan y apuntan | "Tu gente" con permisos (resumen, apuntar por ti, "Necesito ayuda") y ánimos a través de Owi |
+| Foto de la comida → carbohidratos, proteína… | Foto o descripción → estimación aproximada y editable; la nutricionista puede revisarla |
+| Gráfica con glucosa, insulina y comidas juntas; vista por días | "Tu día en una gráfica" + lista del día |
+| Glucosa en bloqueo, Live Activity y Apple Watch | Live Activity de Owi (bloqueo, Dynamic Island, Smart Stack del reloj) |
+| Soporte para profesionales | Informe PDF para la consulta con preguntas del paciente |
+
+Lo que **no** copiamos por la Fase 1: insulina activa (IOB), alertas automáticas de glucosa y cualquier cálculo de dosis.
+
+Fuentes: https://gluroo.com · https://www.healthline.com/healthy/gluroo-the-simplest-yet-most-comprehensive-diabetes-tool-you-may-ever-need · https://gluroo.com/?p=3410 · https://gluroo.com/home-pmh/
+
 ## Estado
 
+- Hechas en la versión 0.10: chat con Owi, check-in emocional, Tu gente, foto de comida, modo mantenimiento, Live Activity y Apple Watch, y el perfil tipo 1.
 - Hechas en la versión 0.9: 1 (informe PDF), 2 (proteína y fuerza), 4 (pauta de escalado) y 6 (programa de constancia).
 
 ## Fuentes

@@ -15,12 +15,13 @@ import { APP_NAME, DEFAULT_AVATAR_NAME } from '../config';
 import { TEAM } from '../data/mock';
 import { t } from '../i18n';
 import { useStore } from '../state/store';
-import { hasT2, usesGlp1, type Glp1Drug, type PetMood, type Profile, type SensorId } from '../state/types';
+import { hasDiabetes, usesGlp1, type Glp1Drug, type PetMood, type Profile, type SensorId } from '../state/types';
 import { colors, fonts, MIN_TOUCH, radius } from '../theme';
 
 const STEPS = ['hello', 'name', 'owiName', 'profile', 'treatment', 'avatar', 'consent', 'team', 'commit'] as const;
 type Step = (typeof STEPS)[number];
 const PROFILES: { id: Profile; icon: IconName; bg: string }[] = [
+  { id: 't1', icon: 'signal', bg: '#5B4BC4' },
   { id: 't2', icon: 'drop', bg: '#C8372D' },
   { id: 'glp1', icon: 'syringe', bg: '#1E63C7' },
   { id: 't2_glp1', icon: 'steth', bg: '#17785A' },
@@ -80,7 +81,7 @@ export default function Onboarding() {
   const [consents, setConsents] = useState(state.consents);
   const owi = state.pet.name || DEFAULT_AVATAR_NAME;
   const glp1 = usesGlp1(state.profile);
-  const t2 = hasT2(state.profile);
+  const t2 = hasDiabetes(state.profile);
 
   const bubble: Record<Step, string> = {
     hello: t('onb.hello', { app: APP_NAME }),

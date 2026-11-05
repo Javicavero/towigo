@@ -8,7 +8,7 @@ import { STEPS_TODAY, TEAM } from '../data/mock';
 import { t } from '../i18n';
 import { useNav } from '../nav';
 import { useStore } from '../state/store';
-import { hasT2, usesGlp1 } from '../state/types';
+import { hasDiabetes, isT1, usesGlp1 } from '../state/types';
 import { colors, radius } from '../theme';
 import { Pressable } from 'react-native';
 import { Glyph } from './icons';
@@ -21,7 +21,7 @@ export function TodayList() {
   const { state, d } = useStore();
   const { go } = useNav();
   const glp1 = usesGlp1(state.profile);
-  const t2 = hasT2(state.profile);
+  const t2 = hasDiabetes(state.profile);
   const weekday = (new Date().getDay() + 6) % 7;
   const today = new Date().toISOString().slice(0, 10);
   const unread = state.messages.find((m) => !m.read && m.kind === 'audio' && m.from !== 'patient' && m.from !== 'owi');
@@ -51,7 +51,18 @@ export function TodayList() {
       />,
     );
   }
-  if (t2) {
+  if (isT1(state.profile))
+    rows.push(
+      <ListRow
+        key="basal"
+        icon={<Glyph name="clock" bg="#5B4BC4" />}
+        title={t('today.basal', { name: state.insulinPlan.basalName })}
+        subtitle={d.basalToday ? undefined : t('today.basalSub', { time: state.insulinPlan.basalTime })}
+        done={d.basalToday}
+        onPress={d.basalToday ? undefined : () => go('log', 'insulin')}
+      />,
+    );
+  if (t2 && !isT1(state.profile)) {
     const measured = state.glucose.some((g) => g.at.slice(0, 10) === today);
     rows.push(
       <ListRow key="glu" icon={<Glyph name="drop" bg="#C8372D" />} title={t('today.glucose')} done={measured} onPress={() => go('log', 'glucose')} />,
@@ -168,9 +179,14 @@ export function SummaryGrid() {
   const { state, d } = useStore();
   const { go } = useNav();
   const glp1 = usesGlp1(state.profile);
-  const t2 = hasT2(state.profile);
+  const t2 = hasDiabetes(state.profile);
   const tiles: React.ReactNode[] = [];
-  if (t2 && d.lastGlucose)
+  if (isT1(state.profile)) {
+    tiles.push(<Tile key="tir" label={t('sum.tir')} color={colors.greenText} value={`${d.tir24}`} unit="%" sub={t('sum.tirSub', { avg: d.avg24 ?? '—' })} onPress={() => go('progress')} />);
+    tiles.push(<Tile key="ins" label={t('sum.insulin')} color={colors.blue} value={String(d.rapidTodayU)} unit="u" sub={d.basalToday ? t('sum.basalDone') : t('sum.basalPending')} onPress={() => go('log', 'insulin')} />);
+    tiles.push(<Tile key="carb" label={t('sum.carbs')} color={colors.coralText} value={String(d.carbsToday)} unit="g" sub={t('sum.carbsSub')} onPress={() => go('log', 'carbs')} />);
+  }
+  if (t2 && d.lastGlucose && !isT1(state.profile))
     tiles.push(
       <Tile
         key="glu"

@@ -68,6 +68,15 @@ La web de Towigo se publica sola en **GitHub Pages** cada vez que se sube códig
   confirmaremos al probarla. Para las alarmas, el sensor y su app oficial siguen mandando.
 - Clarity no tiene conexión propia: lo que ves en Clarity sale de la misma nube de Dexcom.
 
+## 5. Activar la IA de Owi (chat y foto de comida)
+
+1. Crea una clave en https://console.anthropic.com (API Keys).
+2. En Supabase → Edge Functions → Secrets, añade `ANTHROPIC_API_KEY` con esa clave.
+3. Despliega las funciones `owi-chat` y `food-estimate` (igual que las de Dexcom).
+4. Sin la clave, Owi sigue funcionando con su "cerebro" local (registros, resúmenes y preguntas), y la foto de comida usa una estimación de demostración.
+
+Reglas fijas de la IA (Fase 1): nunca da dosis ni interpreta síntomas, ante urgencias remite al 112 y solo recibe datos agregados (sin nombre ni identificadores).
+
 ## Seguridad y RGPD
 
 - La contraseña de Dexcom nunca pasa por Towigo: el permiso se da en la web de Dexcom.

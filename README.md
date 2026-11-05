@@ -46,6 +46,15 @@ npx expo start --web
 
 ## Historial
 
+### 0.10 (tipo 1, Owi más listo, Gluroo)
+- **Tipo 1** como cuarto camino: sensor con tendencia, el día en una sola gráfica (glucosa + insulina + carbohidratos, al estilo Gluroo), tiempo en rango, registro de insulina rápida/lenta y carbohidratos, aviso de la lenta según el plan. Nunca calcula bolos ni dosis.
+- **Chat con Owi**: apunta lo que le escribes ("4 u de rápida hace 15 min", "45 g de carbos", "peso 98,5"), resume cómo vas, explica conceptos y prepara preguntas para la consulta (se añaden al informe PDF). Se niega a dar dosis y remite al 112 en urgencias. Con el servidor activo, las preguntas abiertas van a la IA (`supabase/functions/owi-chat`).
+- **Check-in emocional diario** con historial; si hay días duros seguidos, Owi ofrece hablar con la psicóloga.
+- **Tu gente** (como el GluCrew de Gluroo): familia o cuidadores con permisos (ver resumen, apuntar por ti, recibir "Necesito ayuda"), invitaciones y ánimos que llegan a través de Owi.
+- **Foto de comida**: estimación aproximada y editable de raciones, carbohidratos y proteína (IA en `supabase/functions/food-estimate`; sin servidor, estimación de demostración).
+- **Modo mantenimiento después del GLP-1**: zona de ±2 kg, fuerza y proteína.
+- **Live Activity** de Owi en la pantalla de bloqueo, la Dynamic Island y el Apple Watch (día de inyección y glucosa en directo en tipo 1), con módulo nativo local `modules/owi-live-activity`.
+
 ### 0.9 (benchmark de apps de salud)
 - Informe para la consulta en PDF (4, 12 o 26 semanas): inyecciones, pauta, peso y composición, glucosa, HbA1c, medicación, efectos secundarios y hábitos. Solo datos apuntados, sin interpretación.
 - Pauta de escalado del médico: fases, semana actual y aviso cuando cambia la fase. Towigo no propone ni calcula dosis.

@@ -5,7 +5,7 @@
 import { Pressable, View } from 'react-native';
 import { t } from '../i18n';
 import { useStore } from '../state/store';
-import { hasT2, usesGlp1, type Glp1Drug, type Plan, type TitrationStep } from '../state/types';
+import { hasT2, isT1, usesGlp1, type Glp1Drug, type Plan, type TitrationStep } from '../state/types';
 import { colors, MIN_TOUCH } from '../theme';
 import { Choice, Row, T } from './ui';
 
@@ -93,6 +93,19 @@ export default function PlanSettings() {
 
       {usesGlp1(state.profile) && (
         <View style={{ gap: 8 }}>
+          <T v="label">{t('maint.phase')}</T>
+          <Row gap={8}>
+            <Choice style={{ flex: 1 }} label={t('maint.active')} selected={state.glp1.status !== 'maintenance'} onPress={() => dispatch({ type: 'setGlp1', patch: { status: 'active' } })} />
+            <Choice
+              style={{ flex: 1 }}
+              label={t('maint.maint')}
+              selected={state.glp1.status === 'maintenance'}
+              onPress={() => dispatch({ type: 'setGlp1', patch: { status: 'maintenance', maintenanceSince: state.glp1.maintenanceSince ?? new Date().toISOString(), maintenanceKg: state.glp1.maintenanceKg ?? d.weightNow ?? undefined } })}
+            />
+          </Row>
+          <T v="small" color={colors.secondary}>
+            {t('maint.note')}
+          </T>
           <Toggle on={p.injection.enabled} onPress={() => set('injection', { enabled: !p.injection.enabled })} label={t('plan.injection')} />
           <T v="small" color={colors.secondary}>
             {t('plan.drug')}
@@ -110,6 +123,20 @@ export default function PlanSettings() {
             {t('plan.doseByDoctor', { dose: f2(d.prescribedDose) })}
           </T>
           <TitrationEditor />
+        </View>
+      )}
+
+      {isT1(state.profile) && (
+        <View style={{ gap: 8 }}>
+          <Toggle on={p.insulin?.enabled !== false} onPress={() => set('insulin', { enabled: !(p.insulin?.enabled !== false) })} label={t('plan.basal', { name: state.insulinPlan.basalName })} />
+          <Row gap={8} style={{ flexWrap: 'wrap' }}>
+            {['08:00', '21:00', '22:00', '23:00'].map((h) => (
+              <Choice key={h} label={h} selected={state.insulinPlan.basalTime === h} onPress={() => dispatch({ type: 'setInsulinPlan', patch: { basalTime: h } })} />
+            ))}
+          </Row>
+          <T v="small" color={colors.secondary}>
+            {t('plan.basalByTeam', { n: state.insulinPlan.basalUnits })}
+          </T>
         </View>
       )}
 

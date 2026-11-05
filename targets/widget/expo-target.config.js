@@ -10,7 +10,9 @@ module.exports = (config) => ({
   type: 'widget',
   name: 'OwiWidget',
   icon: '../../assets/icon.png',
-  deploymentTarget: '17.0',
+  // 18.0: Live Activities en Apple Watch (supplementalActivityFamilies).
+  deploymentTarget: '18.0',
+  frameworks: ['ActivityKit'],
   entitlements: {
     'com.apple.security.application-groups': ['group.app.towigo'],
   },

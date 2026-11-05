@@ -31,6 +31,13 @@ En la web se ve una **vista previa** en *Yo → Owi en tu pantalla*.
 4. En el móvil: mantén pulsada la pantalla de inicio → **+** (iPhone) o **Widgets** (Android) →
    **Towigo** → elige el tamaño.
 
+## Live Activity, Dynamic Island y Apple Watch
+
+- Código: `targets/widget/OwiLiveActivity.swift` (vista) y `modules/owi-live-activity` (módulo nativo local que la inicia, actualiza y termina).
+- Aparece solo en momentos con principio y fin: **el día de la inyección** (hasta que se apunta) y, en **tipo 1**, la **glucosa del sensor** con su tendencia.
+- En el **Apple Watch** se ve en el Smart Stack (watchOS 11 o posterior) sin instalar una app de reloj, igual que hace Gluroo.
+- Requiere iOS 18 para el widget (por el soporte del reloj) y `NSSupportsLiveActivities` (ya en `app.json`).
+
 ## Estado
 - Configuración verificada con `expo prebuild`: el proyecto iOS incluye el objetivo `OwiWidget`
   (con las 12 ilustraciones y los colores) y Android registra el widget `Owi`.

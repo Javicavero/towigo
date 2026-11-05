@@ -9,7 +9,10 @@ import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AvatarBadge from '../components/AvatarBadge';
-import { SupportCard } from '../components/program';
+import { CheckinCard } from '../components/checkin';
+import { CheerCard } from '../components/crew';
+import { MaintenanceCard, SupportCard } from '../components/program';
+import { T1Card } from '../components/t1';
 import { SummaryGrid, TodayList } from '../components/today';
 import { Glyph, Icon, type IconName } from '../components/icons';
 import { Burst, FadeIn, Pop } from '../components/motion';
@@ -20,11 +23,12 @@ import { TEAM } from '../data/mock';
 import { t } from '../i18n';
 import { useNav } from '../nav';
 import { useStore } from '../state/store';
-import { usesGlp1, type PetMood, type ReminderKind } from '../state/types';
+import { isT1, usesGlp1, type PetMood, type ReminderKind } from '../state/types';
 import { colors, radius } from '../theme';
 
 const REMINDER_ICON: Record<ReminderKind, [IconName, string]> = {
   injection: ['syringe', '#1E63C7'],
+  insulin: ['syringe', '#C8372D'],
   meds: ['pill', '#17785A'],
   weigh: ['scale', '#5B4BC4'],
   meal: ['meal', '#D9542F'],
@@ -70,6 +74,7 @@ export default function Home() {
     pct: d.lostPct.toFixed(1).replace('.', ','),
     weeks: d.injectionWeeks,
     v: d.lastGlucose?.v ?? 0,
+    tir: d.tir24,
   };
   const calm = d.petMood === 'happy' || d.petMood === 'missYou';
   let message: string;
@@ -82,7 +87,7 @@ export default function Home() {
   else if (d.petMood === 'attentive' && d.injectionOverdue) message = t('owi.say.missedInjection', vars);
   else if (d.petMood === 'attentive' && d.plateau) message = t('owi.say.plateau', vars);
   else if (d.petMood === 'celebrate') message = t('owi.say.milestone', vars);
-  else if (d.petMood === 'happy') message = glp1 ? t('owi.say.happyGlp1', vars) : t('owi.say.happyT2', vars);
+  else if (d.petMood === 'happy') message = isT1(state.profile) ? t('owi.say.happyT1', vars) : d.maintenance ? t('owi.say.happyMaint', { ...vars, weeks: d.maintWeeks }) : glp1 ? t('owi.say.happyGlp1', vars) : t('owi.say.happyT2', vars);
   else message = t(`owi.say.${d.petMood}`, vars);
 
   const rawDate = new Date().toLocaleDateString('es-ES', {
@@ -216,6 +221,7 @@ export default function Home() {
                             if (reminder.kind === 'weigh') go('log', 'weight');
                             if (reminder.kind === 'meal') go('log', 'intake');
                             if (reminder.kind === 'meds') go('log', 'meds');
+                            if (reminder.kind === 'insulin') go('log', 'insulin');
                           }}
                         />
                         <Button
@@ -234,6 +240,9 @@ export default function Home() {
                     )}
                   </SpeechBubble>
                 </Pop>
+                {!reminder && (
+                  <Button style={{ marginTop: 10 }} kind="secondary" label={t('home.talkOwi', { owi })} onPress={() => go('owi')} />
+                )}
                 {reminder && (
                   <T v="small" color={colors.secondary} center style={{ marginTop: 6 }}>
                     {t('rem.fromPlan')}
@@ -244,6 +253,10 @@ export default function Home() {
           </FadeIn>
 
           <SupportCard />
+          <CheerCard />
+          {!d.checkinToday && <CheckinCard onDone={(v) => v >= 4 && setBurst((b) => b + 1)} />}
+          {isT1(state.profile) && <T1Card />}
+          {d.maintenance && <MaintenanceCard />}
           <SectionTitle>{t('home.forToday')}</SectionTitle>
           <FadeIn delay={80}>
             <TodayList />

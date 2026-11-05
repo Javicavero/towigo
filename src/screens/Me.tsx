@@ -11,20 +11,22 @@ import { Glyph } from '../components/icons';
 import OwiAnimated from '../components/OwiAnimated';
 import OwiSticker from '../components/OwiSticker';
 import PlanSettings from '../components/PlanSettings';
+import { CrewSettings } from '../components/crew';
 import { ReportCard } from '../components/program';
 import { buildWidgetSnapshot } from '../widgets/snapshot';
 import WidgetPreview from '../widgets/WidgetPreview';
+import { buildLiveActivity } from '../widgets/liveActivity';
 import { Button, Card, Choice, Disclosure, Row, Screen, SectionTitle, T } from '../components/ui';
 import { APP_NAME, FLAGS } from '../config';
 import { ACCESSORIES } from '../data/avatarOptions';
 import { t } from '../i18n';
 import { useStore } from '../state/store';
-import { hasT2, usesGlp1, type Profile, type ReminderKind, type Scenario, type TextScale } from '../state/types';
+import { hasDiabetes, hasT2, usesGlp1, type Profile, type ReminderKind, type Scenario, type TextScale } from '../state/types';
 import { colors, fonts, MIN_TOUCH } from '../theme';
 
-type Section = 'avatar' | 'owi' | 'widgets' | 'profile' | 'plan' | 'report' | 'sensor' | 'text' | 'privacy' | 'demo';
+type Section = 'crew' | 'avatar' | 'owi' | 'widgets' | 'profile' | 'plan' | 'report' | 'sensor' | 'text' | 'privacy' | 'demo';
 const SCENARIOS: Scenario[] = ['normal', 'injectionDay', 'missedInjection', 'sideEffects', 'plateau', 'milestone', 'highGlucose', 'lowGlucose', 'night'];
-const DEMO_REMINDERS: ReminderKind[] = ['injection', 'meds', 'weigh', 'meal', 'sport', 'water'];
+const DEMO_REMINDERS: ReminderKind[] = ['injection', 'insulin', 'meds', 'weigh', 'meal', 'sport', 'water'];
 
 export default function Me() {
   const { state, dispatch, d } = useStore();
@@ -33,7 +35,7 @@ export default function Me() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const toggle = (s: Section) => setOpen((o) => (o === s ? null : s));
   const glp1 = usesGlp1(state.profile);
-  const t2 = hasT2(state.profile);
+  const t2 = hasDiabetes(state.profile);
 
   return (
     <Screen>
@@ -53,6 +55,9 @@ export default function Me() {
       </Card>
 
       <SectionTitle>{t('me.personal')}</SectionTitle>
+      <Disclosure icon={<Glyph name="heart" bg="#5B4BC4" />} title={t('crew.title')} subtitle={t('crew.sub', { n: state.crew.length })} open={open === 'crew'} onToggle={() => toggle('crew')}>
+        <CrewSettings />
+      </Disclosure>
       <Disclosure icon={<Glyph name="user" bg="#5F6670" />} title={t('me.avatarTitle')} subtitle={t('me.avatarSub')} open={open === 'avatar'} onToggle={() => toggle('avatar')}>
         <AvatarEditor />
         <T v="label">{t('me.accessories')}</T>
@@ -94,7 +99,7 @@ export default function Me() {
         />
       </Disclosure>
       <Disclosure icon={<Glyph name="widget" bg="#5B4BC4" />} title={t('me.widgets')} subtitle={t('me.widgetsSub')} open={open === 'widgets'} onToggle={() => toggle('widgets')}>
-        <WidgetPreview s={buildWidgetSnapshot(state, d)} />
+        <WidgetPreview s={buildWidgetSnapshot(state, d)} la={buildLiveActivity(state, d)} />
         <T v="small">{t('me.widgetsHow')}</T>
         <T v="small" color={colors.secondary}>
           {t('me.widgetsNote')}
@@ -102,7 +107,7 @@ export default function Me() {
       </Disclosure>
       <Disclosure icon={<Glyph name="steth" bg="#1E63C7" />} title={t('me.profileTitle')} subtitle={t(`profile.short.${state.profile}`)} open={open === 'profile'} onToggle={() => toggle('profile')}>
         <Row gap={8} style={{ flexWrap: 'wrap' }}>
-          {(['t2', 'glp1', 't2_glp1'] as Profile[]).map((p) => (
+          {(['t1', 't2', 'glp1', 't2_glp1'] as Profile[]).map((p) => (
             <Choice key={p} label={t(`profile.short.${p}`)} selected={state.profile === p} onPress={() => dispatch({ type: 'setProfile', profile: p })} />
           ))}
         </Row>
@@ -171,7 +176,7 @@ export default function Me() {
         <Disclosure icon={<Glyph name="demo" bg="#5B4BC4" />} title={t('demo.section')} subtitle={t('demo.sectionSub')} open={open === 'demo'} onToggle={() => toggle('demo')}>
           <T v="label">{t('demo.profile')}</T>
           <Row gap={8} style={{ flexWrap: 'wrap' }}>
-            {(['glp1', 't2', 't2_glp1'] as Profile[]).map((p) => (
+            {(['t1', 'glp1', 't2', 't2_glp1'] as Profile[]).map((p) => (
               <Choice key={p} label={t(`profile.short.${p}`)} selected={state.profile === p} onPress={() => dispatch({ type: 'setProfile', profile: p })} />
             ))}
           </Row>
@@ -183,7 +188,7 @@ export default function Me() {
           </View>
           <T v="label">{t('demo.reminders')}</T>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
-            {DEMO_REMINDERS.filter((k) => (glp1 || k !== 'injection') && (t2 || k !== 'meds')).map((k) => (
+            {DEMO_REMINDERS.filter((k) => (glp1 || k !== 'injection') && (hasT2(state.profile) || k !== 'meds') && (state.profile === 't1' || k !== 'insulin')).map((k) => (
               <Choice key={k} label={t(`demo.rem.${k}`)} selected={state.demoReminder === k} onPress={() => dispatch({ type: 'setDemoReminder', kind: state.demoReminder === k ? null : k })} />
             ))}
           </ScrollView>

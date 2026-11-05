@@ -2,7 +2,13 @@ import { createContext, useContext, useEffect, useMemo, useReducer, useState, ty
 import { DEFAULT_AVATAR_NAME } from '../config';
 import { ACCESSORIES, type AccessoryId } from '../data/avatarOptions';
 import {
+  demoCarbs,
+  demoCheckins,
+  demoCheers,
+  demoCrew,
+  demoCgm,
   demoGlucose,
+  demoInsulin,
   demoHba1c,
   demoInjections,
   demoMeds,
@@ -12,6 +18,7 @@ import {
   glp1PlanFor,
   goalsFor,
   initialMessages,
+  insulinPlanFor,
   SITE_ORDER,
   STEPS_GOAL,
   STEPS_TODAY,
@@ -19,10 +26,15 @@ import {
 import { defaultPlan, dueReminders } from '../data/reminders';
 import { clear, load, save } from './storage';
 import {
-  hasT2,
+  hasDiabetes,
+  isT1,
+  type InsulinKind,
   usesGlp1,
   type AppState,
   type Avatar,
+  type CheckIn,
+  type CrewPerms,
+  type CrewRelation,
   type Consents,
   type GlucoseContext,
   type GlucoseEntry,
@@ -77,8 +89,10 @@ function demoData(profile: Profile, scenario: Scenario) {
     glp1,
     injections: usesGlp1(profile) ? demoInjections(scenario, glp1) : [],
     weights: demoWeights(profile, scenario),
-    glucose: hasT2(profile) ? demoGlucose(scenario) : [],
-    hba1c: hasT2(profile) ? demoHba1c() : [],
+    glucose: isT1(profile) ? demoCgm(scenario) : hasDiabetes(profile) ? demoGlucose(scenario) : [],
+    insulin: isT1(profile) ? demoInsulin() : [],
+    carbs: isT1(profile) ? demoCarbs() : [],
+    hba1c: hasDiabetes(profile) ? demoHba1c() : [],
     meds: demoMeds(profile),
     sideEffects: usesGlp1(profile) ? demoSideEffects(scenario) : [],
     strength: demoStrength(),
@@ -100,7 +114,13 @@ function initialState(): AppState {
     ...demoData(profile, 'normal'),
     medsTaken: {},
     intake: [],
+    insulinPlan: insulinPlanFor(),
     supportAskedOn: null,
+    owiChat: [],
+    consultQuestions: [],
+    checkins: demoCheckins(),
+    crew: demoCrew(),
+    cheers: demoCheers(),
     messages: initialMessages(profile),
     habitsToday: { log: false, walk: STEPS_TODAY >= STEPS_GOAL, listen: false },
     logsToday: 0,
@@ -139,9 +159,19 @@ type Action =
   | { type: 'addSideEffect'; symptoms: SideEffectEntry['symptoms'] }
   | { type: 'addIntake'; protein?: number; water?: number }
   | { type: 'addStrength'; routine: string }
+  | { type: 'setInsulinPlan'; patch: Partial<AppState['insulinPlan']> }
+  | { type: 'addInsulin'; units: number; kind: InsulinKind; minutesAgo?: number }
+  | { type: 'addCarbs'; g: number; protein?: number; label?: string; photo?: boolean; minutesAgo?: number }
   | { type: 'setTitration'; steps: TitrationStep[]; startedAt?: string }
   | { type: 'askTeam'; text: string }
   | { type: 'dismissSupport' }
+  | { type: 'crewInvite'; name: string; relation: CrewRelation }
+  | { type: 'crewPerms'; id: string; perms: Partial<CrewPerms> }
+  | { type: 'crewRemove'; id: string }
+  | { type: 'cheerRead'; id: string }
+  | { type: 'chat'; from: 'me' | 'owi'; text: string }
+  | { type: 'saveQuestions'; questions: string[] }
+  | { type: 'checkin'; v: CheckIn['v']; tags: string[]; note?: string; share?: boolean }
   | { type: 'sendMessage'; text?: string; kind: 'text' | 'audio'; durationSec?: number }
   | { type: 'owiReply'; text: string }
   | { type: 'listened'; id: string }
@@ -203,6 +233,19 @@ function reducer(s: AppState, a: Action): AppState {
       const next = { ...cur, protein: Math.max(0, cur.protein + (a.protein ?? 0)), water: Math.max(0, cur.water + (a.water ?? 0)) };
       return { ...s, ...logged(s), intake: [...s.intake.filter((i) => i.date !== today), next] };
     }
+    case 'addInsulin': {
+      const at = new Date(Date.now() - (a.minutesAgo ?? 0) * 60e3).toISOString();
+      return { ...s, ...logged(s), insulin: [...s.insulin, { id: uid(), at, units: a.units, kind: a.kind }] };
+    }
+    case 'addCarbs': {
+      const at = new Date(Date.now() - (a.minutesAgo ?? 0) * 60e3).toISOString();
+      const today = dayKey(Date.now());
+      const cur = s.intake.find((i) => i.date === today) ?? { date: today, protein: 0, water: 0 };
+      const intake = a.protein ? [...s.intake.filter((i) => i.date !== today), { ...cur, protein: cur.protein + a.protein }] : s.intake;
+      return { ...s, ...logged(s), intake, carbs: [...s.carbs, { id: uid(), at, g: a.g, protein: a.protein, label: a.label, photo: a.photo }] };
+    }
+    case 'setInsulinPlan':
+      return { ...s, insulinPlan: { ...s.insulinPlan, ...a.patch } };
     case 'addStrength':
       return { ...s, ...logged(s), habitsToday: { ...s.habitsToday, log: true, walk: true }, strength: [...s.strength, { id: uid(), at: now, routine: a.routine }] };
     case 'setTitration':
@@ -211,6 +254,25 @@ function reducer(s: AppState, a: Action): AppState {
       const m: Message = { id: uid(), from: 'patient', kind: 'text', text: a.text, at: now, read: true };
       return { ...s, supportAskedOn: dayKey(Date.now()), messages: [...s.messages, m] };
     }
+    case 'chat':
+      return { ...s, owiChat: [...s.owiChat, { id: uid(), from: a.from, text: a.text, at: now }].slice(-80) };
+    case 'saveQuestions':
+      return { ...s, consultQuestions: Array.from(new Set([...s.consultQuestions, ...a.questions])) };
+    case 'checkin': {
+      const date = dayKey(Date.now());
+      const entry: CheckIn = { date, v: a.v, tags: a.tags, note: a.note, shared: a.share };
+      return { ...s, ...logged(s), checkins: [...s.checkins.filter((c) => c.date !== date), entry] };
+    }
+    case 'crewInvite': {
+      const code = Math.random().toString(36).slice(2, 8).toUpperCase();
+      return { ...s, crew: [...s.crew, { id: uid(), name: a.name, relation: a.relation, perms: { summary: true, logForMe: false, sos: true }, status: 'invited', code }] };
+    }
+    case 'crewPerms':
+      return { ...s, crew: s.crew.map((c) => (c.id === a.id ? { ...c, perms: { ...c.perms, ...a.perms } } : c)) };
+    case 'crewRemove':
+      return { ...s, crew: s.crew.filter((c) => c.id !== a.id) };
+    case 'cheerRead':
+      return { ...s, cheers: s.cheers.map((c) => (c.id === a.id ? { ...c, read: true } : c)) };
     case 'dismissSupport':
       return { ...s, supportAskedOn: dayKey(Date.now()) };
     case 'sendMessage': {
@@ -266,11 +328,17 @@ export type Derived = {
   phaseWeeks: number;
   nextPhase: { dose: number; at: number } | null;
   phaseChangeSoon: boolean;
+  // Mantenimiento tras el GLP-1
+  maintenance: boolean;
+  maintWeeks: number;
+  maintDeltaKg: number | null;
   // Constancia
   treatmentStart: number;
   treatmentWeek: number;
   nextMilestone: number | null;
-  supportReason: 'missedInjection' | 'plateau' | 'sideEffects' | 'away' | null;
+  supportReason: 'missedInjection' | 'plateau' | 'sideEffects' | 'mood' | 'away' | null;
+  checkinToday: CheckIn | null;
+  lowMoodDays: number;
   // Fuerza
   strengthThisWeek: number;
   // Peso
@@ -289,6 +357,15 @@ export type Derived = {
   hba1cNow: number | null;
   hba1cPrev: number | null;
   medsToday: MedSlot[];
+  // Tipo 1
+  tir24: number;
+  avg24: number | null;
+  lows24: number;
+  basalToday: boolean;
+  rapidTodayU: number;
+  carbsToday: number;
+  lastInsulin: AppState['insulin'][number] | null;
+  trend: 'up2' | 'up' | 'flat' | 'down' | 'down2' | null;
   // Efectos e ingesta
   sideEffectsToday: SideEffectEntry[];
   worstSymptomToday: 0 | 1 | 2 | 3;
@@ -325,6 +402,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       ...saved,
       glp1: { ...base.glp1, ...saved.glp1 },
       goals: { ...base.goals, ...saved.goals },
+      plan: { ...base.plan, ...saved.plan },
+      insulin: saved.insulin ?? base.insulin,
+      carbs: saved.carbs ?? base.carbs,
+      insulinPlan: { ...base.insulinPlan, ...saved.insulinPlan },
+      owiChat: saved.owiChat ?? [],
+      consultQuestions: saved.consultQuestions ?? [],
+      checkins: saved.checkins ?? base.checkins,
+      crew: saved.crew ?? base.crew,
+      cheers: saved.cheers ?? base.cheers,
       avatar: { ...base.avatar, ...saved.avatar, equipped: { ...base.avatar.equipped, ...(saved.avatar?.equipped ?? {}) } } };
   });
 
@@ -341,8 +427,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const d = useMemo<Derived>(() => {
     const today = dayKey(now);
-    const glp1 = usesGlp1(state.profile);
-    const t2 = hasT2(state.profile);
+    const maintenance = usesGlp1(state.profile) && state.glp1.status === 'maintenance';
+    // En mantenimiento ya no hay inyecciones semanales: se apagan recordatorios, pauta y avisos de inyección.
+    const glp1 = usesGlp1(state.profile) && !maintenance;
+    const t2 = hasDiabetes(state.profile);
 
     // ---- GLP-1 ----
     const inj = [...state.injections].sort((a, b) => a.at.localeCompare(b.at));
@@ -393,7 +481,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
     // ---- Constancia: semanas desde el inicio del tratamiento ----
     const firstWeight = state.weights.length ? Math.min(...state.weights.map((w) => new Date(w.at).getTime())) : now;
-    const treatmentStart = glp1 ? startT : firstWeight;
+    const treatmentStart = maintenance && state.glp1.maintenanceSince ? new Date(state.glp1.maintenanceSince).getTime() : glp1 ? startT : firstWeight;
     const treatmentWeek = Math.max(1, Math.floor((now - treatmentStart) / (7 * DAY)) + 1);
     const nextMilestone = MILESTONES.find((m) => m >= treatmentWeek) ?? null;
 
@@ -438,6 +526,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       ? state.meds.flatMap((m) => m.times.map((time) => ({ med: m, time, taken: !!state.medsTaken[`${today}|${m.id}|${time}`] })))
       : [];
 
+    // ---- Tipo 1 ----
+    const last24 = gl.filter((g) => g.context === 'sensor' && now - new Date(g.at).getTime() < DAY);
+    const tir24 = last24.length ? Math.round((last24.filter((g) => g.v >= 70 && g.v <= 180).length / last24.length) * 100) : 0;
+    const avg24 = last24.length ? Math.round(last24.reduce((x, g) => x + g.v, 0) / last24.length) : null;
+    const lows24 = last24.filter((g, i) => g.v < 70 && (i === 0 || last24[i - 1].v >= 70)).length;
+    const insToday = state.insulin.filter((x) => dayKey(x.at) === today);
+    const basalToday = insToday.some((x) => x.kind === 'basal');
+    const rapidTodayU = insToday.filter((x) => x.kind === 'rapid').reduce((x, i) => x + i.units, 0);
+    const carbsToday = state.carbs.filter((x) => dayKey(x.at) === today).reduce((x, c) => x + c.g, 0);
+    const ins = [...state.insulin].sort((a, b) => a.at.localeCompare(b.at));
+    let trend: Derived['trend'] = null;
+    if (lastGlucose?.context === 'sensor' && gl.length > 1) {
+      const prev = gl[gl.length - 2];
+      const mins = Math.max(5, (new Date(lastGlucose.at).getTime() - new Date(prev.at).getTime()) / 60e3);
+      const rate = (lastGlucose.v - prev.v) / mins; // mg/dL por minuto
+      trend = rate > 2 ? 'up2' : rate > 1 ? 'up' : rate < -2 ? 'down2' : rate < -1 ? 'down' : 'flat';
+    }
+
     // ---- Efectos e ingesta ----
     const sideEffectsToday = state.sideEffects.filter((s) => dayKey(s.at) === today);
     const worstSymptomToday = sideEffectsToday.reduce<number>((m, e) => Math.max(m, ...e.symptoms.map((x) => x.level)), 0) as 0 | 1 | 2 | 3;
@@ -446,7 +552,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     // ---- Avisos ----
     const lowNow = fresh && v < 70;
     const reminders = dueReminders(
-      { profile: state.profile, plan: state.plan, glp1: state.glp1, meds: state.meds, injectedToday, medsTaken: state.medsTaken },
+      { profile: state.profile, plan: state.plan, glp1: state.glp1, meds: state.meds, injectedToday, medsTaken: state.medsTaken, insulinPlan: state.insulinPlan, basalToday },
       new Date(now),
       state.remindersDone,
       { lowGlucose: lowNow, demo: state.demoReminder },
@@ -470,8 +576,28 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const syncOk = !(state.dataSource === 'dexcom' && state.dexcom.error);
 
     // ---- Momentos en los que ayuda hablar con el equipo (avisa a una persona; no es una indicación clínica) ----
+    // Ánimo: días seguidos (hasta hoy) con un check-in bajo (1–2).
+    const ck = [...state.checkins].sort((a, b) => b.date.localeCompare(a.date));
+    let lowMoodDays = 0;
+    for (const c of ck) {
+      if (c.v <= 2) lowMoodDays++;
+      else break;
+    }
+    const checkinToday = state.checkins.find((c) => c.date === today) ?? null;
     const supportReason: Derived['supportReason'] =
-      state.supportAskedOn === today ? null : injectionOverdue ? 'missedInjection' : worstSymptomToday >= 2 ? 'sideEffects' : plateau ? 'plateau' : daysAway >= 3 ? 'away' : null;
+      state.supportAskedOn === today
+        ? null
+        : injectionOverdue
+          ? 'missedInjection'
+          : worstSymptomToday >= 2
+            ? 'sideEffects'
+            : lowMoodDays >= 2
+              ? 'mood'
+              : plateau
+                ? 'plateau'
+                : daysAway >= 3
+                  ? 'away'
+                  : null;
 
     // ---- Emoción de Owi (por prioridad). Acompaña; nunca regaña ni da indicaciones clínicas. ----
     let petMood: PetMood = 'happy';
@@ -479,7 +605,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     else if (fresh && glucoseStatus === 'veryLow') petMood = 'worriedLow';
     else if (fresh && glucoseStatus === 'low') petMood = 'caringLow';
     else if (fresh && glucoseStatus === 'veryHigh') petMood = 'worriedHigh';
-    else if (fresh && glucoseStatus === 'high') petMood = 'caringHigh';
+    // En tipo 1 las subidas tras comer son habituales: Owi no reacciona a cada una, solo a las muy altas.
+    else if (fresh && glucoseStatus === 'high' && !isT1(state.profile)) petMood = 'caringHigh';
     else if (worstSymptomToday >= 2) petMood = 'caringHigh';
     else if (state.scenario === 'milestone') petMood = 'celebrate';
     else if (reminders.length) petMood = reminders[0].kind === 'sport' ? 'sport' : 'remind';
@@ -502,9 +629,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       nextPhase,
       phaseChangeSoon,
       treatmentStart,
+      maintenance,
+      maintWeeks: maintenance && state.glp1.maintenanceSince ? Math.max(1, Math.floor((now - new Date(state.glp1.maintenanceSince).getTime()) / (7 * DAY)) + 1) : 0,
+      maintDeltaKg: maintenance && weightNow !== null && state.glp1.maintenanceKg ? Math.round((weightNow - state.glp1.maintenanceKg) * 10) / 10 : null,
       treatmentWeek,
       nextMilestone,
       supportReason,
+      checkinToday,
+      lowMoodDays,
       strengthThisWeek,
       weightNow,
       weightStart,
@@ -520,6 +652,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       hba1cNow: hb.length ? hb[hb.length - 1].v : null,
       hba1cPrev: hb.length > 1 ? hb[hb.length - 2].v : null,
       medsToday,
+      tir24,
+      avg24,
+      lows24,
+      basalToday,
+      rapidTodayU,
+      carbsToday,
+      lastInsulin: ins.length ? ins[ins.length - 1] : null,
+      trend,
       sideEffectsToday,
       worstSymptomToday,
       proteinToday: intake?.protein ?? 0,

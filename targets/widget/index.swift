@@ -121,5 +121,6 @@ struct OwiWidget: Widget {
 struct TowigoWidgets: WidgetBundle {
   var body: some Widget {
     OwiWidget()
+    OwiLiveActivity()
   }
 }

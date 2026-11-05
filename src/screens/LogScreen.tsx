@@ -8,12 +8,13 @@ import BodyMap from '../components/BodyMap';
 import { Glyph, type IconName } from '../components/icons';
 import { IntakeCard, MedsCard } from '../components/cards';
 import { StrengthCard } from '../components/program';
+import FoodPhoto from '../components/FoodPhoto';
 import { Burst } from '../components/motion';
 import { Button, Card, Choice, Row, Screen, T } from '../components/ui';
 import { t } from '../i18n';
 import { useNav, type LogSection } from '../nav';
 import { useStore } from '../state/store';
-import { hasT2, usesGlp1, type GlucoseContext, type InjectionSite, type SymptomId } from '../state/types';
+import { hasDiabetes, hasT2, isT1, usesGlp1, type GlucoseContext, type InjectionSite, type InsulinKind, type SymptomId } from '../state/types';
 import { colors, radius } from '../theme';
 
 const SYMPTOMS: SymptomId[] = ['nausea', 'vomitos', 'estrenimiento', 'diarrea', 'ardor', 'fatiga', 'pocoApetito', 'mareo'];
@@ -26,7 +27,10 @@ const ICON: Record<LogSection, [IconName, string]> = {
   effects: ['heart', '#B7791F'],
   intake: ['protein', '#D9542F'],
   strength: ['dumbbell', '#5B4BC4'],
+  insulin: ['syringe', '#1E63C7'],
+  carbs: ['meal', '#D9542F'],
 };
+const WHEN = [0, 15, 30, 60];
 const fmt = (n: number, d = 1) => n.toFixed(d).replace('.', ',');
 
 function Stepper({ value, onChange, steps, unit, decimals = 0, min = 0, max = 999, label }: { value: number; onChange: (n: number) => void; steps: number[]; unit: string; decimals?: number; min?: number; max?: number; label: string }) {
@@ -69,6 +73,11 @@ export default function LogScreen() {
   // Glucosa
   const [gv, setGv] = useState(d.lastGlucose?.v ?? 120);
   const [ctx, setCtx] = useState<GlucoseContext>('ayunas');
+  // Tipo 1
+  const [insKind, setInsKind] = useState<InsulinKind>('rapid');
+  const [units, setUnits] = useState(4);
+  const [when, setWhen] = useState(0);
+  const [carbG, setCarbG] = useState(40);
   // Efectos
   const [sym, setSym] = useState<Partial<Record<SymptomId, 1 | 2 | 3>>>({});
 
@@ -80,8 +89,18 @@ export default function LogScreen() {
   }, [toast]);
 
   const glp1 = usesGlp1(state.profile);
-  const t2 = hasT2(state.profile);
-  const sections: LogSection[] = [...(glp1 ? (['injection'] as LogSection[]) : []), 'weight', ...(t2 ? (['glucose', 'meds'] as LogSection[]) : []), ...(glp1 ? (['effects'] as LogSection[]) : []), 'intake', 'strength'];
+  const t2 = hasDiabetes(state.profile);
+  const t1 = isT1(state.profile);
+  const sections: LogSection[] = [
+    ...(t1 ? (['insulin', 'carbs'] as LogSection[]) : []),
+    ...(glp1 && !d.maintenance ? (['injection'] as LogSection[]) : []),
+    ...(t2 ? (['glucose'] as LogSection[]) : []),
+    ...(hasT2(state.profile) ? (['meds'] as LogSection[]) : []),
+    'weight',
+    ...(glp1 ? (['effects'] as LogSection[]) : []),
+    'intake',
+    'strength',
+  ];
 
   const toggle = (s: LogSection) => {
     setOpen(open === s ? null : s);
@@ -155,6 +174,68 @@ export default function LogScreen() {
                       setSite(null);
                     }}
                   />
+                </>
+              )}
+
+              {s === 'insulin' && (
+                <>
+                  <Row gap={8}>
+                    {(['rapid', 'basal'] as InsulinKind[]).map((k) => (
+                      <Choice
+                        key={k}
+                        style={{ flex: 1 }}
+                        label={k === 'rapid' ? state.insulinPlan.rapidName : state.insulinPlan.basalName}
+                        selected={insKind === k}
+                        onPress={() => {
+                          setInsKind(k);
+                          setUnits(k === 'basal' ? state.insulinPlan.basalUnits : 4);
+                        }}
+                      />
+                    ))}
+                  </Row>
+                  <Stepper value={units} onChange={setUnits} steps={[0.5, 1]} unit={t('log.units')} decimals={1} max={100} label={t('log.insulin')} />
+                  <T v="label">{t('log.when')}</T>
+                  <Row gap={8} style={{ flexWrap: 'wrap' }}>
+                    {WHEN.map((m) => (
+                      <Choice key={m} label={m === 0 ? t('log.whenNow') : t('log.whenAgo', { n: m })} selected={when === m} onPress={() => setWhen(m)} />
+                    ))}
+                  </Row>
+                  <T v="small" color={colors.secondary}>
+                    {insKind === 'basal' ? t('log.basalNote', { n: state.insulinPlan.basalUnits }) : t('log.rapidNote')}
+                  </T>
+                  <Button
+                    label={t('log.save')}
+                    onPress={() => {
+                      dispatch({ type: 'addInsulin', units, kind: insKind, minutesAgo: when });
+                      saved('log.savedInsulin', { n: fmt(units, units % 1 ? 1 : 0) });
+                      setWhen(0);
+                    }}
+                  />
+                </>
+              )}
+
+              {s === 'carbs' && (
+                <>
+                  <FoodPhoto onSaved={(m) => saved('log.savedFood', { m })} />
+                  <T v="label">{t('log.orGrams')}</T>
+                  <Stepper value={carbG} onChange={setCarbG} steps={[5, 10]} unit={t('log.carbsUnit')} max={300} label={t('log.carbs')} />
+                  <T v="label">{t('log.when')}</T>
+                  <Row gap={8} style={{ flexWrap: 'wrap' }}>
+                    {WHEN.map((m) => (
+                      <Choice key={m} label={m === 0 ? t('log.whenNow') : t('log.whenAgo', { n: m })} selected={when === m} onPress={() => setWhen(m)} />
+                    ))}
+                  </Row>
+                  <Button
+                    label={t('log.save')}
+                    onPress={() => {
+                      dispatch({ type: 'addCarbs', g: carbG, minutesAgo: when });
+                      saved('log.savedCarbs', { n: carbG });
+                      setWhen(0);
+                    }}
+                  />
+                  <T v="small" color={colors.secondary}>
+                    {t('log.carbsNote')}
+                  </T>
                 </>
               )}
 
@@ -249,7 +330,12 @@ export default function LogScreen() {
                 </>
               )}
 
-              {s === 'intake' && <IntakeCard />}
+              {s === 'intake' && (
+                <>
+                  <FoodPhoto onSaved={(m) => saved('log.savedFood', { m })} />
+                  <IntakeCard />
+                </>
+              )}
               {s === 'strength' && <StrengthCard embedded />}
             </View>
           )}

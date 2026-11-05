@@ -48,3 +48,7 @@ ios/
 android/
 targets/*/Assets.xcassets
 targets/*/Info.plist
+
+# El código nativo de los módulos locales sí se versiona
+!modules/*/ios/
+!modules/*/android/

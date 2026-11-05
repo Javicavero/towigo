@@ -1,0 +1,7 @@
+{
+  "name": "owi-live-activity",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.ts",
+  "description": "Módulo local de Towigo: inicia, actualiza y termina la Live Activity de Owi (ActivityKit)."
+}

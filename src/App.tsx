@@ -17,6 +17,7 @@ import Home from './screens/Home';
 import LogScreen from './screens/LogScreen';
 import Me from './screens/Me';
 import Onboarding from './screens/Onboarding';
+import OwiChat from './screens/OwiChat';
 import Progress from './screens/Progress';
 import Team from './screens/Team';
 import { useDexcomSync } from './services/useDexcomSync';
@@ -128,6 +129,7 @@ function Root() {
           {tab === 'team' && <Team />}
           {tab === 'progress' && <Progress />}
           {tab === 'me' && <Me />}
+          {tab === 'owi' && <OwiChat />}
         </TabScreen>
         <TabBar tab={tab} go={(t) => go(t)} />
       </View>

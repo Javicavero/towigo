@@ -6,7 +6,7 @@
  */
 import { t } from '../i18n';
 import type { AppState, PetMood } from '../state/types';
-import { hasT2, usesGlp1 } from '../state/types';
+import { hasDiabetes, usesGlp1 } from '../state/types';
 
 export type WidgetSnapshot = {
   v: 1;
@@ -31,16 +31,21 @@ type D = {
   injectionOverdue: boolean;
   medsToday: { taken: boolean }[];
   lastGlucose: { v: number } | null;
+  trend?: 'up2' | 'up' | 'flat' | 'down' | 'down2' | null;
   reminders: { kind: string }[];
 };
 
 export function buildWidgetSnapshot(state: AppState, d: D): WidgetSnapshot {
   const glp1 = usesGlp1(state.profile);
-  const t2 = hasT2(state.profile);
+  const t2 = hasDiabetes(state.profile);
   let nextLabel = t('widget.streakLabel');
   let nextValue = t('widget.days', { n: d.streak });
   let deepLink = 'towigo://hoy';
-  if (glp1 && d.daysToInjection !== null) {
+  if (state.profile === 't1' && d.lastGlucose) {
+    const arrow = d.trend ? ` ${{ up2: '⇈', up: '↑', flat: '→', down: '↓', down2: '⇊' }[d.trend]}` : '';
+    nextLabel = t('widget.glucose');
+    nextValue = `${d.lastGlucose.v}${arrow} mg/dL`;
+  } else if (glp1 && d.daysToInjection !== null) {
     nextLabel = t('widget.injection');
     nextValue = d.injectedToday ? t('widget.injDone') : d.injectionOverdue ? t('widget.injPending') : d.daysToInjection === 0 ? t('widget.today') : t('widget.inDays', { n: d.daysToInjection });
     deepLink = 'towigo://registrar/inyeccion';

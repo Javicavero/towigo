@@ -1,9 +1,14 @@
 import type { AccessoryId, BODY_TYPES, BROWS, FACE_SHAPES, FACIAL_HAIR, GLASSES, HAIR_STYLES, TOPS } from '../data/avatarOptions';
 
 /** Los tres caminos de la app. */
-export type Profile = 't2' | 'glp1' | 't2_glp1';
-export const usesGlp1 = (p: Profile) => p !== 't2';
-export const hasT2 = (p: Profile) => p !== 'glp1';
+/** Los cuatro caminos de la app. */
+export type Profile = 't1' | 't2' | 'glp1' | 't2_glp1';
+export const usesGlp1 = (p: Profile) => p === 'glp1' || p === 't2_glp1';
+/** Lleva control de glucosa (tipo 1 o tipo 2). */
+export const hasDiabetes = (p: Profile) => p !== 'glp1';
+/** Tipo 2 (medicación oral). */
+export const hasT2 = (p: Profile) => p === 't2' || p === 't2_glp1';
+export const isT1 = (p: Profile) => p === 't1';
 
 /**
  * Emociones de Owi (las 12 ilustraciones del diseño). Reaccionan a hábitos y datos;
@@ -69,6 +74,11 @@ export type Glp1Plan = {
   drug: Glp1Drug;
   /** Pauta de escalado del médico, desde `startedAt`. La última fase es la de mantenimiento. */
   titration: TitrationStep[];
+  /** 'maintenance' cuando el médico retira o reduce el GLP-1: la app pasa a cuidar el mantenimiento. */
+  status?: 'active' | 'maintenance';
+  maintenanceSince?: string;
+  /** Peso al empezar el mantenimiento (referencia de la zona de mantenimiento). */
+  maintenanceKg?: number;
   /** Dosis actual pautada por su médico (solo se muestra, no se calcula). */
   currentDose: number;
   weekday: number; // 0 = lunes
@@ -85,6 +95,14 @@ export type GlucoseEntry = { id: string; at: string; v: number; context: Glucose
 export type Hba1cEntry = { at: string; v: number };
 export type Medication = { id: string; name: string; dose: string; times: string[] };
 
+// ---------- Tipo 1: insulina y carbohidratos ----------
+/** Lo que el paciente se ha puesto. Towigo nunca calcula ni sugiere bolos ni dosis (Fase 1). */
+export type InsulinKind = 'rapid' | 'basal';
+export type InsulinEntry = { id: string; at: string; units: number; kind: InsulinKind };
+export type CarbEntry = { id: string; at: string; g: number; protein?: number; label?: string; photo?: boolean };
+/** Insulinas y pauta basal que fija el equipo (solo se muestra y se recuerda). */
+export type InsulinPlan = { rapidName: string; basalName: string; basalTime: string; basalUnits: number };
+
 // ---------- Efectos secundarios ----------
 export type SymptomId = 'nausea' | 'vomitos' | 'estrenimiento' | 'diarrea' | 'ardor' | 'fatiga' | 'pocoApetito' | 'mareo';
 export type SideEffectEntry = { id: string; at: string; symptoms: { id: SymptomId; level: 1 | 2 | 3 }[] };
@@ -96,6 +114,18 @@ export type DayIntake = { date: string; protein: number; water: number };
 export type TeamRole = 'endo' | 'nutri' | 'psico';
 export type Sender = 'patient' | 'owi' | TeamRole;
 export type Message = { id: string; from: Sender; kind: 'text' | 'audio'; text?: string; durationSec?: number; at: string; read: boolean };
+
+// ---------- Owi: chat y check-in ----------
+export type ChatMsg = { id: string; from: 'me' | 'owi'; text: string; at: string };
+/** Cómo estás hoy: 1 (muy mal) … 5 (muy bien). Solo lo ve tu equipo si tú lo compartes. */
+export type CheckIn = { date: string; v: 1 | 2 | 3 | 4 | 5; tags: string[]; note?: string; shared?: boolean };
+
+// ---------- Tu gente (familia y cuidadores) ----------
+export type CrewRelation = 'pareja' | 'hijo' | 'madre' | 'padre' | 'amistad' | 'cuidador';
+/** Permisos que da el paciente; puede quitarlos cuando quiera. */
+export type CrewPerms = { summary: boolean; logForMe: boolean; sos: boolean };
+export type CrewMember = { id: string; name: string; relation: CrewRelation; perms: CrewPerms; status: 'invited' | 'active'; code: string };
+export type Cheer = { id: string; from: string; text: string; at: string; read: boolean };
 
 export type HabitId = 'log' | 'walk' | 'listen';
 
@@ -116,10 +146,11 @@ export type Goals = {
 export type StrengthSession = { id: string; at: string; routine: string };
 
 /** Avisos del plan (horarios del paciente o su equipo; nunca calculados por la app). */
-export type ReminderKind = 'injection' | 'meds' | 'sport' | 'meal' | 'water' | 'weigh';
+export type ReminderKind = 'injection' | 'insulin' | 'meds' | 'sport' | 'meal' | 'water' | 'weigh';
 export type Plan = {
   injection: { enabled: boolean };
   meds: { enabled: boolean };
+  insulin: { enabled: boolean };
   sport: { enabled: boolean; days: number[]; time: string; minutes: number; activity: string };
   weigh: { enabled: boolean; weekday: number };
   meals: { enabled: boolean; times: string[] };
@@ -146,10 +177,18 @@ export type AppState = {
   glucose: GlucoseEntry[];
   hba1c: Hba1cEntry[];
   meds: Medication[];
+  insulin: InsulinEntry[];
+  carbs: CarbEntry[];
+  insulinPlan: InsulinPlan;
   medsTaken: Record<string, boolean>; // `${fecha}|${medId}|${hora}`
   sideEffects: SideEffectEntry[];
   intake: DayIntake[];
   strength: StrengthSession[];
+  owiChat: ChatMsg[];
+  consultQuestions: string[];
+  checkins: CheckIn[];
+  crew: CrewMember[];
+  cheers: Cheer[];
   /** Último día en que el paciente pidió hablar con su equipo desde el programa de constancia. */
   supportAskedOn: string | null;
   messages: Message[];

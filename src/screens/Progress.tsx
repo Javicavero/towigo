@@ -6,7 +6,9 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import { GlucoseCard, HabitsCard } from '../components/cards';
 import BondCard from '../components/BondCard';
-import { JourneyCard, ReportCard, StrengthCard, TitrationCard } from '../components/program';
+import { MoodHistory } from '../components/checkin';
+import { DayLog, DayTimeline, TirBar } from '../components/t1';
+import { JourneyCard, MaintenanceCard, ReportCard, StrengthCard, TitrationCard } from '../components/program';
 import { Glyph, Icon, type IconName } from '../components/icons';
 import OwiAnimated from '../components/OwiAnimated';
 import OwiSticker from '../components/OwiSticker';
@@ -15,7 +17,7 @@ import { Button, Card, ProgressBar, Row, Screen, Segmented, T } from '../compone
 import { ACCESSORIES } from '../data/avatarOptions';
 import { t } from '../i18n';
 import { useStore } from '../state/store';
-import { hasT2, usesGlp1, type PetLevel, type PetMood } from '../state/types';
+import { hasDiabetes, hasT2, usesGlp1, type PetLevel, type PetMood } from '../state/types';
 import { colors } from '../theme';
 
 const LEVELS = [7, 30, 100, 365];
@@ -31,7 +33,7 @@ export default function Progress() {
   const { state, dispatch, d } = useStore();
   const [tab, setTab] = useState<'habits' | 'health' | 'owi'>('habits');
   const glp1 = usesGlp1(state.profile);
-  const t2 = hasT2(state.profile);
+  const t2 = hasDiabetes(state.profile);
   const days = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
   const todayIdx = (new Date().getDay() + 6) % 7;
   const nextLevel = LEVELS.find((l) => l > d.streak) ?? 365;
@@ -40,7 +42,7 @@ export default function Progress() {
   const achievements = [
     { id: 'firstLog', done: d.habitsToday.log, icon: 'plus' as IconName, bg: '#D9542F' },
     ...(glp1 ? [{ id: 'injections4', done: d.injectionWeeks >= 4, icon: 'syringe' as IconName, bg: '#1E63C7' }] : []),
-    ...(t2
+    ...(hasT2(state.profile)
       ? [
           {
             id: 'medsWeek',
@@ -148,12 +150,29 @@ export default function Progress() {
       )}
       {tab === 'habits' && <HabitsCard />}
       {tab === 'habits' && <StrengthCard />}
+      {tab === 'habits' && <MoodHistory />}
 
       {tab === 'health' && <ReportCard />}
-      {tab === 'health' && glp1 && <TitrationCard />}
+      {tab === 'health' && d.maintenance && <MaintenanceCard />}
+      {tab === 'health' && glp1 && !d.maintenance && <TitrationCard />}
 
-      {tab === 'health' && t2 && <GlucoseCard />}
-      {tab === 'health' && glp1 && (
+      {tab === 'health' && state.profile === 't1' && (
+        <Card>
+          <T v="h2">{t('t1.dayTitle')}</T>
+          <DayTimeline />
+          <DayLog />
+        </Card>
+      )}
+      {tab === 'health' && state.profile === 't1' && (
+        <Card>
+          <TirBar days={14} />
+          <T v="small" color={colors.secondary}>
+            {t('t1.tirNote')}
+          </T>
+        </Card>
+      )}
+      {tab === 'health' && t2 && state.profile !== 't1' && <GlucoseCard />}
+      {tab === 'health' && glp1 && !d.maintenance && (
         <Card>
           <T v="h2">{t('progress.injTitle', { n: d.injectionWeeks })}</T>
           <Row gap={6} style={{ flexWrap: 'wrap' }}>

@@ -5,7 +5,7 @@
 import { TEAM } from '../data/mock';
 import { t } from '../i18n';
 import type { Derived } from '../state/store';
-import { hasT2, usesGlp1, type AppState } from '../state/types';
+import { hasDiabetes, usesGlp1, type AppState } from '../state/types';
 
 const DAY = 86400e3;
 const f1 = (n: number) => n.toFixed(1).replace('.', ',');
@@ -42,7 +42,7 @@ export function buildReportHtml(state: AppState, d: Derived, weeks: number, now 
   const from = now - weeks * 7 * DAY;
   const inRange = (at: string) => new Date(at).getTime() >= from;
   const glp1 = usesGlp1(state.profile);
-  const t2 = hasT2(state.profile);
+  const t2 = hasDiabetes(state.profile);
   const sections: string[] = [];
 
   // Tratamiento GLP-1
@@ -77,7 +77,26 @@ export function buildReportHtml(state: AppState, d: Derived, weeks: number, now 
   }
 
   // Glucosa, HbA1c y medicación
-  if (t2) {
+  // Tipo 1: sensor, insulina y carbohidratos (solo datos registrados)
+  if (state.profile === 't1') {
+    const cgm = state.glucose.filter((g) => g.context === 'sensor' && inRange(g.at));
+    if (cgm.length) {
+      const pc = (f: (v: number) => boolean) => Math.round((cgm.filter((g) => f(g.v)).length / cgm.length) * 100);
+      const mean = cgm.reduce((s, g) => s + g.v, 0) / cgm.length;
+      const sd = Math.sqrt(cgm.reduce((s, g) => s + (g.v - mean) ** 2, 0) / cgm.length);
+      const days = Math.max(1, Math.round((now - Math.max(from, new Date(cgm[0].at).getTime())) / DAY));
+      const rapid = state.insulin.filter((i) => i.kind === 'rapid' && inRange(i.at)).reduce((s, i) => s + i.units, 0);
+      const basal = state.insulin.filter((i) => i.kind === 'basal' && inRange(i.at)).reduce((s, i) => s + i.units, 0);
+      const carbs = state.carbs.filter((c) => inRange(c.at)).reduce((s, c) => s + c.g, 0);
+      sections.push(`<h2>${t('report.cgm')}</h2>
+        <p>${t('report.cgmValue', { tir: pc((v) => v >= 70 && v <= 180), low: pc((v) => v < 70), vlow: pc((v) => v < 54), high: pc((v) => v > 180), avg: Math.round(mean), cv: Math.round((sd / mean) * 100), days })}</p>
+        <p><span class="k">${t('report.insulin')}</span> ${t('report.insulinValue', { r: f1(rapid / days), b: f1(basal / days) })}</p>
+        <p><span class="k">${t('report.carbs')}</span> ${t('report.carbsValue', { g: Math.round(carbs / days) })}</p>
+        <p class="muted">${t('report.t1Note')}</p>`);
+    }
+  }
+
+  if (t2 && state.profile !== 't1') {
     const gl = state.glucose.filter((g) => inRange(g.at));
     const fasting = gl.filter((g) => g.context === 'ayunas');
     const avg = (xs: number[]) => (xs.length ? Math.round(xs.reduce((s, x) => s + x, 0) / xs.length) : null);
@@ -126,6 +145,9 @@ export function buildReportHtml(state: AppState, d: Derived, weeks: number, now 
     }</p>
     <p><span class="k">${t('report.strength')}</span> ${t('report.strengthValue', { n: strength, goal: state.goals.strengthPerWeek * weeks })}</p>
     <p><span class="k">${t('report.streak')}</span> ${t('report.streakValue', { n: d.streak })}</p>`);
+
+  if (state.consultQuestions.length)
+    sections.push(`<h2>${t('report.questions')}</h2><ol>${state.consultQuestions.map((q) => `<li>${esc(q)}</li>`).join('')}</ol>`);
 
   const patient = esc(state.userName || t('report.patient'));
   return `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>${t('report.title')} · ${patient}</title>

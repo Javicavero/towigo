@@ -156,7 +156,7 @@ export function JourneyCard() {
         <View style={{ flex: 1 }}>
           <T v="h2">{t('journey.title')}</T>
           <T v="small" color={colors.secondary}>
-            {t(glp1 ? 'journey.subGlp1' : 'journey.subT2', { n: d.treatmentWeek })}
+            {t(d.maintenance ? 'journey.subMaint' : glp1 ? 'journey.subGlp1' : 'journey.subT2', { n: d.treatmentWeek })}
           </T>
         </View>
       </Row>
@@ -320,5 +320,43 @@ export function ProteinFoods() {
         ))}
       </View>
     </View>
+  );
+}
+
+// ---------- Mantenimiento después del GLP-1 ----------
+/** Cuando el médico retira o reduce el GLP-1: zona de mantenimiento de ±2 kg, fuerza y proteína. */
+export function MaintenanceCard() {
+  const { state, d } = useStore();
+  const ref = state.glp1.maintenanceKg ?? d.weightNow ?? 0;
+  const delta = d.maintDeltaKg ?? 0;
+  const inZone = Math.abs(delta) <= 2;
+  const f1 = (n: number) => n.toFixed(1).replace('.', ',');
+  return (
+    <Card tone={inZone ? 'green' : 'yellow'}>
+      <Row gap={10}>
+        <Glyph name="shield" bg="#17785A" />
+        <View style={{ flex: 1 }}>
+          <T v="h2">{t('maint.title')}</T>
+          <T v="small" color={colors.secondary}>
+            {t('maint.week', { n: d.maintWeeks })}
+          </T>
+        </View>
+      </Row>
+      <T v="title">{inZone ? t('maint.inZone') : t('maint.outZone')}</T>
+      <View style={{ gap: 4 }}>
+        {/* Zona: de −2 a +2 kg respecto al peso al empezar el mantenimiento */}
+        <View style={{ height: 14, borderRadius: 7, backgroundColor: colors.line, overflow: 'hidden', justifyContent: 'center' }}>
+          <View style={{ position: 'absolute', left: '25%', width: '50%', height: '100%', backgroundColor: 'rgba(43,181,138,0.35)' }} />
+          <View style={{ position: 'absolute', left: `${Math.max(2, Math.min(98, 50 + (delta / 4) * 50))}%`, width: 14, height: 14, marginLeft: -7, borderRadius: 7, backgroundColor: inZone ? colors.greenText : colors.coralText }} />
+        </View>
+        <T v="small" color={colors.secondary}>
+          {t('maint.zone', { a: f1(ref - 2), b: f1(ref + 2), now: f1(d.weightNow ?? ref) })}
+        </T>
+      </View>
+      <T v="small">{t('maint.keys', { p: state.goals.proteinG, s: state.goals.strengthPerWeek })}</T>
+      <T v="small" color={colors.secondary}>
+        {t('maint.noteCard')}
+      </T>
+    </Card>
   );
 }

@@ -3,12 +3,13 @@
  * Fase 1 (§8.2): nunca se calculan a partir de la glucosa ni dicen qué dosis ponerse.
  * Seguridad: con una glucosa baja reciente no se muestran avisos de medicación; Owi solo acompaña.
  */
-import type { Glp1Plan, Medication, Plan, Profile, Reminder, ReminderKind } from '../state/types';
+import type { Glp1Plan, InsulinPlan, Medication, Plan, Profile, Reminder, ReminderKind } from '../state/types';
 import { usesGlp1, hasT2 } from '../state/types';
 
 export const defaultPlan = (): Plan => ({
   injection: { enabled: true },
   meds: { enabled: true },
+  insulin: { enabled: true },
   sport: { enabled: true, days: [0, 2, 4], time: '18:00', minutes: 30, activity: 'paseo' },
   weigh: { enabled: true, weekday: 0 },
   meals: { enabled: true, times: ['14:30', '21:30'] },
@@ -22,7 +23,7 @@ const minutesOf = (hhmm: string) => {
 const inWindow = (nowMin: number, hhmm: string, len = 45) => nowMin >= minutesOf(hhmm) && nowMin < minutesOf(hhmm) + len;
 
 export function dueReminders(
-  ctx: { profile: Profile; plan: Plan; glp1: Glp1Plan; meds: Medication[]; injectedToday: boolean; medsTaken: Record<string, boolean> },
+  ctx: { profile: Profile; plan: Plan; glp1: Glp1Plan; meds: Medication[]; injectedToday: boolean; medsTaken: Record<string, boolean>; insulinPlan: InsulinPlan; basalToday: boolean },
   now: Date,
   done: Record<string, string>,
   opts: { lowGlucose: boolean; demo?: ReminderKind | null },
@@ -37,8 +38,12 @@ export function dueReminders(
   };
   const { plan } = ctx;
 
-  if (usesGlp1(ctx.profile) && plan.injection.enabled && !ctx.injectedToday && ((weekday === ctx.glp1.weekday && nowMin >= minutesOf(ctx.glp1.time)) || opts.demo === 'injection'))
+  if (usesGlp1(ctx.profile) && ctx.glp1.status !== 'maintenance' && plan.injection.enabled && !ctx.injectedToday && ((weekday === ctx.glp1.weekday && nowMin >= minutesOf(ctx.glp1.time)) || opts.demo === 'injection'))
     push({ id: `inj-${dateKey}`, kind: 'injection', text: 'rem.injection', vars: { time: ctx.glp1.time } });
+
+  // Tipo 1: recuerda la insulina lenta a la hora que fijó el equipo. Las rápidas no se recuerdan ni se calculan.
+  if (ctx.profile === 't1' && plan.insulin?.enabled !== false && !ctx.basalToday && (inWindow(nowMin, ctx.insulinPlan.basalTime, 90) || opts.demo === 'insulin'))
+    push({ id: `basal-${dateKey}`, kind: 'insulin', text: 'rem.insulin', vars: { name: ctx.insulinPlan.basalName, time: ctx.insulinPlan.basalTime } });
 
   if (hasT2(ctx.profile) && plan.meds.enabled && !opts.lowGlucose)
     for (const m of ctx.meds)
@@ -61,6 +66,6 @@ export function dueReminders(
     for (const t of plan.water.times)
       if (inWindow(nowMin, t, 30) || (opts.demo === 'water' && t === plan.water.times[0])) push({ id: `water-${t}`, kind: 'water', text: 'rem.water', vars: {} });
 
-  const order: ReminderKind[] = ['injection', 'meds', 'weigh', 'meal', 'sport', 'water'];
+  const order: ReminderKind[] = ['injection', 'insulin', 'meds', 'weigh', 'meal', 'sport', 'water'];
   return out.sort((a, b) => (a.kind === opts.demo ? -1 : b.kind === opts.demo ? 1 : order.indexOf(a.kind) - order.indexOf(b.kind)));
 }

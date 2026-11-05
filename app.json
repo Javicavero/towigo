@@ -14,6 +14,9 @@
         "com.apple.security.application-groups": [
           "group.app.towigo"
         ]
+      },
+      "infoPlist": {
+        "NSSupportsLiveActivities": true
       }
     },
     "android": {
@@ -35,6 +38,13 @@
     "plugins": [
       "expo-font",
       "expo-asset",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Towigo usa tus fotos para estimar las raciones de tus comidas, solo si tú lo eliges.",
+          "cameraPermission": "Towigo usa la cámara para hacer fotos de tus comidas y estimar las raciones, solo si tú lo eliges."
+        }
+      ],
       "@bacons/apple-targets",
       [
         "react-native-android-widget",
