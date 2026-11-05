@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AvatarBadge from '../components/AvatarBadge';
+import { SupportCard } from '../components/program';
 import { SummaryGrid, TodayList } from '../components/today';
 import { Glyph, Icon, type IconName } from '../components/icons';
 import { Burst, FadeIn, Pop } from '../components/motion';
@@ -242,6 +243,7 @@ export default function Home() {
             </View>
           </FadeIn>
 
+          <SupportCard />
           <SectionTitle>{t('home.forToday')}</SectionTitle>
           <FadeIn delay={80}>
             <TodayList />

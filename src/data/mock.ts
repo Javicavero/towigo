@@ -2,7 +2,7 @@
  * Datos de demostración (simulados) para los tres caminos: tipo 2, GLP-1 y tipo 2 + GLP-1.
  * En la app real llegan del paciente, de su báscula / Apple Health y, si lo usa, de su sensor.
  */
-import type { GlucoseEntry, Glp1Plan, Goals, Hba1cEntry, Injection, InjectionSite, Medication, Message, Profile, Scenario, SideEffectEntry, WeightEntry } from '../state/types';
+import type { GlucoseEntry, Glp1Plan, Goals, Hba1cEntry, Injection, InjectionSite, Medication, Message, Profile, Scenario, SideEffectEntry, StrengthSession, WeightEntry } from '../state/types';
 
 const DAY = 86400e3;
 const iso = (t: number) => new Date(t).toISOString();
@@ -30,11 +30,35 @@ export function goalsFor(profile: Profile): Goals {
     waterGlasses: 8,
     fastingRange: [80, 130],
     postMealMax: 180,
+    proteinPerKg: 1.2,
+    strengthPerWeek: 2,
   };
 }
 
 export function glp1PlanFor(now = Date.now()): Glp1Plan {
-  return { drug: 'semaglutida', currentDose: 1, weekday: 6, time: '10:00', startedAt: iso(now - 84 * DAY) };
+  // Pauta de escalado de la Dra. (ejemplo): 4 semanas por fase hasta la dosis de mantenimiento.
+  return {
+    drug: 'semaglutida',
+    titration: [
+      { dose: 0.25, weeks: 4 },
+      { dose: 0.5, weeks: 4 },
+      { dose: 1, weeks: 4 },
+      { dose: 1.7, weeks: 4 },
+      { dose: 2.4, weeks: 0 },
+    ],
+    currentDose: 1,
+    weekday: 6,
+    time: '10:00',
+    startedAt: iso(now - 80 * DAY),
+  };
+}
+
+export function demoStrength(now = Date.now()): StrengthSession[] {
+  return [
+    { id: 'st1', at: iso(now - 9 * DAY), routine: 'base' },
+    { id: 'st2', at: iso(now - 6 * DAY), routine: 'legs' },
+    { id: 'st3', at: iso(now - 2 * DAY), routine: 'base' },
+  ];
 }
 
 /** Fecha de la última vez que tocó el día de inyección (antes de hoy o hoy). */

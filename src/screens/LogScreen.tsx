@@ -7,6 +7,7 @@ import { Pressable, View } from 'react-native';
 import BodyMap from '../components/BodyMap';
 import { Glyph, type IconName } from '../components/icons';
 import { IntakeCard, MedsCard } from '../components/cards';
+import { StrengthCard } from '../components/program';
 import { Burst } from '../components/motion';
 import { Button, Card, Choice, Row, Screen, T } from '../components/ui';
 import { t } from '../i18n';
@@ -24,6 +25,7 @@ const ICON: Record<LogSection, [IconName, string]> = {
   meds: ['pill', '#17785A'],
   effects: ['heart', '#B7791F'],
   intake: ['protein', '#D9542F'],
+  strength: ['dumbbell', '#5B4BC4'],
 };
 const fmt = (n: number, d = 1) => n.toFixed(d).replace('.', ',');
 
@@ -58,7 +60,7 @@ export default function LogScreen() {
   const started = useRef(Date.now());
   // Inyección
   const [site, setSite] = useState<InjectionSite | null>(null);
-  const [dose, setDose] = useState(state.glp1.currentDose);
+  const [dose, setDose] = useState(d.prescribedDose);
   // Peso
   const [kg, setKg] = useState(d.weightNow ?? 80);
   const [withComp, setWithComp] = useState(false);
@@ -79,7 +81,7 @@ export default function LogScreen() {
 
   const glp1 = usesGlp1(state.profile);
   const t2 = hasT2(state.profile);
-  const sections: LogSection[] = [...(glp1 ? (['injection'] as LogSection[]) : []), 'weight', ...(t2 ? (['glucose', 'meds'] as LogSection[]) : []), ...(glp1 ? (['effects'] as LogSection[]) : []), 'intake'];
+  const sections: LogSection[] = [...(glp1 ? (['injection'] as LogSection[]) : []), 'weight', ...(t2 ? (['glucose', 'meds'] as LogSection[]) : []), ...(glp1 ? (['effects'] as LogSection[]) : []), 'intake', 'strength'];
 
   const toggle = (s: LogSection) => {
     setOpen(open === s ? null : s);
@@ -141,7 +143,7 @@ export default function LogScreen() {
                   <T v="label">{t('log.doseInjected')}</T>
                   <Stepper value={dose} onChange={setDose} steps={[0.25]} unit="mg" decimals={2} max={20} label={t('log.doseInjected')} />
                   <T v="small" color={colors.secondary} center>
-                    {t('log.doseNote', { dose: fmt(state.glp1.currentDose, 2) })}
+                    {t('log.doseNote', { dose: fmt(d.prescribedDose, 2) })}
                   </T>
                   <Button
                     label={t('log.save')}
@@ -248,6 +250,7 @@ export default function LogScreen() {
               )}
 
               {s === 'intake' && <IntakeCard />}
+              {s === 'strength' && <StrengthCard embedded />}
             </View>
           )}
         </Card>

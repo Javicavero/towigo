@@ -46,6 +46,12 @@ npx expo start --web
 
 ## Historial
 
+### 0.9 (benchmark de apps de salud)
+- Informe para la consulta en PDF (4, 12 o 26 semanas): inyecciones, pauta, peso y composición, glucosa, HbA1c, medicación, efectos secundarios y hábitos. Solo datos apuntados, sin interpretación.
+- Pauta de escalado del médico: fases, semana actual y aviso cuando cambia la fase. Towigo no propone ni calcula dosis.
+- Programa de constancia: hitos (1, 3, 6 y 12 meses) y tarjeta "Hablar con mi equipo" en momentos difíciles (inyección olvidada, efectos fuertes, meseta, días sin abrir la app).
+- Fuerza y proteína: rutinas de 10 minutos sin material, objetivo semanal del equipo y raciones rápidas de proteína.
+
 ### 0.4
 
 - **Owi con su diseño definitivo**: modelo 3D del erizo y sus 12 visualizaciones (feliz, atento,

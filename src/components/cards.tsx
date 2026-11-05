@@ -5,6 +5,7 @@
 import { View } from 'react-native';
 import { Icon, type IconName } from './icons';
 import { Bouncy, Pop, useCountUp } from './motion';
+import { ProteinFoods } from './program';
 import TrendChart from './TrendChart';
 import { Button, Card, ProgressBar, Row, T } from './ui';
 import { STEPS_GOAL, STEPS_TODAY, TEAM } from '../data/mock';
@@ -52,6 +53,9 @@ export function InjectionCard() {
           {t('inj.next', { date: dateShort(d.nextInjectionAt), time: state.glp1.time })}
         </T>
       )}
+      <T v="small" color={colors.secondary}>
+        {t('inj.prescribed', { dose: String(d.prescribedDose).replace('.', ','), who: TEAM.endo.short })}
+      </T>
       {d.injectionOverdue && (
         <T v="small" color={colors.ink}>
           {t('inj.overdueText')}
@@ -268,6 +272,7 @@ export function IntakeCard() {
             <Button key={g} style={{ flex: 1 }} kind="secondary" label={`+${g} g`} onPress={() => dispatch({ type: 'addIntake', protein: g })} />
           ))}
         </Row>
+        <ProteinFoods />
       </View>
       <View style={{ gap: 6 }}>
         <Row style={{ justifyContent: 'space-between' }}>
@@ -280,7 +285,7 @@ export function IntakeCard() {
         <Button kind="blue" label={t('intake.addWater')} onPress={() => dispatch({ type: 'addIntake', water: 1 })} />
       </View>
       <T v="small" color={colors.secondary}>
-        {t('intake.note', { who: TEAM.nutri.name })}
+        {t('intake.note', { who: TEAM.nutri.name, perKg: String(state.goals.proteinPerKg).replace('.', ',') })}
       </T>
     </Card>
   );

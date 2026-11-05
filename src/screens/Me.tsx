@@ -11,6 +11,7 @@ import { Glyph } from '../components/icons';
 import OwiAnimated from '../components/OwiAnimated';
 import OwiSticker from '../components/OwiSticker';
 import PlanSettings from '../components/PlanSettings';
+import { ReportCard } from '../components/program';
 import { buildWidgetSnapshot } from '../widgets/snapshot';
 import WidgetPreview from '../widgets/WidgetPreview';
 import { Button, Card, Choice, Disclosure, Row, Screen, SectionTitle, T } from '../components/ui';
@@ -21,7 +22,7 @@ import { useStore } from '../state/store';
 import { hasT2, usesGlp1, type Profile, type ReminderKind, type Scenario, type TextScale } from '../state/types';
 import { colors, fonts, MIN_TOUCH } from '../theme';
 
-type Section = 'avatar' | 'owi' | 'widgets' | 'profile' | 'plan' | 'sensor' | 'text' | 'privacy' | 'demo';
+type Section = 'avatar' | 'owi' | 'widgets' | 'profile' | 'plan' | 'report' | 'sensor' | 'text' | 'privacy' | 'demo';
 const SCENARIOS: Scenario[] = ['normal', 'injectionDay', 'missedInjection', 'sideEffects', 'plateau', 'milestone', 'highGlucose', 'lowGlucose', 'night'];
 const DEMO_REMINDERS: ReminderKind[] = ['injection', 'meds', 'weigh', 'meal', 'sport', 'water'];
 
@@ -113,6 +114,9 @@ export default function Me() {
       <SectionTitle>{t('me.treatment')}</SectionTitle>
       <Disclosure icon={<Glyph name="clock" bg="#D9542F" />} title={t('plan.title')} subtitle={t('me.planSub')} open={open === 'plan'} onToggle={() => toggle('plan')}>
         <PlanSettings />
+      </Disclosure>
+      <Disclosure icon={<Glyph name="doc" bg="#1E63C7" />} title={t('report.cardTitle')} subtitle={t('report.meSub')} open={open === 'report'} onToggle={() => toggle('report')}>
+        <ReportCard embedded />
       </Disclosure>
       {(state.sensor === 'dexcom' || state.sensor === 'libre') && (
         <Disclosure icon={<Glyph name="signal" bg="#1E63C7" />} title={t('me.sensorTitle')} subtitle={t(`sensor.${state.sensor}`)} open={open === 'sensor'} onToggle={() => toggle('sensor')}>

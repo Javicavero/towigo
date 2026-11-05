@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import { GlucoseCard, HabitsCard } from '../components/cards';
 import BondCard from '../components/BondCard';
+import { JourneyCard, ReportCard, StrengthCard, TitrationCard } from '../components/program';
 import { Glyph, Icon, type IconName } from '../components/icons';
 import OwiAnimated from '../components/OwiAnimated';
 import OwiSticker from '../components/OwiSticker';
@@ -69,6 +70,7 @@ export default function Progress() {
         onChange={setTab}
       />
 
+      {tab === 'habits' && <JourneyCard />}
       {tab === 'habits' && (
         <>
           <Card style={{ alignItems: 'center' }}>
@@ -145,6 +147,10 @@ export default function Progress() {
         </>
       )}
       {tab === 'habits' && <HabitsCard />}
+      {tab === 'habits' && <StrengthCard />}
+
+      {tab === 'health' && <ReportCard />}
+      {tab === 'health' && glp1 && <TitrationCard />}
 
       {tab === 'health' && t2 && <GlucoseCard />}
       {tab === 'health' && glp1 && (

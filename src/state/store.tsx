@@ -7,6 +7,7 @@ import {
   demoInjections,
   demoMeds,
   demoSideEffects,
+  demoStrength,
   demoWeights,
   glp1PlanFor,
   goalsFor,
@@ -39,6 +40,7 @@ import {
   type Scenario,
   type SensorId,
   type SideEffectEntry,
+  type TitrationStep,
   type TextScale,
   type WeightEntry,
 } from './types';
@@ -63,6 +65,9 @@ export const defaultAvatar: Avatar = {
 };
 
 /** Vínculo con Owi: sube con hábitos e interacciones; marca su evolución. */
+/** Hitos del programa de constancia (semanas de tratamiento). */
+export const MILESTONES = [4, 12, 26, 52];
+
 export const PET_LEVEL_AT: Record<PetLevel, number> = { 1: 0, 2: 40, 3: 120, 4: 300 };
 
 function demoData(profile: Profile, scenario: Scenario) {
@@ -76,6 +81,7 @@ function demoData(profile: Profile, scenario: Scenario) {
     hba1c: hasT2(profile) ? demoHba1c() : [],
     meds: demoMeds(profile),
     sideEffects: usesGlp1(profile) ? demoSideEffects(scenario) : [],
+    strength: demoStrength(),
   };
 }
 
@@ -94,6 +100,7 @@ function initialState(): AppState {
     ...demoData(profile, 'normal'),
     medsTaken: {},
     intake: [],
+    supportAskedOn: null,
     messages: initialMessages(profile),
     habitsToday: { log: false, walk: STEPS_TODAY >= STEPS_GOAL, listen: false },
     logsToday: 0,
@@ -131,6 +138,10 @@ type Action =
   | { type: 'takeMed'; medId: string; time: string }
   | { type: 'addSideEffect'; symptoms: SideEffectEntry['symptoms'] }
   | { type: 'addIntake'; protein?: number; water?: number }
+  | { type: 'addStrength'; routine: string }
+  | { type: 'setTitration'; steps: TitrationStep[]; startedAt?: string }
+  | { type: 'askTeam'; text: string }
+  | { type: 'dismissSupport' }
   | { type: 'sendMessage'; text?: string; kind: 'text' | 'audio'; durationSec?: number }
   | { type: 'owiReply'; text: string }
   | { type: 'listened'; id: string }
@@ -192,6 +203,16 @@ function reducer(s: AppState, a: Action): AppState {
       const next = { ...cur, protein: Math.max(0, cur.protein + (a.protein ?? 0)), water: Math.max(0, cur.water + (a.water ?? 0)) };
       return { ...s, ...logged(s), intake: [...s.intake.filter((i) => i.date !== today), next] };
     }
+    case 'addStrength':
+      return { ...s, ...logged(s), habitsToday: { ...s.habitsToday, log: true, walk: true }, strength: [...s.strength, { id: uid(), at: now, routine: a.routine }] };
+    case 'setTitration':
+      return { ...s, glp1: { ...s.glp1, titration: a.steps, startedAt: a.startedAt ?? s.glp1.startedAt } };
+    case 'askTeam': {
+      const m: Message = { id: uid(), from: 'patient', kind: 'text', text: a.text, at: now, read: true };
+      return { ...s, supportAskedOn: dayKey(Date.now()), messages: [...s.messages, m] };
+    }
+    case 'dismissSupport':
+      return { ...s, supportAskedOn: dayKey(Date.now()) };
     case 'sendMessage': {
       const m: Message = { id: uid(), from: 'patient', kind: a.kind, text: a.text, durationSec: a.durationSec, at: now, read: true };
       return { ...s, messages: [...s.messages, m] };
@@ -229,7 +250,7 @@ function reducer(s: AppState, a: Action): AppState {
 
 export type MedSlot = { med: Medication; time: string; taken: boolean };
 
-type Derived = {
+export type Derived = {
   // GLP-1
   lastInjection: AppState['injections'][number] | null;
   nextInjectionAt: number | null;
@@ -238,6 +259,20 @@ type Derived = {
   injectionOverdue: boolean;
   suggestedSite: InjectionSite;
   injectionWeeks: number;
+  /** Pauta del médico: fase actual, dosis pautada y próxima fase (solo se muestra). */
+  phaseIndex: number;
+  prescribedDose: number;
+  phaseWeek: number;
+  phaseWeeks: number;
+  nextPhase: { dose: number; at: number } | null;
+  phaseChangeSoon: boolean;
+  // Constancia
+  treatmentStart: number;
+  treatmentWeek: number;
+  nextMilestone: number | null;
+  supportReason: 'missedInjection' | 'plateau' | 'sideEffects' | 'away' | null;
+  // Fuerza
+  strengthThisWeek: number;
   // Peso
   weightNow: number | null;
   weightStart: number | null;
@@ -285,7 +320,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const base = initialState();
     // Versiones anteriores del prototipo (otro modelo de datos): empezamos de cero.
     if (!saved || !saved.profile || !saved.goals) return base;
-    return { ...base, ...saved, avatar: { ...base.avatar, ...saved.avatar, equipped: { ...base.avatar.equipped, ...(saved.avatar?.equipped ?? {}) } } };
+    return {
+      ...base,
+      ...saved,
+      glp1: { ...base.glp1, ...saved.glp1 },
+      goals: { ...base.goals, ...saved.goals },
+      avatar: { ...base.avatar, ...saved.avatar, equipped: { ...base.avatar.equipped, ...(saved.avatar?.equipped ?? {}) } } };
   });
 
   useEffect(() => save(state), [state]);
@@ -329,6 +369,39 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
     if (inj.length) injectionWeeks++;
     if (injectionOverdue) injectionWeeks = 0;
+
+    // ---- Pauta de escalado (la fija el médico) ----
+    const steps = state.glp1.titration?.length ? state.glp1.titration : [{ dose: state.glp1.currentDose, weeks: 0 }];
+    const startT = new Date(state.glp1.startedAt).getTime();
+    const weeksOn = Math.max(0, Math.floor((now - startT) / (7 * DAY)));
+    let phaseIndex = steps.length - 1;
+    let acc = 0;
+    for (let i = 0; i < steps.length; i++) {
+      if (steps[i].weeks === 0 || weeksOn < acc + steps[i].weeks) {
+        phaseIndex = i;
+        break;
+      }
+      acc += steps[i].weeks;
+    }
+    const phase = steps[phaseIndex];
+    const phaseWeek = weeksOn - acc + 1;
+    // La nueva fase empieza el primer día de inyección a partir del fin de la fase actual.
+    let nextPhaseAt = startT + (acc + phase.weeks) * 7 * DAY;
+    while ((new Date(nextPhaseAt).getDay() + 6) % 7 !== state.glp1.weekday) nextPhaseAt += DAY;
+    const nextPhase = glp1 && phase.weeks > 0 && phaseIndex < steps.length - 1 ? { dose: steps[phaseIndex + 1].dose, at: nextPhaseAt } : null;
+    const phaseChangeSoon = !!nextPhase && nextPhase.at - now < 7 * DAY;
+
+    // ---- Constancia: semanas desde el inicio del tratamiento ----
+    const firstWeight = state.weights.length ? Math.min(...state.weights.map((w) => new Date(w.at).getTime())) : now;
+    const treatmentStart = glp1 ? startT : firstWeight;
+    const treatmentWeek = Math.max(1, Math.floor((now - treatmentStart) / (7 * DAY)) + 1);
+    const nextMilestone = MILESTONES.find((m) => m >= treatmentWeek) ?? null;
+
+    // ---- Fuerza ----
+    const monday = new Date(now);
+    monday.setHours(0, 0, 0, 0);
+    monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
+    const strengthThisWeek = state.strength.filter((x) => new Date(x.at).getTime() >= monday.getTime()).length;
 
     // ---- Peso ----
     const ws = [...state.weights].sort((a, b) => a.at.localeCompare(b.at));
@@ -387,7 +460,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const unlocked = Object.fromEntries(ACCESSORIES.map((a) => [a.id, streak >= a.unlockDays])) as Record<AccessoryId, boolean>;
     const listened = state.messages.filter((m) => m.read && m.kind === 'audio' && m.from !== 'patient').length;
     const sent = state.messages.filter((m) => m.from === 'patient').length;
-    const bond = streak * 10 + state.logsToday * 4 + injectionWeeks * 2 + listened * 5 + sent * 3 + state.remindersDoneCount * 3 + (state.scenario === 'milestone' ? 120 : 0);
+    const bond = streak * 10 + state.logsToday * 4 + injectionWeeks * 2 + listened * 5 + sent * 3 + state.remindersDoneCount * 3 + state.strength.length * 4 + (state.scenario === 'milestone' ? 120 : 0);
     const petLevel = ([4, 3, 2, 1] as PetLevel[]).find((l) => bond >= PET_LEVEL_AT[l]) ?? 1;
     const nextAt = petLevel < 4 ? PET_LEVEL_AT[(petLevel + 1) as PetLevel] : PET_LEVEL_AT[4];
     const petProgress = petLevel < 4 ? (bond - PET_LEVEL_AT[petLevel]) / (nextAt - PET_LEVEL_AT[petLevel]) : 1;
@@ -395,6 +468,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const hour = new Date(now).getHours();
     const isNight = state.scenario === 'night' || hour < 7;
     const syncOk = !(state.dataSource === 'dexcom' && state.dexcom.error);
+
+    // ---- Momentos en los que ayuda hablar con el equipo (avisa a una persona; no es una indicación clínica) ----
+    const supportReason: Derived['supportReason'] =
+      state.supportAskedOn === today ? null : injectionOverdue ? 'missedInjection' : worstSymptomToday >= 2 ? 'sideEffects' : plateau ? 'plateau' : daysAway >= 3 ? 'away' : null;
 
     // ---- Emoción de Owi (por prioridad). Acompaña; nunca regaña ni da indicaciones clínicas. ----
     let petMood: PetMood = 'happy';
@@ -418,6 +495,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       injectionOverdue,
       suggestedSite,
       injectionWeeks,
+      phaseIndex,
+      prescribedDose: phase.dose,
+      phaseWeek,
+      phaseWeeks: phase.weeks,
+      nextPhase,
+      phaseChangeSoon,
+      treatmentStart,
+      treatmentWeek,
+      nextMilestone,
+      supportReason,
+      strengthThisWeek,
       weightNow,
       weightStart,
       lostKg,

@@ -63,8 +63,12 @@ export type Glp1Drug = 'semaglutida' | 'tirzepatida' | 'liraglutida' | 'otro';
 export type InjectionSite = 'abdIzq' | 'abdDer' | 'musloIzq' | 'musloDer' | 'brazoIzq' | 'brazoDer';
 /** Registro de una inyección: lo que el paciente se ha puesto (la app no decide dosis). */
 export type Injection = { id: string; at: string; dose: number; site: InjectionSite };
+/** Una fase de la pauta de escalado que fija el médico (la app solo la muestra y la recuerda). */
+export type TitrationStep = { dose: number; weeks: number };
 export type Glp1Plan = {
   drug: Glp1Drug;
+  /** Pauta de escalado del médico, desde `startedAt`. La última fase es la de mantenimiento. */
+  titration: TitrationStep[];
   /** Dosis actual pautada por su médico (solo se muestra, no se calcula). */
   currentDose: number;
   weekday: number; // 0 = lunes
@@ -102,7 +106,14 @@ export type Goals = {
   waterGlasses: number;
   fastingRange: [number, number];
   postMealMax: number;
+  /** g de proteína por kg que pauta la nutricionista (el objetivo diario sale de aquí). */
+  proteinPerKg: number;
+  /** Sesiones de fuerza por semana que propone el equipo. */
+  strengthPerWeek: number;
 };
+
+/** Una sesión de fuerza hecha (rutinas cortas para proteger el músculo). */
+export type StrengthSession = { id: string; at: string; routine: string };
 
 /** Avisos del plan (horarios del paciente o su equipo; nunca calculados por la app). */
 export type ReminderKind = 'injection' | 'meds' | 'sport' | 'meal' | 'water' | 'weigh';
@@ -138,6 +149,9 @@ export type AppState = {
   medsTaken: Record<string, boolean>; // `${fecha}|${medId}|${hora}`
   sideEffects: SideEffectEntry[];
   intake: DayIntake[];
+  strength: StrengthSession[];
+  /** Último día en que el paciente pidió hablar con su equipo desde el programa de constancia. */
+  supportAskedOn: string | null;
   messages: Message[];
   habitsToday: Record<HabitId, boolean>;
   logsToday: number;

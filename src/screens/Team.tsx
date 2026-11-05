@@ -135,7 +135,7 @@ export default function Team() {
   };
 
   return (
-    <Screen padBottom={110}>
+    <Screen padBottom={110} stickToEnd>
       <T v="title" accessibilityRole="header">
         {t('team.title')}
       </T>

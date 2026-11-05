@@ -38,6 +38,10 @@ _Noviembre 2026. Respeta los límites de la Fase 1: sin cálculo ni sugerencia d
 
 Siguiente sprint: **1 (informe PDF), 2 (proteína y fuerza), 4 (escalado pautado) y 6 (programa de constancia)**. Son las que más diferencian a Towigo de MeAgain y del resto, y son seguras en la Fase 1.
 
+## Estado
+
+- Hechas en la versión 0.9: 1 (informe PDF), 2 (proteína y fuerza), 4 (pauta de escalado) y 6 (programa de constancia).
+
 ## Fuentes
 
 - MeAgain: https://meagain.com/best-glp-1-tracker-apps

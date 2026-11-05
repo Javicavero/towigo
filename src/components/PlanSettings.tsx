@@ -5,7 +5,7 @@
 import { Pressable, View } from 'react-native';
 import { t } from '../i18n';
 import { useStore } from '../state/store';
-import { hasT2, usesGlp1, type Glp1Drug, type Plan } from '../state/types';
+import { hasT2, usesGlp1, type Glp1Drug, type Plan, type TitrationStep } from '../state/types';
 import { colors, MIN_TOUCH } from '../theme';
 import { Choice, Row, T } from './ui';
 
@@ -41,8 +41,47 @@ function DayPicker({ value, onChange, multi }: { value: number[]; onChange: (d: 
   );
 }
 
+const f2 = (n: number) => (Math.round(n * 100) / 100).toString().replace('.', ',');
+
+/**
+ * Pauta de escalado: en la app real la introduce el médico desde su panel; en el prototipo se puede editar aquí.
+ * Towigo nunca propone fases ni dosis: solo guarda y muestra la pauta.
+ */
+function TitrationEditor() {
+  const { state, dispatch, d } = useStore();
+  const steps = state.glp1.titration;
+  const set = (i: number, patch: Partial<TitrationStep>) => dispatch({ type: 'setTitration', steps: steps.map((s, j) => (j === i ? { ...s, ...patch } : s)) });
+  const r = (n: number) => Math.round(Math.max(0, n) * 100) / 100;
+  return (
+    <View style={{ gap: 8 }}>
+      <T v="label">{t('tit.editTitle')}</T>
+      <T v="small" color={colors.secondary}>
+        {t('tit.editNote')}
+      </T>
+      {steps.map((s, i) => (
+        <Row key={i} gap={6} style={{ flexWrap: 'wrap', opacity: i < d.phaseIndex ? 0.6 : 1 }}>
+          <T v="label" style={{ width: 64 }}>
+            {f2(s.dose)} mg
+          </T>
+          <Choice label="−" style={{ minWidth: 40 }} onPress={() => set(i, { dose: r(s.dose - 0.25) })} />
+          <Choice label="+" style={{ minWidth: 40 }} onPress={() => set(i, { dose: r(s.dose + 0.25) })} />
+          <T v="small" color={colors.secondary} style={{ width: 86, textAlign: 'center' }}>
+            {s.weeks ? t('report.weeks', { n: s.weeks }) : t('report.maintenance')}
+          </T>
+          <Choice label="−" style={{ minWidth: 40 }} accessibilityLabel={t('tit.lessWeeks')} onPress={() => set(i, { weeks: Math.max(0, s.weeks - 1) })} />
+          <Choice label="+" style={{ minWidth: 40 }} accessibilityLabel={t('tit.moreWeeks')} onPress={() => set(i, { weeks: s.weeks + 1 })} />
+        </Row>
+      ))}
+      <Row gap={8}>
+        <Choice label={t('tit.add')} onPress={() => dispatch({ type: 'setTitration', steps: [...steps, { dose: steps[steps.length - 1]?.dose ?? 0.25, weeks: 0 }] })} />
+        {steps.length > 1 && <Choice label={t('tit.remove')} onPress={() => dispatch({ type: 'setTitration', steps: steps.slice(0, -1) })} />}
+      </Row>
+    </View>
+  );
+}
+
 export default function PlanSettings() {
-  const { state, dispatch } = useStore();
+  const { state, dispatch, d } = useStore();
   const p = state.plan;
   const set = <K extends keyof Plan>(k: K, patch: Partial<Plan[K]>) => dispatch({ type: 'setPlan', patch: { [k]: { ...p[k], ...patch } } as Partial<Plan> });
 
@@ -68,8 +107,9 @@ export default function PlanSettings() {
           </T>
           <DayPicker value={[state.glp1.weekday]} onChange={(d) => dispatch({ type: 'setGlp1', patch: { weekday: d[0] } })} />
           <T v="small" color={colors.secondary}>
-            {t('plan.doseByDoctor', { dose: String(state.glp1.currentDose).replace('.', ',') })}
+            {t('plan.doseByDoctor', { dose: f2(d.prescribedDose) })}
           </T>
+          <TitrationEditor />
         </View>
       )}
 

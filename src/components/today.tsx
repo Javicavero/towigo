@@ -86,6 +86,26 @@ export function TodayList() {
         onPress={() => go('log', 'intake')}
       />,
     );
+  if (glp1 && d.nextPhase && d.phaseChangeSoon)
+    rows.push(
+      <ListRow
+        key="tit"
+        icon={<Glyph name="steps" bg="#1E63C7" />}
+        title={t('today.titration', { dose: String(d.nextPhase.dose).replace('.', ',') })}
+        subtitle={t('today.titrationSub', { date: new Date(d.nextPhase.at).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric' }) })}
+        onPress={() => go('progress')}
+      />,
+    );
+  rows.push(
+    <ListRow
+      key="str"
+      icon={<Glyph name="dumbbell" bg="#5B4BC4" />}
+      title={t('today.strength')}
+      subtitle={t('today.strengthSub', { a: d.strengthThisWeek, b: state.goals.strengthPerWeek })}
+      done={d.strengthThisWeek >= state.goals.strengthPerWeek}
+      onPress={() => go('log', 'strength')}
+    />,
+  );
   if (unread)
     rows.push(
       <ListRow

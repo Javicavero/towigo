@@ -35,7 +35,11 @@ export type IconName =
   | 'demo'
   | 'steth'
   | 'widget'
-  | 'protein';
+  | 'protein'
+  | 'dumbbell'
+  | 'doc'
+  | 'flag'
+  | 'steps';
 
 export function Icon({ name, size = 26, color = colors.ink, stroke = 2.2 }: { name: IconName; size?: number; color?: string; stroke?: number }) {
   const p = { stroke: color, strokeWidth: stroke, fill: 'none', strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
@@ -139,6 +143,10 @@ export function Icon({ name, size = 26, color = colors.ink, stroke = 2.2 }: { na
           <Rect {...p} x={4} y={13} width={16} height={7} rx={2} />
         </>
       )}
+      {name === 'dumbbell' && <Path {...p} d="M3 10v4M6 7v10M18 7v10M21 10v4M6 12h12" />}
+      {name === 'doc' && <Path {...p} d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 13h6M9 17h6" />}
+      {name === 'flag' && <Path {...p} d="M5 21V4M5 4h11l-2 4 2 4H5" />}
+      {name === 'steps' && <Path {...p} d="M4 17h4v-4h4V9h4V5h4" />}
       {name === 'protein' && <Path {...p} d="M15.5 4.5a4 4 0 0 1 4 4c0 3.5-4.5 4-6.5 6l-4 4a2 2 0 1 1-2.8-2.8l4-4c2-2 2.5-6.5 6-6.5zM6 15.5l2.5 2.5" />}
     </Svg>
   );

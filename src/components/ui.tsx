@@ -1,4 +1,4 @@
-import { Children, isValidElement, type ReactNode } from 'react';
+import { Children, isValidElement, useRef, type ReactNode } from 'react';
 import {
   Animated,
   Pressable,
@@ -7,6 +7,7 @@ import {
   Text,
   View,
   type PressableProps,
+  type ScrollViewInstance,
   type StyleProp,
   type TextStyle,
   type ViewStyle,
@@ -167,15 +168,22 @@ export function Swatch({ color, selected, onPress, label }: { color: string; sel
 }
 
 /** Contenedor de pantalla: centrado y con ancho máximo para que en escritorio se vea como un móvil. */
-export function Screen({ children, scroll = true, padBottom = 110 }: { children: ReactNode; scroll?: boolean; padBottom?: number }) {
+export function Screen({ children, scroll = true, padBottom = 110, stickToEnd }: { children: ReactNode; scroll?: boolean; padBottom?: number; stickToEnd?: boolean }) {
   const insets = useSafeAreaInsets();
+  const ref = useRef<ScrollViewInstance>(null);
   // Entrada suave y escalonada de cada bloque.
   let k = 0;
   const animated = Children.map(children, (c) => (isValidElement(c) ? <FadeIn delay={Math.min(k++, 8) * 55}>{c}</FadeIn> : c));
   const inner = <View style={[styles.inner, { paddingTop: insets.top + 16, paddingBottom: padBottom }]}>{animated}</View>;
   if (!scroll) return <View style={styles.flex}>{inner}</View>;
   return (
-    <ScrollView style={styles.flex} contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
+    <ScrollView
+      ref={ref}
+      style={styles.flex}
+      contentContainerStyle={{ flexGrow: 1 }}
+      keyboardShouldPersistTaps="handled"
+      onContentSizeChange={stickToEnd ? () => ref.current?.scrollToEnd({ animated: true }) : undefined}
+    >
       {inner}
     </ScrollView>
   );
