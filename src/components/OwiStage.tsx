@@ -116,8 +116,8 @@ export default function OwiStage({
             <Arc c0={c0} r={c0 - w * 3.1} value={rings.food} color={RING.food} w={w} />
           </Svg>
         </Animated.View>
-        <View style={{ marginTop: size * 0.04 }}>
-          <OwiAnimated mood={mood} level={level} size={size * 0.74} onPress={onPressOwi} label={label} />
+        <View style={{ marginTop: size * 0.02 }}>
+          <OwiAnimated mood={mood} level={level} size={size * 0.84} onPress={onPressOwi} label={label} shadow={false} />
         </View>
       </View>
       {children}

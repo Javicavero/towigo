@@ -4,15 +4,16 @@ Desde la versión 0.5 los personajes son **2D**: más ligeros, sin fallos de 3D 
 aspecto en web, iPhone y Android.
 
 ## Owi (erizo, la mascota)
-- 12 ilustraciones del diseño en `assets/owi/<emoción>.png` (fondo transparente, 256 px):
-  `happy`, `attentive`, `caringHigh`, `worriedHigh`, `caringLow`, `worriedLow`, `celebrate`,
-  `sleep`, `confused`, `remind`, `sport`, `missYou`.
-- La app las anima (`src/components/OwiAnimated.tsx`): respira, salta, se balancea, tiembla,
-  flota dormido o corre según la emoción, y reacciona al tocarlo.
-- Evoluciona con el vínculo: crece un poco y gana insignias (pañuelo, gorro, medalla).
-- Para mejorar la calidad: entregar las 12 ilustraciones a 512 px con fondo transparente y
-  los mismos nombres. Opcional: animaciones Lottie con esos nombres.
-- El modelo 3D original del diseño se conserva en `assets/owi/source/` por si se recupera el 3D.
+- **Hoja de diseño oficial**: `docs/owi/hoja-diseno-owi.webp` (vistas, poses, paleta, proporciones 1:1 y rasgos faciales).
+  - Paleta: crema `#FEDDB9` (cara, barriga, manos y pies), marrón medio `#D0783B` (púas en forma de hoja),
+    marrón oscuro `#753315` (cejas, nariz y detalles), blanco (brillos) y negro (pupilas).
+  - Púas estilizadas en forma de hoja, ordenadas, que forman una melena alrededor de la cara.
+  - Ojos grandes marrones con dos brillos, cejas gruesas, cinta deportiva naranja solo en deporte.
+- **Animaciones** (12 emociones, bucles tipo GIF a 20 fps): se renderizan desde el modelo 3D siguiendo la
+  hoja de diseño con el estudio `tools/owi/anim` y se reproducen en 2D con `src/components/OwiSprite.tsx`.
+- **Ilustraciones fijas** (`assets/owi/<emoción>.png`, 256 px) para el chat, los widgets y las miniaturas:
+  salen del mismo render, así que todo es coherente.
+- Evoluciona con el vínculo: crece un poco con el nivel.
 
 ## Avatar del usuario
 - Busto ilustrado en SVG (`src/components/AvatarFace.tsx`): tono de piel, forma de cara,

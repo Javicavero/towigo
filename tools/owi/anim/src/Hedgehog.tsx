@@ -16,17 +16,92 @@ import { Confetti, Floating, Heart, lerp, tube } from './common';
 
 const OWI_URL = './owi_prepared.glb';
 
+// Paleta oficial (hoja de diseño de Owi): crema, marrón medio, marrón oscuro, blanco y negro.
 const C = {
-  quill: '#683619',
-  fur: '#F5C477',
-  belly: '#FAD593',
-  earInner: '#E3A879',
-  nose: '#3A2216',
-  ink: '#2B1A12',
-  mouth: '#5A2A1C',
-  tongue: '#F07B7B',
+  quill: '#7A3A17', // cuerpo bajo las púas
+  leafBase: '#7A3412',
+  leafTip: '#C06632',
+  fur: '#F9D7B0',
+  belly: '#FDE3C6',
+  earInner: '#EFA98A',
+  nose: '#3A1D10',
+  ink: '#5A260F', // cejas y trazos (marrón oscuro)
+  iris: '#6A3313',
+  pupil: '#170B05',
+  mouth: '#7A1C12',
+  tongue: '#F27C74',
   blush: '#FF9C8C',
+  band: '#EE5A2A',
 };
+
+/**
+ * Púas estilizadas en forma de hoja (hoja de diseño): ordenadas, del mismo volumen,
+ * forman una melena alrededor de la cara y cubren espalda y cabeza.
+ */
+function leafGeometry() {
+  const g = new THREE.SphereGeometry(0.5, 18, 14);
+  const pos = g.attributes.position as THREE.BufferAttribute;
+  const col = new Float32Array(pos.count * 3);
+  const a = new THREE.Color(C.leafBase);
+  const b = new THREE.Color(C.leafTip);
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i);
+    const y = pos.getY(i);
+    const z = pos.getZ(i);
+    const u = y + 0.5; // 0 base → 1 punta
+    const w = Math.pow(Math.sin(Math.PI * Math.pow(u, 0.85)), 0.75); // hoja ancha, punta suave
+    const bend = -0.14 * u * u; // la punta se pega al cuerpo (como escamas)
+    pos.setXYZ(i, x * w * 0.78, u, z * w * 0.24 + bend);
+    const c = a.clone().lerp(b, Math.min(1, u * 1.15));
+    col[i * 3] = c.r;
+    col[i * 3 + 1] = c.g;
+    col[i * 3 + 2] = c.b;
+  }
+  g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  g.computeVertexNormals();
+  return g;
+}
+
+function LeafQuills() {
+  const leaves = useMemo(() => {
+    const out: { p: THREE.Vector3; q: THREE.Quaternion; s: number }[] = [];
+    const c = new THREE.Vector3(0, 0.7, -0.1);
+    const R = new THREE.Vector3(0.6, 0.64, 0.56);
+    const N = 240;
+    const fwd = new THREE.Vector3(0, 0, 1);
+    for (let i = 0; i < N; i++) {
+      const y = 1 - (2 * (i + 0.5)) / N;
+      const r = Math.sqrt(1 - y * y);
+      const th = i * 2.399963;
+      const n = new THREE.Vector3(Math.cos(th) * r, y, Math.sin(th) * r);
+      const ang = Math.acos(n.dot(fwd)); // ángulo con el frente
+      if (ang < 0.98) continue; // hueco de la cara
+      if (n.y < -0.42) continue; // barriga y pies
+      if (n.y < -0.1 && n.z > 0.1) continue;
+      const p = c.clone().add(new THREE.Vector3(n.x * R.x, n.y * R.y, n.z * R.z).multiplyScalar(0.86));
+      // Dirección de la punta: hacia fuera, algo hacia arriba y hacia atrás
+      const d = n.clone().add(new THREE.Vector3(0, 0.22, 0)).add(new THREE.Vector3(0, 0, -0.12)).normalize();
+      const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), d);
+      // Cara plana de la hoja mirando hacia fuera
+      const zAxis = new THREE.Vector3(0, 0, 1).applyQuaternion(q);
+      const want = n.clone().sub(d.clone().multiplyScalar(n.dot(d))).normalize();
+      const twist = Math.atan2(new THREE.Vector3().crossVectors(zAxis, want).dot(d), zAxis.dot(want));
+      q.premultiply(new THREE.Quaternion().setFromAxisAngle(d, twist));
+      const s = 0.4 + 0.08 * Math.max(0, n.y) + (i % 3) * 0.012;
+      out.push({ p, q, s });
+    }
+    return out;
+  }, []);
+  const geo = useMemo(leafGeometry, []);
+  const mat = useMemo(() => new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.62 }), []);
+  return (
+    <group>
+      {leaves.map((l, i) => (
+        <mesh key={i} geometry={geo} material={mat} position={l.p} quaternion={l.q} scale={l.s} />
+      ))}
+    </group>
+  );
+}
 
 // Anclas de la cara (coordenadas del modelo preparado)
 const EYE = { x: 0.215, y: 0.79, z: 0.6 };
@@ -127,9 +202,13 @@ function Eye({ side, look, blink }: { side: 1 | -1; look: Look; blink: React.Ref
         <meshStandardMaterial color="#FFFFFF" roughness={0.15} />
       </mesh>
       <group position={[gx, gy, 0.06]}>
-        <mesh scale={[0.105, 0.125, 0.05]}>
+        <mesh scale={[0.112, 0.132, 0.05]}>
           <sphereGeometry args={[1, 28, 20]} />
-          <meshStandardMaterial color={C.ink} roughness={0.15} />
+          <meshStandardMaterial color={C.iris} roughness={0.2} />
+        </mesh>
+        <mesh position={[0, 0, 0.022]} scale={[0.064, 0.076, 0.035]}>
+          <sphereGeometry args={[1, 24, 16]} />
+          <meshStandardMaterial color={C.pupil} roughness={0.1} />
         </mesh>
         <mesh position={[0.035, 0.045, 0.045]} scale={[0.038, 0.042, 0.02]}>
           <sphereGeometry args={[1, 16, 12]} />
@@ -158,7 +237,7 @@ function Eye({ side, look, blink }: { side: 1 | -1; look: Look; blink: React.Ref
 }
 
 function Brow({ side, look }: { side: 1 | -1; look: Look }) {
-  const geo = useMemo(() => tube([[-0.07, -0.008, 0], [0, 0.012, 0.01], [0.07, -0.008, 0]], 0.022), []);
+  const geo = useMemo(() => tube([[-0.085, -0.012, 0], [0, 0.018, 0.012], [0.085, -0.012, 0]], 0.032), []);
   // Interior arriba = preocupación; "angry" = interior abajo (decidido, deporte).
   const a = look.angry ? side * -0.45 : side * -look.brow;
   const y = BROW_Y + (look.brow < 0 ? 0.03 : 0) + (look.angry ? -0.04 : 0);
@@ -336,6 +415,7 @@ export default function Hedgehog({
     model.traverse((o) => {
       const m = o as THREE.Mesh;
       if (!m.isMesh) return;
+      if (m.name === 'quills') m.visible = false;
       m.material =
         m.name === 'quills' || m.name === 'body'
           ? mats.quill
@@ -436,6 +516,7 @@ export default function Hedgehog({
     <group ref={root} position={position} scale={LEVELS[level].scale * size}>
       <group ref={body}>
         <primitive object={model} />
+        <LeafQuills />
         <Eye side={-1} look={look} blink={blink} />
         <Eye side={1} look={look} blink={blink} />
         <Brow side={-1} look={look} />
@@ -450,10 +531,10 @@ export default function Hedgehog({
         {mood === 'sport' && (
           <group position={[0, 1.1, -0.02]} rotation={[-0.15, 0, 0]}>
             <mesh rotation={[Math.PI / 2, 0, 0]}>
-              <torusGeometry args={[0.45, 0.055, 12, 40]} />
-              <meshStandardMaterial color="#FFFFFF" roughness={0.7} />
+              <torusGeometry args={[0.47, 0.06, 12, 48]} />
+              <meshStandardMaterial color={C.band} roughness={0.7} />
             </mesh>
-            {[-0.035, 0.035].map((dy) => (
+            {[].map((dy: number) => (
               <mesh key={dy} position={[0, dy, 0]} rotation={[Math.PI / 2, 0, 0]}>
                 <torusGeometry args={[0.455, 0.018, 8, 40]} />
                 <meshStandardMaterial color="#D9342B" roughness={0.6} />
