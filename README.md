@@ -46,8 +46,14 @@ npx expo start --web
 
 ## Historial
 
+### 1.2 (Owi fiel a su hoja de diseño, solo 2D)
+- Owi sale **únicamente de la plantilla oficial** (`docs/owi/hoja-diseno-owi.webp`), sin 3D: poses recortadas de la hoja
+  (frontal, 3/4, neutra, expresión cómica, deporte) y emociones compuestas con sus "Rasgos faciales".
+- Animación 2D de dibujo animado (estirar y encoger, saltos, balanceo, respiración, temblor) y efectos con las chispas de la
+  propia hoja. Herramientas en `tools/owi/anim2d`. Vista previa: `docs/owi-animaciones.gif`.
+
 ### 1.1 (Owi protagonista y animado)
-- **Owi animado en 3D tipo GIF**: 12 emociones con movimientos propios (saluda, salta y gira al celebrar, corre, duerme respirando, se rasca la cabeza, abraza el corazón, tiembla…), renderizadas fotograma a fotograma desde el modelo 3D (`tools/owi/anim`) y reproducidas en 2D (`OwiSprite`). Bucles perfectos a 20 fps; respeta "Reducir movimiento". Vista previa: `docs/owi-animaciones.gif`.
+- **Owi animado tipo GIF**: 12 emociones con movimientos propios, reproducidas con `OwiSprite`. Bucles perfectos a 20 fps; respeta "Reducir movimiento".
 - **Hoy**: escenario a pantalla completa con Owi dentro de los anillos del día, fondo que cambia con su emoción, halo que respira, su frase con tus datos y acciones rápidas. Al tocarlo, salta y gira.
 - Owi animado en la cabecera de Registrar, Progreso, Equipo y Yo (te habla y celebra cada registro) y protagonista en la bienvenida.
 

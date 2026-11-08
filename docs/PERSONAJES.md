@@ -9,10 +9,14 @@ aspecto en web, iPhone y Android.
     marrón oscuro `#753315` (cejas, nariz y detalles), blanco (brillos) y negro (pupilas).
   - Púas estilizadas en forma de hoja, ordenadas, que forman una melena alrededor de la cara.
   - Ojos grandes marrones con dos brillos, cejas gruesas, cinta deportiva naranja solo en deporte.
-- **Animaciones** (12 emociones, bucles tipo GIF a 20 fps): se renderizan desde el modelo 3D siguiendo la
-  hoja de diseño con el estudio `tools/owi/anim` y se reproducen en 2D con `src/components/OwiSprite.tsx`.
-- **Ilustraciones fijas** (`assets/owi/<emoción>.png`, 256 px) para el chat, los widgets y las miniaturas:
-  salen del mismo render, así que todo es coherente.
+- **Solo 2D y solo con la plantilla**: las poses y los rasgos se recortan directamente de la hoja de diseño (sin 3D).
+- **Animaciones** (12 emociones, bucles tipo GIF a 20 fps): `tools/owi/anim2d` las genera con transformaciones de dibujo
+  animado y efectos, y la app las reproduce con `src/components/OwiSprite.tsx`.
+  - Contento (frente, boca abierta, bota) · Atento (vista 3/4) · Cariñoso (ojos felices y corazón) · Preocupado (cejas
+    preocupadas, tiembla, gota) · Celebra (expresión cómica, saltos) · Duerme (ojos cerrados, respira, "z") · Confundido
+    (ojos sorprendidos, "?") · Avisa (pose neutra, "!") · Deporte (pose con cinta, corre) · Te echa de menos (cejas tristes).
+- **Ilustraciones fijas** (`assets/owi/<emoción>.png`, 256 px) para el chat, los widgets y las miniaturas: primer
+  fotograma de cada animación.
 - Evoluciona con el vínculo: crece un poco con el nivel.
 
 ## Avatar del usuario

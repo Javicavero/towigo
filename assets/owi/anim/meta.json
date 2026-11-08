@@ -1,31 +1,16 @@
 {
- "celebrate": {
-  "frames": 48,
-  "cols": 8,
-  "fps": 20
- },
  "happy": {
   "frames": 48,
   "cols": 8,
   "fps": 20
  },
- "remind": {
+ "celebrate": {
   "frames": 48,
   "cols": 8,
   "fps": 20
  },
  "sport": {
   "frames": 16,
-  "cols": 8,
-  "fps": 20
- },
- "worriedHigh": {
-  "frames": 32,
-  "cols": 8,
-  "fps": 20
- },
- "worriedLow": {
-  "frames": 32,
   "cols": 8,
   "fps": 20
  },
@@ -36,6 +21,16 @@
  },
  "caringHigh": {
   "frames": 64,
+  "cols": 8,
+  "fps": 20
+ },
+ "worriedHigh": {
+  "frames": 32,
+  "cols": 8,
+  "fps": 20
+ },
+ "worriedLow": {
+  "frames": 32,
   "cols": 8,
   "fps": 20
  },
@@ -56,6 +51,11 @@
  },
  "sleep": {
   "frames": 80,
+  "cols": 8,
+  "fps": 20
+ },
+ "remind": {
+  "frames": 48,
   "cols": 8,
   "fps": 20
  }
