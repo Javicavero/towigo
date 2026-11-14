@@ -1,7 +1,5 @@
 /**
- * Sistema visual de Towigo v1 — "premium + tech".
- * Neutros cálidos y superficies limpias en claro; grafito profundo en oscuro.
- * Los colores de datos (teal, azul eléctrico, violeta, coral) son los protagonistas.
+ * Sistema visual de Towigo v2: "Holo" en claro y "Aurora" en oscuro.
  * El tema (claro/oscuro) se decide al arrancar: sistema o preferencia del usuario (Yo → Apariencia).
  */
 import { Appearance, Platform } from 'react-native';
@@ -34,73 +32,71 @@ const pref = readAppearancePref();
 export const scheme: 'light' | 'dark' = pref === 'system' ? (Appearance.getColorScheme() === 'dark' ? 'dark' : 'light') : pref;
 export const isDark = scheme === 'dark';
 
+// Claro "Holo": perla con violeta y aguamarina. Los acentos de texto van oscurecidos para cumplir contraste AA.
 const light = {
-  // Marca y acentos (texto/botones con contraste ≥ 4,5:1 sobre la superficie)
-  owiGreen: '#14B8A6', // gráficos
-  deepGreen: '#0F9488',
-  greenText: '#0B7266', // texto y botones
-  greenDark: '#085A51',
-  coral: '#FF7A59',
-  coralDark: '#E0573A',
+  owiGreen: '#22C7B8', // gráficos (aguamarina)
+  deepGreen: '#12A093',
+  greenText: '#5B3DE0', // acción principal y texto de acento (violeta, 5,9:1 sobre el fondo)
+  greenDark: '#4327B8',
+  coral: '#FF9A6B',
+  coralDark: '#E86A3A',
   coralText: '#B4432B',
   coralShadow: '#8E3120',
   achievement: '#E9A23B',
   yellowDark: '#8A6100',
-  // Neutros
-  ink: '#121316',
-  secondary: '#62646B',
-  cream: '#F4F3EF', // fondo de la app (neutro cálido)
+  ink: '#1B1630',
+  secondary: '#625B7C',
+  cream: '#F4F1FA', // fondo de la app
   white: '#FFFFFF', // superficie de tarjetas
-  surface2: '#F8F7F4',
-  line: '#E8E6E1',
-  border: '#E8E6E1',
-  borderStrong: '#D6D3CC',
-  onAccent: '#FFFFFF', // texto/iconos sobre acentos
-  chip: '#EFEDE8',
-  tabBar: 'rgba(250,249,246,0.92)',
-  // Tintes de estado
-  softGreen: '#E3F4F1',
-  softCoral: '#FCEBE5',
+  surface2: '#FAF8FE',
+  line: '#E6E0F3',
+  border: '#E6E0F3',
+  borderStrong: '#D3CAE8',
+  onAccent: '#FFFFFF',
+  chip: '#ECE7F7',
+  tabBar: 'rgba(250,248,254,0.92)',
+  softGreen: '#ECE7FF',
+  softCoral: '#FFEDE4',
   softYellow: '#FBF1DD',
-  softBlue: '#E8EFFF',
+  softBlue: '#E3F6F4',
   softPurple: '#EFEBFF',
-  // Datos
-  blue: '#2F5BEA',
-  blueDark: '#1F44B8',
-  purple: '#6A4DF4',
+  blue: '#0B7F75', // segundo acento de datos (aguamarina oscuro)
+  blueDark: '#085F58',
+  purple: '#7B5CFF',
   low: '#C0261C',
 };
 
+// Oscuro "Aurora": azul noche con turquesa, violeta y rosa.
 const dark: typeof light = {
-  owiGreen: '#2DD4BF',
-  deepGreen: '#14B8A6',
-  greenText: '#3EE0C4',
-  greenDark: '#99F6E4',
-  coral: '#FF8A6B',
-  coralDark: '#FF7A59',
-  coralText: '#FF9479',
+  owiGreen: '#3DE0C8',
+  deepGreen: '#22C7B8',
+  greenText: '#3DE0C8', // acción principal y texto de acento (turquesa, 11,5:1)
+  greenDark: '#A6F4E8',
+  coral: '#FF7AB6',
+  coralDark: '#FF7AB6',
+  coralText: '#FF9AC6',
   coralShadow: '#8E3120',
   achievement: '#F5B95A',
   yellowDark: '#F2C46D',
-  ink: '#F3F3F4',
-  secondary: '#A1A3AA',
-  cream: '#0B0C0F',
-  white: '#16181D',
-  surface2: '#1C1F25',
-  line: '#272A31',
-  border: '#272A31',
-  borderStrong: '#363A43',
-  onAccent: '#04221C',
-  chip: '#22252C',
-  tabBar: 'rgba(14,15,19,0.92)',
-  softGreen: 'rgba(45,212,191,0.12)',
-  softCoral: 'rgba(255,138,107,0.13)',
+  ink: '#F2F5FF',
+  secondary: '#93A0BF',
+  cream: '#0A0F1E',
+  white: '#141A2E',
+  surface2: '#1A2138',
+  line: '#232B45',
+  border: '#232B45',
+  borderStrong: '#343E5E',
+  onAccent: '#06131A',
+  chip: '#1D2540',
+  tabBar: 'rgba(10,15,30,0.92)',
+  softGreen: 'rgba(61,224,200,0.12)',
+  softCoral: 'rgba(255,122,182,0.14)',
   softYellow: 'rgba(245,185,90,0.13)',
-  softBlue: 'rgba(110,150,255,0.14)',
-  softPurple: 'rgba(160,140,255,0.14)',
-  blue: '#7A9BFF',
-  blueDark: '#A9BEFF',
-  purple: '#A58FFF',
+  softBlue: 'rgba(124,108,255,0.16)',
+  softPurple: 'rgba(124,108,255,0.16)',
+  blue: '#9D91FF',
+  blueDark: '#C2BAFF',
+  purple: '#9D91FF',
   low: '#FF6B5E',
 };
 
@@ -108,7 +104,7 @@ export const colors = isDark ? dark : light;
 
 /** Degradados (uso muy puntual). */
 export const gradients = {
-  hero: isDark ? (['#10231F', '#0B0C0F'] as const) : (['#E3F4F1', '#F4F3EF'] as const),
+  hero: isDark ? (['#161B3A', '#0A0F1E'] as const) : (['#E9E2FF', '#F4F1FA'] as const),
   coral: ['#FF8A65', '#FF7A59'] as const,
   night: isDark ? (['#111527', '#0B0C0F'] as const) : (['#E9ECF8', '#F4F3EF'] as const),
   tech: isDark ? (['#0E1A2B', '#16181D'] as const) : (['#EEF3FF', '#FFFFFF'] as const),
@@ -117,12 +113,12 @@ export const gradients = {
 export const fonts = {
   regular: 'Inter_400Regular',
   medium: 'Inter_500Medium',
-  semibold: 'Inter_600SemiBold',
-  bold: 'Inter_700Bold',
-  black: 'Inter_700Bold',
+  semibold: 'Sora_600SemiBold', // titulares y cifras
+  bold: 'Sora_700Bold',
+  black: 'Sora_700Bold',
 };
 
-export const radius = { s: 8, m: 12, l: 20, xl: 28 };
+export const radius = { s: 10, m: 14, l: 22, xl: 28 };
 
 /** Tamaño mínimo de zona táctil (accesibilidad, mayores de 60). */
 export const MIN_TOUCH = 48;

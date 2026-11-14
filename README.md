@@ -46,6 +46,10 @@ npx expo start --web
 
 ## Historial
 
+### 1.3 (estilos Aurora y Holo, auditoría interna)
+- Nuevo sistema visual: **Holo** en claro (perla, violeta y aguamarina) y **Aurora** en oscuro (azul noche, turquesa, violeta y rosa). Titulares en Sora.
+- **Auditoría interna** del producto y del código, con plan por fases: `docs/AUDITORIA_INTERNA.md`.
+
 ### 1.2 (Owi fiel a su hoja de diseño, solo 2D)
 - Owi sale **únicamente de la plantilla oficial** (`docs/owi/hoja-diseno-owi.webp`), sin 3D: poses recortadas de la hoja
   (frontal, 3/4, neutra, expresión cómica, deporte) y emociones compuestas con sus "Rasgos faciales".

@@ -12,7 +12,7 @@ import { hasT2, isT1, usesGlp1 } from '../state/types';
 import { colors, isDark } from '../theme';
 import { Card, Row, T } from './ui';
 
-export const RING = { plan: isDark ? '#3EE0C4' : '#0FA394', move: isDark ? '#7A9BFF' : '#2F5BEA', food: isDark ? '#FF8A6B' : '#F0643F' };
+export const RING = { plan: isDark ? '#3DE0C8' : '#7B5CFF', move: isDark ? '#7C6CFF' : '#22C7B8', food: isDark ? '#FF7AB6' : '#FF9A6B' };
 
 export function useDayRings() {
   const { state, d } = useStore();
