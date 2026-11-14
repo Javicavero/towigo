@@ -46,6 +46,13 @@ npx expo start --web
 
 ## Historial
 
+### 1.4 (Fase 0: cimientos)
+- Días reales: la racha y los hábitos se calculan a partir de un historial por fecha, con cierre de día. Fechas en hora local.
+- Guardado en iPhone y Android (AsyncStorage) y versiones del modelo de datos con migración automática.
+- Avisos en el móvil (inyección, insulina lenta, medicación y pesaje), con texto discreto opcional. Yo → Mi plan y avisos.
+- Registrar: historial de últimos registros con borrar, apuntar en "Ayer" o "Anteayer" y escribir la cifra con el teclado.
+- Calidad: 14 pruebas automáticas (`npm test`), revisión de código (`npx eslint .`) y comprobación de tipos en cada subida.
+
 ### 1.3 (estilos Aurora y Holo, auditoría interna)
 - Nuevo sistema visual: **Holo** en claro (perla, violeta y aguamarina) y **Aurora** en oscuro (azul noche, turquesa, violeta y rosa). Titulares en Sora.
 - **Auditoría interna** del producto y del código, con plan por fases: `docs/AUDITORIA_INTERNA.md`.

@@ -2,6 +2,7 @@
  * Datos de demostración (simulados) para los tres caminos: tipo 2, GLP-1 y tipo 2 + GLP-1.
  * En la app real llegan del paciente, de su báscula / Apple Health y, si lo usa, de su sensor.
  */
+import { dayKeyAgo } from '../state/dates';
 import type { Cheer, CrewMember, CheckIn, CarbEntry, InsulinEntry, InsulinPlan, GlucoseEntry, Glp1Plan, Goals, Hba1cEntry, Injection, InjectionSite, Medication, Message, Profile, Scenario, SideEffectEntry, StrengthSession, WeightEntry } from '../state/types';
 
 const DAY = 86400e3;
@@ -181,7 +182,7 @@ export function demoCheers(now = Date.now()): Cheer[] {
 
 export function demoCheckins(now = Date.now()): CheckIn[] {
   const vals: CheckIn['v'][] = [4, 3, 4, 2, 3, 4];
-  return vals.map((v, i) => ({ date: iso(now - (vals.length - i) * DAY).slice(0, 10), v, tags: v <= 2 ? ['cansancio'] : ['familia'] }));
+  return vals.map((v, i) => ({ date: dayKeyAgo(vals.length - i, now), v, tags: v <= 2 ? ['cansancio'] : ['familia'] }));
 }
 
 export function demoHba1c(now = Date.now()): Hba1cEntry[] {

@@ -13,7 +13,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors, fonts, isDark, MIN_TOUCH, radius } from '../theme';
+import { colors, fonts, isDark, radius } from '../theme';
 import { useStore } from '../state/store';
 import { FadeIn, tap, useProgress } from './motion';
 

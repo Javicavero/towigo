@@ -24,7 +24,9 @@ import ProApp from './pro/ProApp';
 import { isProRoute } from './pro/openPro';
 import Progress from './screens/Progress';
 import Team from './screens/Team';
+import { onNotificationOpen } from './services/notifications';
 import { useDexcomSync } from './services/useDexcomSync';
+import { useNotificationSync } from './services/useNotificationSync';
 import { useWidgetSync } from './widgets/useWidgetSync';
 import { StoreProvider, useStore } from './state/store';
 import { colors, isDark } from './theme';
@@ -103,6 +105,7 @@ function Root() {
   const { state } = useStore();
   useDexcomSync();
   useWidgetSync();
+  useNotificationSync();
   const [tab, setTab] = useState<Tab>('home');
   const [section, setSection] = useState<LogSection | null>(null);
   const go = (t: Tab, sec?: LogSection) => {
@@ -121,7 +124,11 @@ function Root() {
     };
     Linking.getInitialURL().then(open).catch(() => {});
     const sub = Linking.addEventListener('url', (e) => open(e.url));
-    return () => sub.remove();
+    const offNotif = onNotificationOpen(open);
+    return () => {
+      sub.remove();
+      offNotif();
+    };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   if (isProRoute()) return <ProApp />;
   if (!state.onboarded) return <Onboarding />;

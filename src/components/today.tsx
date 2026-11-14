@@ -3,14 +3,14 @@
  * - "Para hoy": lista corta de tareas (lo que toca hacer hoy), con casilla.
  * - "Resumen": cuadrícula de datos clave; el detalle y las gráficas están en Progreso.
  */
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { STEPS_TODAY, TEAM } from '../data/mock';
 import { t } from '../i18n';
 import { useNav } from '../nav';
+import { dayKey } from '../state/dates';
 import { useStore } from '../state/store';
 import { hasDiabetes, isT1, usesGlp1 } from '../state/types';
 import { colors, radius } from '../theme';
-import { Pressable } from 'react-native';
 import { Glyph } from './icons';
 import { tap } from './motion';
 import { ListGroup, ListRow, T } from './ui';
@@ -23,7 +23,7 @@ export function TodayList() {
   const glp1 = usesGlp1(state.profile);
   const t2 = hasDiabetes(state.profile);
   const weekday = (new Date().getDay() + 6) % 7;
-  const today = new Date().toISOString().slice(0, 10);
+  const today = dayKey();
   const unread = state.messages.find((m) => !m.read && m.kind === 'audio' && m.from !== 'patient' && m.from !== 'owi');
   const rows: React.ReactNode[] = [];
 
@@ -63,7 +63,7 @@ export function TodayList() {
       />,
     );
   if (t2 && !isT1(state.profile)) {
-    const measured = state.glucose.some((g) => g.at.slice(0, 10) === today);
+    const measured = state.glucose.some((g) => dayKey(g.at) === today);
     rows.push(
       <ListRow key="glu" icon={<Glyph name="drop" bg="#C8372D" />} title={t('today.glucose')} done={measured} onPress={() => go('log', 'glucose')} />,
     );
@@ -80,7 +80,7 @@ export function TodayList() {
       />,
     );
   if (state.plan.weigh.enabled && state.plan.weigh.weekday === weekday) {
-    const weighed = state.weights.some((w) => w.at.slice(0, 10) === today);
+    const weighed = state.weights.some((w) => dayKey(w.at) === today);
     rows.push(<ListRow key="w" icon={<Glyph name="scale" bg="#5B4BC4" />} title={t('today.weigh')} done={weighed} onPress={() => go('log', 'weight')} />);
   }
   if (glp1)

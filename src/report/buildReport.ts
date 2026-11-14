@@ -2,6 +2,7 @@
  * Informe para la consulta: resumen de lo que ha apuntado el paciente en un periodo.
  * Es un resumen de datos registrados: no interpreta, no diagnostica y no recomienda (Fase 1).
  */
+import { dayKey } from '../state/dates';
 import { TEAM } from '../data/mock';
 import { t } from '../i18n';
 import type { Derived } from '../state/store';
@@ -137,7 +138,7 @@ export function buildReportHtml(state: AppState, d: Derived, weeks: number, now 
   }
 
   // Hábitos: proteína y fuerza
-  const intake = state.intake.filter((i) => new Date(i.date).getTime() >= from && i.protein > 0);
+  const intake = state.intake.filter((i) => i.date >= dayKey(from) && i.protein > 0);
   const strength = state.strength.filter((s) => inRange(s.at)).length;
   sections.push(`<h2>${t('report.habits')}</h2>
     <p><span class="k">${t('report.protein')}</span> ${

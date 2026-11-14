@@ -2,6 +2,7 @@
  * Pacientes de demostración del panel profesional y métricas clínicas descriptivas.
  * La priorización ordena la revisión del equipo; no diagnostica ni genera indicaciones al paciente.
  */
+import { dayKey, dayKeyAgo } from '../state/dates';
 import { demoData, derive, initialState, type Derived } from '../state/store';
 import { hasDiabetes, isT1, usesGlp1, type AppState, type CheckIn, type Message, type Profile, type Scenario } from '../state/types';
 
@@ -61,7 +62,7 @@ function quiet(s: AppState, days: number, now: number): AppState {
     injections: old(s.injections),
     insulin: old(s.insulin),
     carbs: old(s.carbs),
-    checkins: s.checkins.filter((c) => new Date(c.date).getTime() < cut),
+    checkins: s.checkins.filter((c) => c.date < dayKey(cut)),
     lastOpenAt: iso(cut),
   };
 }
@@ -80,9 +81,9 @@ export function buildCohort(now = Date.now()): { patients: Patient[]; states: Re
       scenario: p.scenario,
       ...demoData(p.profile, p.scenario),
     };
-    s.streakBefore = [4, 12, 2, 0, 21, 9, 33, 15, 3, 1, 7, 18][i];
+    s.habitHistory = Object.fromEntries(Array.from({ length: [4, 12, 2, 0, 21, 9, 33, 15, 3, 1, 7, 18][i] }, (_, k) => [dayKeyAgo(k + 1, now), true]));
     s.strength = s.strength.slice(0, p.strength ?? i % 3);
-    if (p.lowMood) s.checkins = [3, 2, 2, 1].map((v, k) => ({ date: iso(now - (3 - k) * DAY).slice(0, 10), v: v as CheckIn['v'], tags: ['stress', 'tired'] }));
+    if (p.lowMood) s.checkins = [3, 2, 2, 1].map((v, k) => ({ date: dayKeyAgo(3 - k, now), v: v as CheckIn['v'], tags: ['stress', 'tired'] }));
     if (p.msg) {
       const m: Message = { id: `pm${i}`, from: 'patient', kind: 'text', text: p.msg, at: iso(now - (i + 1) * 9 * 60e3), read: true };
       s.messages = [...s.messages, m];
@@ -164,7 +165,7 @@ export function metricsFor(s: AppState, now = Date.now()): Metrics {
   const ws = [...s.weights].sort((a, b) => a.at.localeCompare(b.at));
   const w4 = ws.filter((w) => now - new Date(w.at).getTime() < 29 * DAY);
   const weightDelta4w = w4.length >= 2 ? Math.round((w4[w4.length - 1].kg - w4[0].kg) * 10) / 10 : null;
-  const ck = s.checkins.filter((c) => now - new Date(c.date).getTime() < 7 * DAY);
+  const ck = s.checkins.filter((c) => c.date > dayKeyAgo(7, now));
   const moodAvg7 = ck.length ? Math.round((ck.reduce((a, c) => a + c.v, 0) / ck.length) * 10) / 10 : null;
 
   const flags: Flag[] = [];

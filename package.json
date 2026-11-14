@@ -17,6 +17,7 @@
     "expo-image-picker": "~58.0.10",
     "expo-linear-gradient": "~58.0.3",
     "expo-linking": "~58.0.16",
+    "expo-notifications": "~58.1.9",
     "expo-print": "~58.0.8",
     "expo-sharing": "~58.0.22",
     "expo-status-bar": "~58.0.4",
@@ -29,14 +30,21 @@
     "react-native-web": "~0.21.4"
   },
   "devDependencies": {
+    "@types/node": "^22.20.5",
     "@types/react": "~19.3.0",
+    "eslint": "^9.39.5",
+    "eslint-config-expo": "^58.0.4",
+    "tsx": "^4.23.15",
     "typescript": "~6.0.3"
   },
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "typecheck": "tsc --noEmit && tsc -p tests",
+    "test": "tsx --test tests/*.test.ts",
+    "lint": "expo lint"
   },
   "private": true
 }

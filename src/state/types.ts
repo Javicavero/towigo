@@ -192,9 +192,16 @@ export type AppState = {
   /** Último día en que el paciente pidió hablar con su equipo desde el programa de constancia. */
   supportAskedOn: string | null;
   messages: Message[];
+  /** Avisos del sistema en este móvil. Discreto: el texto no menciona salud. */
+  notifications: { enabled: boolean; discreet: boolean };
+  /** Versión del modelo de datos guardado (ver migrate en logic.ts). */
+  schemaVersion: number;
+  /** Día local (AAAA-MM-DD) al que se refieren habitsToday, logsToday y freezeActiveToday. */
+  day: string;
+  /** Días ya cerrados: true si se cumplió algún hábito (o se usó un protector). La racha sale de aquí. */
+  habitHistory: Record<string, boolean>;
   habitsToday: Record<HabitId, boolean>;
   logsToday: number;
-  streakBefore: number;
   freezes: number;
   freezeActiveToday: boolean;
   plan: Plan;

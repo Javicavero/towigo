@@ -64,7 +64,8 @@
             }
           ]
         }
-      ]
+      ],
+      "expo-notifications"
     ],
     "scheme": "towigo"
   }

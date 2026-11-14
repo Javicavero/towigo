@@ -2,7 +2,9 @@
  * "Mi plan y avisos": tratamiento y horarios que fija el paciente con su equipo.
  * Fase 1: la app solo recuerda; nunca decide ni calcula dosis.
  */
+import { useState } from 'react';
 import { Pressable, View } from 'react-native';
+import { notificationsSupported, requestNotificationPermission } from '../services/notifications';
 import { t } from '../i18n';
 import { useStore } from '../state/store';
 import { hasT2, isT1, usesGlp1, type Glp1Drug, type Plan, type TitrationStep } from '../state/types';
@@ -83,6 +85,7 @@ function TitrationEditor() {
 export default function PlanSettings() {
   const { state, dispatch, d } = useStore();
   const p = state.plan;
+  const [notifMsg, setNotifMsg] = useState<string | null>(null);
   const set = <K extends keyof Plan>(k: K, patch: Partial<Plan[K]>) => dispatch({ type: 'setPlan', patch: { [k]: { ...p[k], ...patch } } as Partial<Plan> });
 
   return (
@@ -90,6 +93,24 @@ export default function PlanSettings() {
       <T v="small" color={colors.secondary}>
         {t('plan.note')}
       </T>
+
+      <View style={{ gap: 6, backgroundColor: colors.softGreen, borderRadius: 14, padding: 12 }}>
+        <Toggle
+          on={state.notifications.enabled}
+          label={t('notif.toggle')}
+          onPress={async () => {
+            if (state.notifications.enabled) return dispatch({ type: 'setNotifications', patch: { enabled: false } });
+            if (!notificationsSupported) return setNotifMsg(t('notif.webOnly'));
+            const ok = await requestNotificationPermission();
+            if (ok) dispatch({ type: 'setNotifications', patch: { enabled: true } });
+            setNotifMsg(ok ? null : t('notif.denied'));
+          }}
+        />
+        {state.notifications.enabled && <Toggle on={state.notifications.discreet} label={t('notif.discreetToggle')} onPress={() => dispatch({ type: 'setNotifications', patch: { discreet: !state.notifications.discreet } })} />}
+        <T v="small" color={colors.secondary}>
+          {notifMsg ?? t('notif.note')}
+        </T>
+      </View>
 
       {usesGlp1(state.profile) && (
         <View style={{ gap: 8 }}>

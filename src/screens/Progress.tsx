@@ -17,6 +17,7 @@ import TrendChart from '../components/TrendChart';
 import { Button, Card, ProgressBar, Row, Screen, Segmented, T } from '../components/ui';
 import { ACCESSORIES } from '../data/avatarOptions';
 import { t } from '../i18n';
+import { dayKeyAgo } from '../state/dates';
 import { useStore } from '../state/store';
 import { hasDiabetes, hasT2, usesGlp1, type PetLevel, type PetMood } from '../state/types';
 import { colors } from '../theme';
@@ -86,7 +87,7 @@ export default function Progress() {
             <Row gap={6} style={{ marginTop: 6 }}>
               {days.map((label, i) => {
                 const off = todayIdx - i;
-                const done = off > 0 ? off <= d.streakBefore : off === 0 ? d.todayDone : false;
+                const done = off > 0 ? !!state.habitHistory[dayKeyAgo(off)] : off === 0 ? d.todayDone : false;
                 return (
                   <View key={i} style={{ alignItems: 'center', gap: 4 }}>
                     <View

@@ -1,4 +1,5 @@
 /** Gráficas clínicas del panel profesional (SVG, claro/oscuro). */
+import { dayKeyAgo, dayKeyToDate } from '../state/dates';
 import { useState } from 'react';
 import { View } from 'react-native';
 import Svg, { Line, Path, Rect, Text as SvgText } from 'react-native-svg';
@@ -132,7 +133,7 @@ export function InjectionStrip({ s }: { s: AppState }) {
 
 /** Ánimo de los últimos 14 días (check-ins del paciente). */
 export function MoodStrip({ s }: { s: AppState }) {
-  const days = Array.from({ length: 14 }, (_, i) => new Date(Date.now() - (13 - i) * 86400e3).toISOString().slice(0, 10));
+  const days = Array.from({ length: 14 }, (_, i) => dayKeyAgo(13 - i));
   const by = Object.fromEntries(s.checkins.map((c) => [c.date, c]));
   return (
     <Row style={{ justifyContent: 'space-between' }}>
@@ -140,7 +141,7 @@ export function MoodStrip({ s }: { s: AppState }) {
         <View key={d} style={{ alignItems: 'center', gap: 2 }}>
           {by[d] ? <MoodFace v={by[d].v} size={18} /> : <View style={{ width: 18, height: 18, borderRadius: 9, backgroundColor: colors.line }} />}
           <T v="small" style={{ fontSize: 9 }} color={colors.secondary}>
-            {new Date(d).getDate()}
+            {dayKeyToDate(d).getDate()}
           </T>
         </View>
       ))}

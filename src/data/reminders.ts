@@ -4,6 +4,7 @@
  * Seguridad: con una glucosa baja reciente no se muestran avisos de medicación; Owi solo acompaña.
  */
 import type { Glp1Plan, InsulinPlan, Medication, Plan, Profile, Reminder, ReminderKind } from '../state/types';
+import { dayKey } from '../state/dates';
 import { usesGlp1, hasT2 } from '../state/types';
 
 export const defaultPlan = (): Plan => ({
@@ -28,8 +29,8 @@ export function dueReminders(
   done: Record<string, string>,
   opts: { lowGlucose: boolean; demo?: ReminderKind | null },
 ): Reminder[] {
-  const day = now.toDateString();
-  const dateKey = now.toISOString().slice(0, 10);
+  const dateKey = dayKey(now);
+  const day = dateKey;
   const nowMin = now.getHours() * 60 + now.getMinutes();
   const weekday = (now.getDay() + 6) % 7; // 0 = lunes
   const out: Reminder[] = [];

@@ -71,6 +71,9 @@ export function owiThink(input: string, state: AppState, d: Derived): OwiReply {
   if (/(estoy bajo|estoy baja|hipo\b|hipoglucemia|me noto baj|tengo una bajada)/.test(s))
     return { text: t('chat.low'), chips: hasDiabetes(state.profile) ? [{ label: t('chat.logGlucose'), send: t('chat.glucoseExample') }] : undefined, mood: 'caringHigh' };
 
+  // 3b) Negaciones ("no me he puesto 4 u", "aún no he comido"): nunca se apunta nada.
+  if (/\b(no|nunca|todavia no|aun no|tampoco)\b[^.,;?]{0,30}(puesto|pinchado|inyectado|tomado|comido|bebido|pesado|medido|hecho)/.test(s)) return { text: t('chat.negated'), mood: 'attentive' };
+
   // 4) Registros en lenguaje natural.
   const ins = s.match(/(\d+(?:[.,]\d+)?)\s*(u|ui|unidades|unidad)\b/);
   if (ins && /(insulina|rapida|lenta|basal|bolo|u\b|ui|unidad)/.test(s)) {

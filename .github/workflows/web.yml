@@ -26,7 +26,12 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx tsc --noEmit
+      - name: Comprobar tipos
+        run: npm run typecheck
+      - name: Pruebas automáticas
+        run: npm test
+      - name: Revisión de código
+        run: npx eslint . --max-warnings 100
       - name: Construir
         env:
           # Se configuran en GitHub → Settings → Secrets and variables → Actions → Variables

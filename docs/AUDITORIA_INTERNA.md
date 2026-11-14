@@ -167,7 +167,23 @@ La ventaja real de Towigo es la combinación de Owi, equipo humano y panel profe
 14. Compilación para iPhone y Android, widgets y reloj.
 15. Piloto con un centro y medición de resultados.
 
-## 10. Decisiones que necesito de ti
+## 10. Estado de la Fase 0 (14 de noviembre)
+
+| Punto | Estado | Dónde |
+|---|---|---|
+| C1 Días reales y racha | Hecho: historial por fecha, cierre de día al pasar la medianoche o al abrir la app, protectores de racha | `src/state/logic.ts` (`rollDay`, `streakBeforeToday`) |
+| C2 Fechas locales | Hecho: todas las fechas en hora local | `src/state/dates.ts` |
+| C3 Guardado en el móvil | Hecho: AsyncStorage en iPhone y Android; sin cifrar todavía | `src/state/storage.ts` |
+| A8 Versiones del modelo | Hecho: `schemaVersion` y `migrate()` (los datos antiguos se conservan) | `src/state/logic.ts` |
+| C4 Notificaciones | Hecho: avisos locales de inyección, insulina lenta, medicación y pesaje, con modo discreto. Sin probar en un móvil | `src/data/notificationPlan.ts`, `src/services/notifications.ts` |
+| A1 Pruebas automáticas | Hecho: 14 pruebas (fechas, racha, migración, avisos, chat, borrar) | `tests/logic.test.ts` |
+| A2 Revisión de código | Hecho: ESLint de Expo; 71 avisos pendientes del compilador de React | `eslint.config.js` |
+| Editar y fechar registros | Hecho: historial con borrar, "Hoy/Ayer/Anteayer" y cifra con teclado numérico | `src/screens/LogScreen.tsx` |
+| A11 Chat y negaciones | Mejorado: "no me he puesto…" ya no propone apuntar nada | `src/owi/brain.ts` |
+
+Las pruebas, los tipos y la revisión de código se ejecutan en cada subida antes de publicar.
+
+## 11. Decisiones que necesito de ti
 
 1. **¿Qué va primero?** Recomiendo la Fase 0: sin ella, todo lo demás se construye sobre datos falsos.
 2. **¿Hay diseñador para Owi?** Sin poses nuevas en vectorial, Owi no puede mejorar mucho más.

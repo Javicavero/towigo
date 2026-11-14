@@ -7,6 +7,7 @@ import { Pressable, TextInput, View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { TEAM } from '../data/mock';
 import { t } from '../i18n';
+import { dayKeyAgo, dayKeyToDate } from '../state/dates';
 import { useStore } from '../state/store';
 import type { CheckIn } from '../state/types';
 import { colors, fonts, MIN_TOUCH, radius } from '../theme';
@@ -111,7 +112,7 @@ export function CheckinCard({ onDone, embedded }: { onDone?: (v: CheckIn['v']) =
 /** Últimos 14 días de ánimo (Progreso). */
 export function MoodHistory() {
   const { state } = useStore();
-  const days = Array.from({ length: 14 }, (_, i) => new Date(Date.now() - (13 - i) * 86400e3).toISOString().slice(0, 10));
+  const days = Array.from({ length: 14 }, (_, i) => dayKeyAgo(13 - i));
   const by = Object.fromEntries(state.checkins.map((c) => [c.date, c]));
   const done = state.checkins.filter((c) => days.includes(c.date));
   return (
@@ -121,10 +122,10 @@ export function MoodHistory() {
         {days.map((d) => {
           const c = by[d];
           return (
-            <View key={d} accessible accessibilityLabel={`${new Date(d).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric' })}: ${c ? t(`checkin.v${c.v}`) : t('checkin.none')}`} style={{ alignItems: 'center', gap: 4 }}>
+            <View key={d} accessible accessibilityLabel={`${dayKeyToDate(d).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric' })}: ${c ? t(`checkin.v${c.v}`) : t('checkin.none')}`} style={{ alignItems: 'center', gap: 4 }}>
               {c ? <MoodFace v={c.v} size={20} /> : <View style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: colors.line }} />}
               <T v="small" style={{ fontSize: 10 }} color={colors.secondary}>
-                {new Date(d).getDate()}
+                {dayKeyToDate(d).getDate()}
               </T>
             </View>
           );

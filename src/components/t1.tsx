@@ -7,6 +7,7 @@ import { View } from 'react-native';
 import Svg, { Circle, G, Line, Path, Polygon, Rect, Text as SvgText } from 'react-native-svg';
 import { t } from '../i18n';
 import { useNav } from '../nav';
+import { dayKey } from '../state/dates';
 import { useStore } from '../state/store';
 import { colors, fonts } from '../theme';
 import { Glyph, Icon } from './icons';
@@ -221,10 +222,10 @@ function Chip({ icon, color, text }: { icon: 'syringe' | 'clock' | 'meal'; color
 /** Lista del día al estilo "mensajes": todo lo apuntado, en orden. */
 export function DayLog() {
   const { state } = useStore();
-  const today = new Date().toDateString();
+  const today = dayKey();
   const items = [
-    ...state.insulin.filter((i) => new Date(i.at).toDateString() === today).map((i) => ({ at: i.at, icon: 'syringe' as const, c: i.kind === 'basal' ? colors.purple : colors.blue, text: t(i.kind === 'basal' ? 't1.logBasal' : 't1.logRapid', { n: i.units }) })),
-    ...state.carbs.filter((c) => new Date(c.at).toDateString() === today).map((c) => ({ at: c.at, icon: 'meal' as const, c: colors.coralText, text: t('t1.logCarb', { n: c.g, label: c.label ?? '' }).trim() })),
+    ...state.insulin.filter((i) => dayKey(i.at) === today).map((i) => ({ at: i.at, icon: 'syringe' as const, c: i.kind === 'basal' ? colors.purple : colors.blue, text: t(i.kind === 'basal' ? 't1.logBasal' : 't1.logRapid', { n: i.units }) })),
+    ...state.carbs.filter((c) => dayKey(c.at) === today).map((c) => ({ at: c.at, icon: 'meal' as const, c: colors.coralText, text: t('t1.logCarb', { n: c.g, label: c.label ?? '' }).trim() })),
   ].sort((a, b) => b.at.localeCompare(a.at));
   if (!items.length) return null;
   return (

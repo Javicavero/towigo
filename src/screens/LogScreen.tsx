@@ -3,7 +3,7 @@
  * Solo se apunta lo que el paciente ha hecho; Towigo no calcula ni sugiere dosis (Fase 1).
  */
 import { useEffect, useRef, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable, TextInput, View } from 'react-native';
 import BodyMap from '../components/BodyMap';
 import { Glyph, type IconName } from '../components/icons';
 import { IntakeCard, MedsCard } from '../components/cards';
@@ -13,9 +13,9 @@ import FoodPhoto from '../components/FoodPhoto';
 import { Button, Card, Choice, Row, Screen, T } from '../components/ui';
 import { t } from '../i18n';
 import { useNav, type LogSection } from '../nav';
-import { useStore } from '../state/store';
+import { useStore, type EntryKind } from '../state/store';
 import { hasDiabetes, hasT2, isT1, usesGlp1, type GlucoseContext, type InjectionSite, type InsulinKind, type SymptomId } from '../state/types';
-import { colors, radius } from '../theme';
+import { colors, fonts } from '../theme';
 
 const SYMPTOMS: SymptomId[] = ['nausea', 'vomitos', 'estrenimiento', 'diarrea', 'ardor', 'fatiga', 'pocoApetito', 'mareo'];
 const CONTEXTS: GlucoseContext[] = ['ayunas', 'antesComer', 'despuesComer', 'noche'];
@@ -33,12 +33,105 @@ const ICON: Record<LogSection, [IconName, string]> = {
 const WHEN = [0, 15, 30, 60];
 const fmt = (n: number, d = 1) => n.toFixed(d).replace('.', ',');
 
+function NumberField({ value, decimals, onChange, label }: { value: number; decimals: number; onChange: (n: number) => void; label: string }) {
+  const { state } = useStore();
+  const [text, setText] = useState<string | null>(null);
+  return (
+    <TextInput
+      value={text ?? fmt(value, decimals)}
+      onFocus={() => setText(fmt(value, decimals))}
+      onChangeText={setText}
+      onBlur={() => {
+        const n = parseFloat((text ?? '').replace(',', '.'));
+        if (!Number.isNaN(n)) onChange(n);
+        setText(null);
+      }}
+      keyboardType="decimal-pad"
+      inputMode="decimal"
+      selectTextOnFocus
+      accessibilityLabel={label}
+      style={{ fontFamily: fonts.semibold, fontSize: 52 * state.textScale, letterSpacing: -1.8, color: colors.ink, textAlign: 'center', minWidth: 170, paddingVertical: 0, borderBottomWidth: 2, borderBottomColor: colors.line }}
+    />
+  );
+}
+
+/** ¿Cuándo fue? Permite apuntar algo de ayer o de anteayer. */
+function DayPick({ value, onChange }: { value: number; onChange: (n: number) => void }) {
+  return (
+    <Row gap={8} style={{ flexWrap: 'wrap' }}>
+      {[0, 1, 2].map((n) => (
+        <Choice key={n} label={t(`log.day${n}`)} selected={value === n} onPress={() => onChange(n)} />
+      ))}
+    </Row>
+  );
+}
+
+const hhmm = (x: string) => new Date(x).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+
+/** Últimos registros, con opción de borrar (se pide confirmación con un segundo toque). */
+function History() {
+  const { state, dispatch } = useStore();
+  const [ask, setAsk] = useState<string | null>(null);
+  const f = (n: number) => String(n).replace('.', ',');
+  const items: { kind: EntryKind; key: string; at: string; icon: IconName; bg: string; text: string }[] = [
+    ...state.injections.map((x) => ({ kind: 'injection' as const, key: x.id, at: x.at, icon: ICON.injection[0], bg: ICON.injection[1], text: t('hist.injection', { dose: f(x.dose), site: t(`site.${x.site}`) }) })),
+    ...state.weights.map((x) => ({ kind: 'weight' as const, key: x.at, at: x.at, icon: ICON.weight[0], bg: ICON.weight[1], text: t('hist.weight', { kg: f(x.kg) }) })),
+    ...state.glucose.filter((x) => x.context !== 'sensor').map((x) => ({ kind: 'glucose' as const, key: x.id, at: x.at, icon: ICON.glucose[0], bg: ICON.glucose[1], text: t('hist.glucose', { v: x.v, ctx: t(`ctx.${x.context}`) }) })),
+    ...state.insulin.map((x) => ({ kind: 'insulin' as const, key: x.id, at: x.at, icon: ICON.insulin[0], bg: ICON.insulin[1], text: t(x.kind === 'basal' ? 't1.logBasal' : 't1.logRapid', { n: f(x.units) }) })),
+    ...state.carbs.map((x) => ({ kind: 'carbs' as const, key: x.id, at: x.at, icon: ICON.carbs[0], bg: ICON.carbs[1], text: t('t1.logCarb', { n: x.g, label: x.label ?? '' }).trim() })),
+    ...state.sideEffects.map((x) => ({ kind: 'effects' as const, key: x.id, at: x.at, icon: ICON.effects[0], bg: ICON.effects[1], text: x.symptoms.map((y) => t(`sym.${y.id}`)).join(', ') })),
+    ...state.strength.map((x) => ({ kind: 'strength' as const, key: x.id, at: x.at, icon: ICON.strength[0], bg: ICON.strength[1], text: t('hist.strength', { name: t(`routine.${x.routine}`) }) })),
+  ]
+    .sort((a, b) => b.at.localeCompare(a.at))
+    .slice(0, 12);
+  if (!items.length) return null;
+  return (
+    <Card>
+      <T v="h2">{t('hist.title')}</T>
+      <T v="small" color={colors.secondary}>
+        {t('hist.sub')}
+      </T>
+      {items.map((it) => {
+        const id = `${it.kind}:${it.key}`;
+        return (
+          <Row key={id} gap={10} style={{ minHeight: 48 }}>
+            <Glyph name={it.icon} bg={it.bg} size={30} />
+            <View style={{ flex: 1 }}>
+              <T v="label">{it.text}</T>
+              <T v="small" color={colors.secondary}>
+                {new Date(it.at).toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' })} · {hhmm(it.at)}
+              </T>
+            </View>
+            {ask === id ? (
+              <Row gap={6}>
+                <Choice
+                  label={t('hist.confirm')}
+                  accessibilityLabel={t('hist.confirmA11y', { what: it.text })}
+                  onPress={() => {
+                    dispatch({ type: 'deleteEntry', kind: it.kind, key: it.key });
+                    setAsk(null);
+                  }}
+                  style={{ backgroundColor: colors.softCoral }}
+                />
+                <Choice label={t('common.cancel')} onPress={() => setAsk(null)} />
+              </Row>
+            ) : (
+              <Choice label={t('hist.delete')} accessibilityLabel={t('hist.deleteA11y', { what: it.text })} onPress={() => setAsk(id)} />
+            )}
+          </Row>
+        );
+      })}
+    </Card>
+  );
+}
+
 function Stepper({ value, onChange, steps, unit, decimals = 0, min = 0, max = 999, label }: { value: number; onChange: (n: number) => void; steps: number[]; unit: string; decimals?: number; min?: number; max?: number; label: string }) {
   const clamp = (n: number) => Math.round(Math.max(min, Math.min(max, n)) * 100) / 100;
   return (
     <View style={{ gap: 8 }}>
-      <View accessible accessibilityLabel={`${label}: ${fmt(value, decimals)} ${unit}`} style={{ alignItems: 'center' }}>
-        <T v="big">{fmt(value, decimals)}</T>
+      <View style={{ alignItems: 'center' }}>
+        {/* La cifra se puede escribir con el teclado numérico, además de usar los botones. */}
+        <NumberField value={value} decimals={decimals} onChange={(n) => onChange(clamp(n))} label={`${label} (${unit})`} />
         <T v="small" color={colors.secondary}>
           {unit}
         </T>
@@ -77,6 +170,7 @@ export default function LogScreen() {
   const [units, setUnits] = useState(4);
   const [when, setWhen] = useState(0);
   const [carbG, setCarbG] = useState(40);
+  const [daysAgo, setDaysAgo] = useState(0);
   // Efectos
   const [sym, setSym] = useState<Partial<Record<SymptomId, 1 | 2 | 3>>>({});
 
@@ -108,6 +202,7 @@ export default function LogScreen() {
   const saved = (key: string, vars: Record<string, string | number> = {}) => {
     const secs = Math.max(1, Math.round((Date.now() - started.current) / 1000));
     setOpen(null);
+    setDaysAgo(0);
     setToast(t(key, { ...vars, owi: state.pet.name, s: secs }));
   };
 
@@ -157,12 +252,13 @@ export default function LogScreen() {
                   <T v="small" color={colors.secondary} center>
                     {t('log.doseNote', { dose: fmt(d.prescribedDose, 2) })}
                   </T>
+                  <DayPick value={daysAgo} onChange={setDaysAgo} />
                   <Button
                     label={t('log.save')}
                     disabled={!site}
                     onPress={() => {
                       if (!site) return;
-                      dispatch({ type: 'addInjection', dose, site });
+                      dispatch({ type: 'addInjection', dose, site, daysAgo });
                       saved('log.savedInjection', { weeks: d.injectionWeeks + 1 });
                       setSite(null);
                     }}
@@ -259,10 +355,11 @@ export default function LogScreen() {
                   <T v="small" color={colors.secondary}>
                     {t('log.scaleNote')}
                   </T>
+                  <DayPick value={daysAgo} onChange={setDaysAgo} />
                   <Button
                     label={t('log.save')}
                     onPress={() => {
-                      dispatch({ type: 'addWeight', entry: withComp ? { kg, fatPct: fat, musclePct: muscle } : { kg } });
+                      dispatch({ type: 'addWeight', entry: withComp ? { kg, fatPct: fat, musclePct: muscle } : { kg }, daysAgo });
                       saved('log.savedWeight');
                     }}
                   />
@@ -277,10 +374,11 @@ export default function LogScreen() {
                       <Choice key={c} label={t(`ctx.${c}`)} selected={ctx === c} onPress={() => setCtx(c)} />
                     ))}
                   </Row>
+                  <DayPick value={daysAgo} onChange={setDaysAgo} />
                   <Button
                     label={t('log.save')}
                     onPress={() => {
-                      dispatch({ type: 'addGlucose', v: gv, context: ctx });
+                      dispatch({ type: 'addGlucose', v: gv, context: ctx, daysAgo });
                       saved(gv < 70 ? 'log.savedGlucoseLow' : 'log.savedGlucose');
                     }}
                   />
@@ -307,11 +405,12 @@ export default function LogScreen() {
                       );
                     })}
                   </View>
+                  <DayPick value={daysAgo} onChange={setDaysAgo} />
                   <Button
                     label={Object.keys(sym).some((k) => sym[k as SymptomId]) ? t('log.save') : t('log.noEffects')}
                     onPress={() => {
                       const list = (Object.entries(sym).filter(([, v]) => v) as [SymptomId, 1 | 2 | 3][]).map(([id, level]) => ({ id, level }));
-                      if (list.length) dispatch({ type: 'addSideEffect', symptoms: list });
+                      if (list.length) dispatch({ type: 'addSideEffect', symptoms: list, daysAgo });
                       else dispatch({ type: 'addIntake' });
                       saved(list.length ? 'log.savedEffects' : 'log.savedNoEffects');
                       setSym({});
@@ -334,6 +433,7 @@ export default function LogScreen() {
           )}
         </Card>
       ))}
+      <History />
     </Screen>
   );
 }
