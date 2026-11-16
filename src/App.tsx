@@ -69,19 +69,19 @@ function TabBar({ tab, go }: { tab: Tab; go: (t: Tab) => void }) {
               accessibilityState={{ selected: active }}
               accessibilityLabel={t(`tab.${id}`) + (badge ? `, ${t('tab.unread', { n: d.unreadCount })}` : '')}
               onPress={() => go(id)}
-              style={{ flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 52, gap: 2 }}
+              style={{ flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 52, gap: 3 }}
             >
-              <View>
-                <Icon name={icon} size={26} color={c} stroke={active ? 2.4 : 2} />
+              <View style={{ width: 56, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: active ? colors.softGreen : 'transparent' }}>
+                <Icon name={icon} size={24} color={c} stroke={active ? 2.4 : 2} />
                 {badge && (
-                  <View style={{ position: 'absolute', top: -4, right: -10, minWidth: 18, height: 18, paddingHorizontal: 4, borderRadius: 9, backgroundColor: '#E5483A', alignItems: 'center', justifyContent: 'center' }}>
-                    <T v="small" color={colors.onAccent} style={{ fontSize: 11, lineHeight: 13 }}>
+                  <View style={{ position: 'absolute', top: -4, right: -10, minWidth: 18, height: 18, paddingHorizontal: 4, borderRadius: 9, backgroundColor: colors.coralDark, alignItems: 'center', justifyContent: 'center' }}>
+                    <T v="small" color="#FFFFFF" style={{ fontSize: 11, lineHeight: 13 }}>
                       {d.unreadCount}
                     </T>
                   </View>
                 )}
               </View>
-              <T v="small" color={c} style={{ fontSize: 11, lineHeight: 14 }}>
+              <T v="small" color={c} style={{ fontSize: 11, lineHeight: 14, fontFamily: active ? 'Inter_600SemiBold' : 'Inter_500Medium' }}>
                 {t(`tab.${id}`)}
               </T>
             </Pressable>

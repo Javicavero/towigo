@@ -156,11 +156,10 @@ export default function Home() {
         </OwiStage>
 
         <View style={{ width: '100%', maxWidth: 560, alignSelf: 'center', paddingHorizontal: 16, gap: 12, marginTop: 6 }}>
-          <SupportCard />
-          <CheerCard />
+          {/* "Ahora": una sola cosa importante cada vez (apoyo > ánimo de tu gente > check-in). */}
+          {d.supportReason ? <SupportCard /> : state.cheers.some((c) => !c.read) ? <CheerCard /> : !d.checkinToday ? <CheckinCard /> : null}
           {isT1(state.profile) && <T1Card />}
           {d.maintenance && <MaintenanceCard />}
-          {!d.checkinToday && <CheckinCard />}
           <SectionTitle>{t('home.forToday')}</SectionTitle>
           <FadeIn delay={100}>
             <TodayList />

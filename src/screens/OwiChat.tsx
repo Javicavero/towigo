@@ -117,7 +117,7 @@ export default function OwiChat() {
             <FadeIn key={m.id} from={6}>
               <View style={{ alignSelf: me ? 'flex-end' : 'flex-start', maxWidth: '86%', backgroundColor: me ? colors.greenText : colors.white, borderRadius: 18, borderBottomRightRadius: me ? 6 : 18, borderBottomLeftRadius: me ? 18 : 6, paddingHorizontal: 14, paddingVertical: 10, gap: 2 }}>
                 <T color={me ? colors.onAccent : colors.ink}>{m.text}</T>
-                <T v="small" color={me ? '#D7F0E6' : colors.secondary} style={{ fontSize: 11, alignSelf: 'flex-end' }}>
+                <T v="small" color={me ? colors.onAccent : colors.secondary} style={{ fontSize: 11, alignSelf: 'flex-end' }}>
                   {hhmm(m.at)}
                 </T>
               </View>

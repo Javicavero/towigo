@@ -16,9 +16,9 @@ const seeded = (seed: number) => {
 export const SITE_ORDER: InjectionSite[] = ['abdIzq', 'abdDer', 'musloIzq', 'musloDer', 'brazoIzq', 'brazoDer'];
 
 export const TEAM = {
-  endo: { name: 'Dra. Lucía Martín', short: 'Lucía', initials: 'LM', color: '#2BB58A', fg: '#1E2A32' },
-  nutri: { name: 'Carlos Ruiz', short: 'Carlos', initials: 'CR', color: '#FF7A59', fg: '#1E2A32' },
-  psico: { name: 'Marta Gil', short: 'Marta', initials: 'MG', color: '#7B5EA7', fg: '#FFFFFF' },
+  endo: { name: 'Dra. Lucía Martín', short: 'Lucía', initials: 'LM', color: '#0FA394', fg: '#FFFFFF' },
+  nutri: { name: 'Carlos Ruiz', short: 'Carlos', initials: 'CR', color: '#F2703F', fg: '#FFFFFF' },
+  psico: { name: 'Marta Gil', short: 'Marta', initials: 'MG', color: '#7B5CFF', fg: '#FFFFFF' },
 } as const;
 
 export const STEPS_TODAY = 6240;

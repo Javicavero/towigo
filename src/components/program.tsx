@@ -88,7 +88,9 @@ export function TitrationCard() {
           </T>
         </View>
       </Row>
-      <T v="title">{t('tit.now', { dose: f2(d.prescribedDose) })}</T>
+      <T v="h2" style={{ fontSize: 22, lineHeight: 28 }}>
+        {t('tit.now', { dose: f2(d.prescribedDose) })}
+      </T>
       {d.phaseWeeks > 0 && (
         <View style={{ gap: 4 }}>
           <ProgressBar value={(d.phaseWeek / d.phaseWeeks) * 100} color={colors.blue} />

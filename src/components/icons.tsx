@@ -1,6 +1,6 @@
 import { View } from 'react-native';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
-import { colors } from '../theme';
+import { catColor, colors, isDark, tint } from '../theme';
 
 export type IconName =
   | 'home'
@@ -154,9 +154,10 @@ export function Icon({ name, size = 26, color = colors.ink, stroke = 2.2 }: { na
 
 /** Icono estilo Ajustes de iOS: dibujo blanco sobre un cuadrado de color. */
 export function Glyph({ name, bg, size = 34 }: { name: IconName; bg: string; size?: number }) {
+  const c = catColor(bg);
   return (
-    <View style={{ width: size, height: size, borderRadius: size * 0.26, backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }}>
-      <Icon name={name} size={size * 0.62} color="#FFFFFF" stroke={2.3} />
+    <View style={{ width: size, height: size, borderRadius: size * 0.3, backgroundColor: tint(c, isDark ? 0.18 : 0.13), borderWidth: 1, borderColor: tint(c, isDark ? 0.28 : 0.18), alignItems: 'center', justifyContent: 'center' }}>
+      <Icon name={name} size={size * 0.56} color={c} stroke={2.2} />
     </View>
   );
 }

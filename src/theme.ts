@@ -102,6 +102,35 @@ const dark: typeof light = {
 
 export const colors = isDark ? dark : light;
 
+/**
+ * Colores de categoría (iconos de Registrar, Para hoy, ajustes…), afinados para Holo y Aurora.
+ * Los nombres describen el tono; cada pantalla los usa a través de los iconos (Glyph).
+ */
+export const cat = isDark
+  ? { indigo: '#8C9BFF', violet: '#A28FFF', rose: '#FF7AB6', aqua: '#3DE0C8', amber: '#F5B95A', peach: '#FF9A6B', slate: '#93A0BF' }
+  : { indigo: '#4F5BEA', violet: '#7B5CFF', rose: '#E5487F', aqua: '#0FA394', amber: '#D9921F', peach: '#F2703F', slate: '#6B6485' };
+
+/** Los colores antiguos que aún aparecen en pantallas se traducen a la paleta nueva. */
+const LEGACY: Record<string, keyof typeof cat> = {
+  '#1E63C7': 'indigo',
+  '#5B4BC4': 'violet',
+  '#C8372D': 'rose',
+  '#17785A': 'aqua',
+  '#0B7266': 'aqua',
+  '#B7791F': 'amber',
+  '#D9542F': 'peach',
+  '#5F6670': 'slate',
+  '#2F3440': 'slate',
+};
+export const catColor = (c: string) => (LEGACY[c.toUpperCase()] ? cat[LEGACY[c.toUpperCase()]] : c);
+
+/** Color con transparencia (#RRGGBB → rgba). */
+export function tint(hex: string, a: number) {
+  const h = hex.replace('#', '');
+  if (h.length !== 6) return hex;
+  return `rgba(${parseInt(h.slice(0, 2), 16)},${parseInt(h.slice(2, 4), 16)},${parseInt(h.slice(4, 6), 16)},${a})`;
+}
+
 /** Degradados (uso muy puntual). */
 export const gradients = {
   hero: isDark ? (['#161B3A', '#0A0F1E'] as const) : (['#E9E2FF', '#F4F1FA'] as const),

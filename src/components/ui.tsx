@@ -294,7 +294,7 @@ export function ListRow({
         tap();
         onPress?.();
       }}
-      style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, paddingVertical: 12, minHeight: 60, backgroundColor: pressed ? '#F5F5F7' : 'transparent' })}
+      style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, paddingVertical: 12, minHeight: 60, backgroundColor: pressed ? colors.surface2 : 'transparent' })}
     >
       <View style={{ width: 34, height: 34, borderRadius: 9, backgroundColor: tint ?? 'transparent', alignItems: 'center', justifyContent: 'center' }}>{icon}</View>
       <View style={{ flex: 1 }}>
@@ -326,7 +326,7 @@ export function ListRow({
 /** Control segmentado (como en iOS). */
 export function Segmented<K extends string>({ options, value, onChange }: { options: { id: K; label: string }[]; value: K; onChange: (k: K) => void }) {
   return (
-    <View accessibilityRole="tablist" style={{ flexDirection: 'row', backgroundColor: '#E4E4E9', borderRadius: 10, padding: 2 }}>
+    <View accessibilityRole="tablist" style={{ flexDirection: 'row', backgroundColor: colors.chip, borderRadius: 12, padding: 3 }}>
       {options.map((o) => {
         const sel = o.id === value;
         return (
@@ -338,7 +338,7 @@ export function Segmented<K extends string>({ options, value, onChange }: { opti
               tap();
               onChange(o.id);
             }}
-            style={{ flex: 1, minHeight: 36, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: sel ? colors.white : 'transparent', shadowColor: '#000', shadowOpacity: sel ? 0.08 : 0, shadowRadius: 3, shadowOffset: { width: 0, height: 1 } }}
+            style={{ flex: 1, minHeight: 36, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: sel ? (isDark ? colors.borderStrong : colors.white) : 'transparent', shadowColor: '#000', shadowOpacity: sel && !isDark ? 0.08 : 0, shadowRadius: 3, shadowOffset: { width: 0, height: 1 } }}
           >
             <T v="label" color={sel ? colors.ink : colors.secondary}>
               {o.label}

@@ -124,12 +124,12 @@ export default function Progress() {
                   width: 48,
                   height: 48,
                   borderRadius: 24,
-                  backgroundColor: '#D6E9F8',
+                  backgroundColor: colors.softBlue,
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
               >
-                <Icon name="shield" size={26} color="#2D5F8A" />
+                <Icon name="shield" size={26} color={colors.blue} />
               </View>
               <View style={{ flex: 1 }}>
                 <T v="h2">{t('progress.freezeTitle', { n: state.freezes })}</T>

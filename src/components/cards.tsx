@@ -145,7 +145,7 @@ export function GlucoseCard() {
               mg/dL · {t(`ctx.${g.context}`)} · {hhmm(g.at)}
             </T>
           </Row>
-          <View style={{ alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 12, backgroundColor: d.glucoseStatus === 'in' ? colors.softGreen : d.glucoseStatus.includes('ow') ? '#FDE7E5' : colors.softCoral }}>
+          <View style={{ alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 12, backgroundColor: d.glucoseStatus === 'in' ? colors.softGreen : d.glucoseStatus.includes('ow') ? colors.softCoral : colors.softCoral }}>
             <T v="label" color={c}>
               {t(`gstatus.${d.glucoseStatus}`)}
             </T>
