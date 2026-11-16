@@ -52,3 +52,4 @@ targets/*/Info.plist
 # El código nativo de los módulos locales sí se versiona
 !modules/*/ios/
 !modules/*/android/
+tools/owi/rig2d/.cache_base.png

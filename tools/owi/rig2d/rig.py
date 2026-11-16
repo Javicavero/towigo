@@ -22,37 +22,38 @@ SS = 2              # supermuestreo
 C = FS * SS
 FPS = 20
 COLS = 8
-FOOT_Y = 1150       # línea de los pies en coordenadas del modelo (1254 px)
-SQUAT_Y0, SQUAT = 600, 0.76   # Owi "chato": la barriga por debajo de la cara se encoge en vertical
-TOP_Y = 47
+FOOT_Y = 1177       # línea de los pies en coordenadas del modelo (= owi-frente.webp, 1254 px)
+TOP_Y = 49
 K = 0.80 * C / (FOOT_Y - TOP_Y)   # modelo -> lienzo
 GROUND = 0.955 * C
 U = C / 320
-DK = (66, 30, 14, 255)              # marrón de rasgos (cejas, boca, pestañas)
+DK = (72, 34, 18, 255)              # marrón de rasgos (boca, pestañas): el de la imagen de frente
 FONT = '/usr/share/fonts/opentype/inter/InterDisplay-Bold.otf'
 
-# --- Colocación de las piezas sobre el cuerpo (coordenadas del modelo) ---
-FACE = 1.16                                     # tamaño de la cara respecto a la primera versión
-EYE_W = round(232 * FACE)
-EYE = {'L': (458, 548), 'R': (798, 548)}
-IRIS_W = round(142 * FACE)
-IRIS_REST = {'L': (14, 10), 'R': (-14, 10)}     # mirada en reposo, un poco hacia dentro
-NOSE = (628, 676, round(118 * FACE))
-MOUTH = (628, 772)
-BROW_Y = 392
-SHOULDER = {'L': (292, 760), 'R': (962, 760)}
-ARM_W = 146
-ARM_REST = {'L': -18, 'R': 18}                  # grados; positivo = la mano va hacia la derecha de la pantalla
-FOOT = {'L': (476, 1078), 'R': (780, 1078)}
-FOOT_W = 262
-CHEEK = {'L': (366, 712), 'R': (890, 712)}
+# --- Colocación de las piezas: medida sobre owi-frente.webp (centro x, y; ancho, alto) ---
+EYE = {'L': (482, 536), 'R': (772, 537)}
+EYE_SIZE = {'L': (210, 216), 'R': (206, 219)}
+IRIS_SIZE = (134, 150)
+IRIS_REST = {'L': (42, 14), 'R': (-48, 13)}     # mirada en reposo, como en el dibujo (hacia la nariz)
+NOSE = (624, 628, 109)
+MOUTH = (628, 694)
+BROW_BOX = {'L': (424, 342, 588, 432), 'R': (668, 342, 826, 433)}
+MOUTH_BOX = (532, 660, 724, 728)
+ARM_C = {'L': (262, 836), 'R': (971, 836)}
+ARM_SIZE = (136, 214)
+ARM_PIVOT = 0.13                                # el hombro, en fracción de la altura del brazo
+ARM_REST = {'L': 0, 'R': 0}                     # grados; positivo = la mano va hacia la derecha de la pantalla
+FOOT = {'L': (450, 1113), 'R': (772, 1113)}
+FOOT_SIZE = (242, 130)
+CHEEK = {'L': (400, 668), 'R': (852, 668)}
+SHOULDER = {s: (ARM_C[s][0], ARM_C[s][1] - ARM_SIZE[1] * (0.5 - ARM_PIVOT)) for s in 'LR'}
 
 P = load()
 
 
-def sc(im, w):
-    k = w * K / im.size[0]
-    return im.resize((max(1, round(im.size[0] * k)), max(1, round(im.size[1] * k))), Image.LANCZOS)
+def sc(im, w, h=None):
+    h = h if h is not None else w * im.size[1] / im.size[0]
+    return im.resize((max(1, round(w * K)), max(1, round(h * K))), Image.LANCZOS)
 
 
 def M(x, y):
@@ -60,28 +61,34 @@ def M(x, y):
     return (C / 2 + (x - 627) * K, GROUND + (y - FOOT_Y) * K)
 
 
+def feature(box):
+    """Recorta un rasgo oscuro (ceja, boca) de la imagen de frente con su transparencia."""
+    a = np.asarray(P['front'].crop(box).convert('RGB')).astype(np.float32)
+    lum = a.mean(-1)
+    alpha = np.clip((175 - lum) / 75, 0, 1)
+    from scipy import ndimage
+    lab, n = ndimage.label(alpha > 0.3)
+    if n > 1:  # solo la pieza principal (fuera restos de orejas u ojos)
+        keep = lab == (np.argmax(ndimage.sum(alpha > 0.3, lab, range(1, n + 1))) + 1)
+        alpha = alpha * ndimage.binary_dilation(keep, iterations=3)
+    col = np.zeros(a.shape[:2] + (4,), np.uint8)
+    col[..., :3] = np.median(a[alpha > 0.85], axis=0)
+    col[..., 3] = (alpha * 255).astype(np.uint8)
+    im = Image.fromarray(col, 'RGBA')
+    return im.resize((max(1, round(im.size[0] * K)), max(1, round(im.size[1] * K))), Image.LANCZOS)
+
+
 # Piezas preescaladas
-def squat(im):
-    """Encoge en vertical la parte de abajo del cuerpo (desde SQUAT_Y0) para que Owi sea más chato, como en las fotos."""
-    a = np.asarray(im)
-    H = a.shape[0]
-    ys = np.arange(H, dtype=np.float32)
-    src = np.where(ys <= SQUAT_Y0, ys, SQUAT_Y0 + (ys - SQUAT_Y0) / SQUAT)
-    out = np.zeros_like(a)
-    ok = src < H - 1
-    y0 = np.floor(src[ok]).astype(int)
-    t = (src[ok] - y0)[:, None, None]
-    out[ok] = (a[y0] * (1 - t) + a[y0 + 1] * t).astype(np.uint8)
-    return Image.fromarray(out)
-
-
-BODY = squat(P['body']).resize((round(1254 * K), round(1254 * K)), Image.LANCZOS)
+from base import get as base_get  # noqa: E402
+BODY = base_get().resize((round(1254 * K), round(1254 * K)), Image.LANCZOS)
 BODY_POS = (round(C / 2 - 627 * K), round(GROUND - FOOT_Y * K))
-EYES = {s: sc(P['eye' + s], EYE_W) for s in 'LR'}
-IRIS = sc(P['iris'], IRIS_W)
+EYES = {s: sc(P['eye' + s], *EYE_SIZE[s]) for s in 'LR'}
+IRIS = {'L': sc(P['iris'], *IRIS_SIZE), 'R': sc(P['iris'].transpose(Image.FLIP_LEFT_RIGHT), *IRIS_SIZE)}  # brillo hacia la nariz, como en el dibujo
 NOSE_IM = sc(P['nose'], NOSE[2])
-ARMS = {'L': sc(P['arm'], ARM_W), 'R': sc(P['arm2'], ARM_W)}
-FEET = {'L': sc(P['foot'], FOOT_W), 'R': sc(P['foot2'], FOOT_W)}
+ARMS = {'L': sc(P['arm'], *ARM_SIZE), 'R': sc(P['arm2'], *ARM_SIZE)}
+FEET = {'L': sc(P['foot'], *FOOT_SIZE), 'R': sc(P['foot2'], *FOOT_SIZE)}
+BROWS = {s: feature(BROW_BOX[s]) for s in 'LR'}
+SMILE = feature(MOUTH_BOX)
 
 
 def eye_masks(im):
@@ -131,7 +138,7 @@ def draw_eye(fig, s, lid=0.0, gaze=(0, 0), iris_k=1.0, closed=None, sparkle=Fals
     if closed is None:
         layer.alpha_composite(im)
         # iris recortado dentro del blanco
-        ir = IRIS if iris_k == 1 else IRIS.resize((round(IRIS.size[0] * iris_k), round(IRIS.size[1] * iris_k)), Image.LANCZOS)
+        ir = IRIS[s] if iris_k == 1 else IRIS[s].resize((round(IRIS[s].size[0] * iris_k), round(IRIS[s].size[1] * iris_k)), Image.LANCZOS)
         rx, ry = IRIS_REST[s]
         gx, gy = (rx + gaze[0]) * K, (ry + gaze[1]) * K
         il = Image.new('RGBA', (w, h), (0, 0, 0, 0))
@@ -157,7 +164,7 @@ def draw_eye(fig, s, lid=0.0, gaze=(0, 0), iris_k=1.0, closed=None, sparkle=Fals
         u = (xs - w / 2) / (w / 2)
         edge = (h * 0.04) + lid_amt * h * 0.98 + (1 - u ** 2) * h * 0.10 * lid_amt
         lm = np.clip((edge - ys) / 2.5, 0, 1)
-        am = np.asarray(Image.fromarray((a * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(5))).astype(np.float32) / 255
+        am = np.asarray(Image.fromarray((a * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(11)).filter(ImageFilter.GaussianBlur(2))).astype(np.float32) / 255
         m = lm * am
         sk = skin.copy()
         sk.putalpha(Image.fromarray((m * 255).astype(np.uint8)))
@@ -192,18 +199,19 @@ def draw_eye(fig, s, lid=0.0, gaze=(0, 0), iris_k=1.0, closed=None, sparkle=Fals
 
 
 # ---------------------------------------------------------------- cejas
-def draw_brows(fig, raise_=0.0, inner=0.0, arch=1.0, asym=0.0, w=26):
-    """raise_: sube (+) / baja (-) en px de modelo. inner: + sube la punta interior (preocupado), - la baja (decidido)."""
-    d = ImageDraw.Draw(fig)
+def draw_brows(fig, raise_=0.0, inner=0.0, arch=1.0, asym=0.0, w=None):
+    """Cejas de la imagen de frente. raise_: sube (+) / baja (-) en px de modelo.
+    inner: + sube la punta interior (preocupado), - la baja (decidido). arch < 1 las aplana. asym: sube la derecha."""
     for s in 'LR':
-        ex, _ = EYE[s]
-        sign = 1 if s == 'L' else -1          # hacia la nariz
-        y = BROW_Y - raise_ - (asym if s == 'R' else -asym * 0.3)
-        outer = (ex - sign * 78 * FACE, y + 14)
-        inn = (ex + sign * 66 * FACE, y + 12 - inner)
-        mid = (ex - sign * 4, y - 22 * arch - inner * 0.25)
-        pts = [M(*p) for p in quad(outer, mid, inn)]
-        stroke(d, pts, w * K)
+        im = BROWS[s]
+        if arch != 1.0:
+            im = im.resize((im.size[0], max(1, round(im.size[1] * (0.55 + 0.45 * arch)))), Image.LANCZOS)
+        ang = math.degrees(math.atan2(inner, 80)) * (1 if s == 'L' else -1)
+        if ang:
+            im = im.rotate(ang, expand=True, resample=Image.BICUBIC)
+        x0, y0, x1, y1 = BROW_BOX[s]
+        dy = -raise_ - (asym if s == 'R' else -asym * 0.3)
+        paste_center(fig, im, *M((x0 + x1) / 2, (y0 + y1) / 2 + dy))
 
 
 # ---------------------------------------------------------------- boca
@@ -211,10 +219,11 @@ def draw_mouth(fig, kind='smile', open_=0.0, wide=1.0, dy=0.0):
     d = ImageDraw.Draw(fig)
     mx, my = MOUTH
     my += dy
-    hw = 70 * wide * FACE
-    if kind == 'smile':
-        pts = [M(*p) for p in quad((mx - hw, my - 10), (mx, my + 34 + 8 * open_), (mx + hw, my - 10))]
-        stroke(d, pts, 15 * K)
+    hw = 80 * wide
+    if kind == 'smile':   # la sonrisa de la imagen de frente
+        im = SMILE if wide == 1 else SMILE.resize((max(1, round(SMILE.size[0] * wide)), SMILE.size[1]), Image.LANCZOS)
+        x0, y0, x1, y1 = MOUTH_BOX
+        paste_center(fig, im, *M((x0 + x1) / 2, (y0 + y1) / 2 + dy))
     elif kind == 'grin':   # boca abierta con lengua
         o = 0.55 + 0.45 * open_
         top = [(mx - hw, my - 14), (mx, my + 4), (mx + hw, my - 14)]
@@ -264,7 +273,7 @@ def draw_arm(fig, s, ang, dx=0, dy=0):
     big = Image.new('RGBA', (w + 2 * pad, h + 2 * pad), (0, 0, 0, 0))
     big.alpha_composite(im, (pad, pad))
     # pivote: parte alta del brazo (hombro), un poco por debajo del borde
-    px, py = pad + w / 2, pad + h * 0.12
+    px, py = pad + w / 2, pad + h * ARM_PIVOT
     r = big.rotate(ang, center=(px, py), resample=Image.BICUBIC)
     sx, sy = M(SHOULDER[s][0] + dx, SHOULDER[s][1] + dy)
     fig.alpha_composite(r, (round(sx - px), round(sy - py)))

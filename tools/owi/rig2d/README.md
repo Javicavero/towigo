@@ -5,6 +5,10 @@ cuerpo base sin cara (`owi-base.webp`), brazos, pies, ojos, iris y nariz (`pieza
 `owi-frente.webp` y `owi-vistas.webp` son la referencia de proporciones.
 
 - `parts.py`: recorta cada pieza y limpia la neblina del fondo transparente.
+- `base.py`: la base es **la propia imagen de frente** (`owi-frente.webp`) sin cara, brazos ni pies, para que en reposo
+  Owi sea idéntico al dibujo. La cara se rellena con la piel de alrededor; detrás de brazos y pies, la piel del cuerpo
+  base deformada al huevo de la imagen de frente y las púas del cuerpo base.
+- `fit.py`: mide dónde está cada pieza en la imagen de frente (las cejas y la sonrisa se recortan de ella).
 - `rig.py`: monta a Owi y lo mueve por partes, a 20 fps:
   - ojos: parpadeo con la piel del propio cuerpo, mirada (el iris se mueve dentro del ojo), ojos felices `^ ^`,
     ojos dormidos, "ojos de cachorro" (pupilas grandes y brillo extra);
@@ -21,4 +25,4 @@ python3 rig.py ../../../assets/owi happy    # solo una
 python3 gif.py ../../../docs/owi-animaciones.gif
 ```
 Necesita Python 3 con Pillow, NumPy (y SciPy solo para medir piezas nuevas).
-Para retocar la colocación de una pieza, cambia las constantes del principio de `rig.py` (EYE, IRIS_W, SHOULDER, FOOT…).
+Para retocar la colocación de una pieza, cambia las constantes del principio de `rig.py` (EYE, EYE_SIZE, IRIS_SIZE, ARM_C, FOOT…) y las mismas en `base.py`.

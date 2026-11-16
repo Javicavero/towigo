@@ -48,6 +48,7 @@ npx expo start --web
 
 ### 1.6 (Owi marioneta 2D con sus piezas)
 - Owi se monta **solo con las piezas entregadas** (cuerpo base, brazos, pies, ojos, iris y nariz en `docs/owi/piezas/`), sin 3D.
+- En reposo es **idéntico a la imagen de frente**: se usa como base, con las piezas colocadas encima en su sitio exacto.
 - Se mueve por partes: parpadea, mira a los lados, pone ojos felices, dormidos o "de cachorro"; cejas y boca cambian con cada
   emoción; saluda, abraza, levanta los brazos, se rasca la cabeza, corre y salta. Herramientas en `tools/owi/rig2d`.
 
