@@ -22,7 +22,8 @@ SS = 2              # supermuestreo
 C = FS * SS
 FPS = 20
 COLS = 8
-FOOT_Y = 1182       # línea de los pies en coordenadas del modelo (1254 px)
+FOOT_Y = 1150       # línea de los pies en coordenadas del modelo (1254 px)
+SQUAT_Y0, SQUAT = 600, 0.76   # Owi "chato": la barriga por debajo de la cara se encoge en vertical
 TOP_Y = 47
 K = 0.80 * C / (FOOT_Y - TOP_Y)   # modelo -> lienzo
 GROUND = 0.955 * C
@@ -31,18 +32,20 @@ DK = (66, 30, 14, 255)              # marrón de rasgos (cejas, boca, pestañas)
 FONT = '/usr/share/fonts/opentype/inter/InterDisplay-Bold.otf'
 
 # --- Colocación de las piezas sobre el cuerpo (coordenadas del modelo) ---
-EYE_W = 232
-EYE = {'L': (470, 528), 'R': (786, 528)}
-IRIS_W = 142
+FACE = 1.16                                     # tamaño de la cara respecto a la primera versión
+EYE_W = round(232 * FACE)
+EYE = {'L': (458, 548), 'R': (798, 548)}
+IRIS_W = round(142 * FACE)
 IRIS_REST = {'L': (14, 10), 'R': (-14, 10)}     # mirada en reposo, un poco hacia dentro
-NOSE = (628, 632, 118)
-MOUTH = (628, 722)
-SHOULDER = {'L': (300, 742), 'R': (954, 742)}
-ARM_W = 150
+NOSE = (628, 676, round(118 * FACE))
+MOUTH = (628, 772)
+BROW_Y = 392
+SHOULDER = {'L': (292, 760), 'R': (962, 760)}
+ARM_W = 146
 ARM_REST = {'L': -18, 'R': 18}                  # grados; positivo = la mano va hacia la derecha de la pantalla
-FOOT = {'L': (478, 1112), 'R': (778, 1112)}
+FOOT = {'L': (476, 1078), 'R': (780, 1078)}
 FOOT_W = 262
-CHEEK = {'L': (380, 668), 'R': (876, 668)}
+CHEEK = {'L': (366, 712), 'R': (890, 712)}
 
 P = load()
 
@@ -58,7 +61,21 @@ def M(x, y):
 
 
 # Piezas preescaladas
-BODY = P['body'].resize((round(1254 * K), round(1254 * K)), Image.LANCZOS)
+def squat(im):
+    """Encoge en vertical la parte de abajo del cuerpo (desde SQUAT_Y0) para que Owi sea más chato, como en las fotos."""
+    a = np.asarray(im)
+    H = a.shape[0]
+    ys = np.arange(H, dtype=np.float32)
+    src = np.where(ys <= SQUAT_Y0, ys, SQUAT_Y0 + (ys - SQUAT_Y0) / SQUAT)
+    out = np.zeros_like(a)
+    ok = src < H - 1
+    y0 = np.floor(src[ok]).astype(int)
+    t = (src[ok] - y0)[:, None, None]
+    out[ok] = (a[y0] * (1 - t) + a[y0 + 1] * t).astype(np.uint8)
+    return Image.fromarray(out)
+
+
+BODY = squat(P['body']).resize((round(1254 * K), round(1254 * K)), Image.LANCZOS)
 BODY_POS = (round(C / 2 - 627 * K), round(GROUND - FOOT_Y * K))
 EYES = {s: sc(P['eye' + s], EYE_W) for s in 'LR'}
 IRIS = sc(P['iris'], IRIS_W)
@@ -175,15 +192,15 @@ def draw_eye(fig, s, lid=0.0, gaze=(0, 0), iris_k=1.0, closed=None, sparkle=Fals
 
 
 # ---------------------------------------------------------------- cejas
-def draw_brows(fig, raise_=0.0, inner=0.0, arch=1.0, asym=0.0, w=19):
+def draw_brows(fig, raise_=0.0, inner=0.0, arch=1.0, asym=0.0, w=26):
     """raise_: sube (+) / baja (-) en px de modelo. inner: + sube la punta interior (preocupado), - la baja (decidido)."""
     d = ImageDraw.Draw(fig)
     for s in 'LR':
         ex, _ = EYE[s]
         sign = 1 if s == 'L' else -1          # hacia la nariz
-        y = 384 - raise_ - (asym if s == 'R' else -asym * 0.3)
-        outer = (ex - sign * 78, y + 14)
-        inn = (ex + sign * 66, y + 12 - inner)
+        y = BROW_Y - raise_ - (asym if s == 'R' else -asym * 0.3)
+        outer = (ex - sign * 78 * FACE, y + 14)
+        inn = (ex + sign * 66 * FACE, y + 12 - inner)
         mid = (ex - sign * 4, y - 22 * arch - inner * 0.25)
         pts = [M(*p) for p in quad(outer, mid, inn)]
         stroke(d, pts, w * K)
@@ -194,10 +211,10 @@ def draw_mouth(fig, kind='smile', open_=0.0, wide=1.0, dy=0.0):
     d = ImageDraw.Draw(fig)
     mx, my = MOUTH
     my += dy
-    hw = 70 * wide
+    hw = 70 * wide * FACE
     if kind == 'smile':
         pts = [M(*p) for p in quad((mx - hw, my - 10), (mx, my + 34 + 8 * open_), (mx + hw, my - 10))]
-        stroke(d, pts, 13 * K)
+        stroke(d, pts, 15 * K)
     elif kind == 'grin':   # boca abierta con lengua
         o = 0.55 + 0.45 * open_
         top = [(mx - hw, my - 14), (mx, my + 4), (mx + hw, my - 14)]
@@ -221,7 +238,7 @@ def draw_mouth(fig, kind='smile', open_=0.0, wide=1.0, dy=0.0):
         d.ellipse((x0, y0, x1, y1), fill=(104, 36, 24, 255), outline=DK, width=round(8 * K))
     elif kind == 'sad':
         pts = [M(*p) for p in quad((mx - hw * 0.7, my + 22), (mx, my - 8), (mx + hw * 0.7, my + 22))]
-        stroke(d, pts, 13 * K)
+        stroke(d, pts, 15 * K)
     elif kind == 'wavy':
         pts = []
         for i in range(31):
@@ -462,7 +479,7 @@ def frame(mood, p):
         elif e[0] == 'heart': heart(d, e[1] * C, e[2] * C, e[3] * U, alpha=max(0, e[4]))
         elif e[0] == 'hug':
             r = (26 if e[2] else 18) * U * e[1]
-            heart(d, 0.5 * C, 0.72 * C, r)
+            heart(d, 0.5 * C, 0.765 * C, r)
         elif e[0] == 'drop': drop(d, e[1] * C, e[2] * C, e[3] * U, alpha=e[4] if len(e) > 4 else 1)
         elif e[0] == 'text': text(img, e[1], e[2] * C, e[3] * C, e[4] * U, e[5], max(0, e[6]), e[7])
         elif e[0] == 'confetti': confetti(d, p)
