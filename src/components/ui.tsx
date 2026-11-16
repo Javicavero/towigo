@@ -120,10 +120,16 @@ const TONES: Record<Tone, string> = {
   blue: colors.white,
   purple: colors.white,
 };
+/** Las tarjetas de estado llevan un borde del mismo tono (más nítido que solo el fondo). */
+const TONE_BORDER: Partial<Record<Tone, string>> = {
+  green: isDark ? 'rgba(61,224,200,0.28)' : 'rgba(91,61,224,0.20)',
+  coral: isDark ? 'rgba(255,122,182,0.30)' : 'rgba(229,72,127,0.22)',
+  yellow: isDark ? 'rgba(245,185,90,0.30)' : 'rgba(217,146,31,0.28)',
+};
 
 /** Tarjeta limpia, sin bordes, con sombra muy suave (estilo Apple Salud). */
 export function Card({ children, style, tone = 'white' }: { children: ReactNode; style?: StyleProp<ViewStyle>; tone?: Tone }) {
-  return <View style={[styles.card, { backgroundColor: TONES[tone] }, style]}>{children}</View>;
+  return <View style={[styles.card, { backgroundColor: TONES[tone] }, TONE_BORDER[tone] ? { borderColor: TONE_BORDER[tone] } : null, style]}>{children}</View>;
 }
 
 /** Opción seleccionable (control segmentado / chip): gris neutro, verde al seleccionar. */

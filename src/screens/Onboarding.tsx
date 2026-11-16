@@ -17,7 +17,7 @@ import { TEAM } from '../data/mock';
 import { t } from '../i18n';
 import { useStore } from '../state/store';
 import { hasDiabetes, usesGlp1, type Glp1Drug, type PetMood, type Profile, type SensorId } from '../state/types';
-import { colors, fonts, MIN_TOUCH, radius } from '../theme';
+import { colors, fonts, gradients, MIN_TOUCH, radius } from '../theme';
 
 const STEPS = ['hello', 'name', 'owiName', 'profile', 'treatment', 'avatar', 'consent', 'team', 'commit'] as const;
 type Step = (typeof STEPS)[number];
@@ -108,15 +108,15 @@ export default function Onboarding() {
           <View style={{ width: MIN_TOUCH }} />
         )}
         <View style={{ flex: 1, marginHorizontal: 8 }} accessible accessibilityLabel={t('onb.progress', { n: i + 1, total: STEPS.length })}>
-          <ProgressBar value={((i + 1) / STEPS.length) * 100} color={colors.owiGreen} height={16} />
+          <ProgressBar value={((i + 1) / STEPS.length) * 100} color={colors.greenText} height={8} />
         </View>
         <View style={{ width: MIN_TOUCH }} />
       </Row>
 
       {step !== 'avatar' && (
         <FadeIn key={pair ? 'pair' : 'owi'}>
-          <View style={{ borderRadius: 28, overflow: 'hidden' }}>
-            <LinearGradient colors={[colors.softGreen, colors.cream]} style={{ alignItems: 'center', paddingTop: 8 }}>
+          <View style={{ borderRadius: 28, overflow: 'hidden', borderWidth: 1, borderColor: colors.line }}>
+            <LinearGradient colors={[gradients.hero[0], colors.cream]} style={{ alignItems: 'center', paddingTop: 8 }}>
               <Row style={{ justifyContent: 'center', alignItems: 'flex-end' }}>
                 {pair && <AvatarFace avatar={d.owiAvatar} size={130} expression={step === 'commit' ? 'big' : 'smile'} />}
                 <OwiAnimated mood={STEP_MOOD[step]} level={1} size={pair ? 200 : 250} label={t('owi.a11y', { name: owi })} />

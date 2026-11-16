@@ -11,9 +11,10 @@ import { fonts } from '../theme';
 import type { LiveActivity } from './liveActivity';
 import type { WidgetSnapshot } from './snapshot';
 
-const INK = '#1C1C1E';
-const SUB = '#5F6670';
-const GREEN = '#17785A';
+// Los widgets usan la paleta Holo (claros sobre el fondo de pantalla del móvil).
+const INK = '#1B1630';
+const SUB = '#625B7C';
+const GREEN = '#5B3DE0';
 
 function Small({ s }: { s: WidgetSnapshot }) {
   return (
@@ -21,7 +22,7 @@ function Small({ s }: { s: WidgetSnapshot }) {
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <Image source={OWI_STICKERS[s.mood]} style={{ width: 72, height: 72 }} resizeMode="contain" />
         <View style={{ alignItems: 'flex-end' }}>
-          <Text style={{ fontFamily: fonts.bold, fontSize: 20, color: '#D9542F' }}>{s.streak}</Text>
+          <Text style={{ fontFamily: fonts.bold, fontSize: 20, color: '#F2703F' }}>{s.streak}</Text>
           <Text style={{ fontFamily: fonts.medium, fontSize: 10, color: SUB }}>{t('widget.streakLabel')}</Text>
         </View>
       </View>
@@ -48,7 +49,7 @@ function Medium({ s }: { s: WidgetSnapshot }) {
           </View>
           <View>
             <Text style={{ fontFamily: fonts.medium, fontSize: 11, color: SUB }}>{t('widget.streakLabel')}</Text>
-            <Text style={{ fontFamily: fonts.bold, fontSize: 15, color: '#D9542F' }}>{t('widget.days', { n: s.streak })}</Text>
+            <Text style={{ fontFamily: fonts.bold, fontSize: 15, color: '#F2703F' }}>{t('widget.days', { n: s.streak })}</Text>
           </View>
         </View>
       </View>
@@ -76,7 +77,7 @@ function Lock({ s }: { s: WidgetSnapshot }) {
   );
 }
 
-const TONE = { green: '#2BB58A', coral: '#FF8A65', low: '#FF6B5E' } as const;
+const TONE = { green: '#3DE0C8', coral: '#FF9A6B', low: '#FF6B5E' } as const;
 
 /** Dynamic Island (compacta y ampliada), Live Activity en bloqueo y Apple Watch. */
 function Live({ la, owiName }: { la: NonNullable<LiveActivity>; owiName: string }) {
@@ -109,7 +110,7 @@ function Live({ la, owiName }: { la: NonNullable<LiveActivity>; owiName: string 
             {st.detail}
           </Text>
         </View>
-        <Text style={{ fontFamily: fonts.bold, fontSize: 22, color: st.tone === 'green' ? GREEN : st.tone === 'low' ? '#B3261E' : '#D9542F' }}>{st.value}</Text>
+        <Text style={{ fontFamily: fonts.bold, fontSize: 22, color: st.tone === 'green' ? GREEN : st.tone === 'low' ? '#B3261E' : '#F2703F' }}>{st.value}</Text>
       </View>
       {/* Apple Watch (Smart Stack) */}
       <View style={{ width: 176, height: 96, borderRadius: 30, backgroundColor: '#000', borderWidth: 4, borderColor: '#2C2C2E', padding: 10, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
@@ -128,7 +129,7 @@ function Live({ la, owiName }: { la: NonNullable<LiveActivity>; owiName: string 
 export default function WidgetPreview({ s, la }: { s: WidgetSnapshot; la?: LiveActivity }) {
   const label = (txt: string) => <Text style={{ fontFamily: fonts.semibold, fontSize: 12, color: 'rgba(255,255,255,0.9)', alignSelf: 'flex-start' }}>{txt}</Text>;
   return (
-    <LinearGradient colors={['#2E5E7E', '#3F8F7A', '#7FBF9A']} style={{ borderRadius: 20, padding: 14, gap: 10, alignItems: 'center' }}>
+    <LinearGradient colors={['#1A1F45', '#3B2E8C', '#0E8C82']} style={{ borderRadius: 20, padding: 14, gap: 10, alignItems: 'center' }}>
       {label(t('widget.lock'))}
       <Lock s={s} />
       {label(`${t('widget.small')} · ${t('widget.medium')}`)}

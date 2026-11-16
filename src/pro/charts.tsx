@@ -30,7 +30,7 @@ export function AgpChart({ s, height = 220 }: { s: AppState; height?: number }) 
       .join(' ') +
     ' Z';
   const median = rows.map((r, i) => `${i ? 'L' : 'M'}${x(r.h)},${y(r.p50)}`).join(' ');
-  const accent = isDark ? '#7A9BFF' : '#2F5BEA';
+  const accent = isDark ? '#9D91FF' : '#7B5CFF';
   return (
     <View onLayout={(e) => setW(e.nativeEvent.layout.width)} accessible accessibilityLabel={t('pro.agpA11y')}>
       <Svg width={w} height={height}>

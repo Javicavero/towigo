@@ -22,8 +22,8 @@ export default function SpeechBubble({
   /** Emoción de Owi: muestra su ilustración junto al nombre. */
   mood?: PetMood;
 }) {
-  // Burbuja de chat sobria: gris claro; los avisos llevan un tinte amarillo suave.
-  const bg = icon ? colors.softYellow : colors.cream;
+  // Burbuja sobre la superficie de la tarjeta; los avisos llevan el tinte de acento.
+  const bg = icon ? colors.softGreen : colors.white;
   return (
     <View style={{ alignItems: arrow === 'center' ? 'center' : arrow === 'right' ? 'flex-end' : 'flex-start' }}>
       <View style={{ marginHorizontal: 48, width: 22, height: 14, alignItems: 'center', justifyContent: 'flex-end' }}>
@@ -33,6 +33,8 @@ export default function SpeechBubble({
         accessibilityLiveRegion="polite"
         style={{
           backgroundColor: bg,
+          borderWidth: 1,
+          borderColor: colors.line,
           borderRadius: radius.l,
           paddingVertical: 14,
           paddingHorizontal: 18,

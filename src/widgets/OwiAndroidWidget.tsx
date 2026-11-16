@@ -27,16 +27,16 @@ export function OwiAndroidWidget({ s }: { s: WidgetSnapshot }) {
     >
       <ImageWidget image={OWI_STICKERS[s.mood] as never} imageWidth={96} imageHeight={96} />
       <FlexWidget style={{ flex: 1, flexDirection: 'column', flexGap: 4 }}>
-        <TextWidget text={s.owiName} style={{ fontSize: 12, color: '#17785A', fontWeight: '600' }} />
-        <TextWidget text={s.message} maxLines={2} truncate="END" style={{ fontSize: 15, color: '#1C1C1E', fontWeight: '600' }} />
+        <TextWidget text={s.owiName} style={{ fontSize: 12, color: '#5B3DE0', fontWeight: '600' }} />
+        <TextWidget text={s.message} maxLines={2} truncate="END" style={{ fontSize: 15, color: '#1B1630', fontWeight: '600' }} />
         <FlexWidget style={{ flexDirection: 'row', flexGap: 14 }}>
           <FlexWidget style={{ flexDirection: 'column' }}>
-            <TextWidget text={s.nextLabel} style={{ fontSize: 11, color: '#5F6670' }} />
-            <TextWidget text={s.nextValue} style={{ fontSize: 15, color: '#1C1C1E', fontWeight: '700' }} />
+            <TextWidget text={s.nextLabel} style={{ fontSize: 11, color: '#625B7C' }} />
+            <TextWidget text={s.nextValue} style={{ fontSize: 15, color: '#1B1630', fontWeight: '700' }} />
           </FlexWidget>
           <FlexWidget style={{ flexDirection: 'column' }}>
-            <TextWidget text="Racha" style={{ fontSize: 11, color: '#5F6670' }} />
-            <TextWidget text={`${s.streak} días`} style={{ fontSize: 15, color: '#D9542F', fontWeight: '700' }} />
+            <TextWidget text="Racha" style={{ fontSize: 11, color: '#625B7C' }} />
+            <TextWidget text={`${s.streak} días`} style={{ fontSize: 15, color: '#F2703F', fontWeight: '700' }} />
           </FlexWidget>
         </FlexWidget>
       </FlexWidget>

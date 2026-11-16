@@ -47,7 +47,7 @@ export const usePro = () => {
 
 type View_ = { k: 'list' } | { k: 'inbox' } | { k: 'patient'; id: string; tab?: string };
 
-export const SIDEBAR_BG = isDark ? '#08090B' : '#0F1216';
+export const SIDEBAR_BG = isDark ? '#060A16' : '#0A0F1E'; // azul noche de Aurora
 
 export default function ProApp() {
   const { state: me, dispatch } = useStore();
@@ -99,20 +99,20 @@ export default function ProApp() {
   const sidebar = (
     <View style={{ width: wide ? 248 : '100%', backgroundColor: SIDEBAR_BG, paddingTop: insets.top + 18, paddingHorizontal: 14, paddingBottom: 14, gap: 18 }}>
       <Row gap={10} style={{ paddingHorizontal: 6 }}>
-        <View style={{ width: 30, height: 30, borderRadius: 9, backgroundColor: '#14B8A6', alignItems: 'center', justifyContent: 'center' }}>
-          <Icon name="steth" size={18} color="#04221C" />
+        <View style={{ width: 30, height: 30, borderRadius: 9, backgroundColor: '#3DE0C8', alignItems: 'center', justifyContent: 'center' }}>
+          <Icon name="steth" size={18} color="#06131A" />
         </View>
         <View style={{ flex: 1 }}>
-          <T v="label" color="#F3F3F4">
+          <T v="label" color="#F2F5FF">
             Towigo Pro
           </T>
-          <T v="small" color="#8A8E97" style={{ fontSize: 11 }}>
+          <T v="small" color="#7F8BAE" style={{ fontSize: 11 }}>
             {t('pro.clinic')}
           </T>
         </View>
         {!wide && (
           <Pressable onPress={back} accessibilityRole="button" accessibilityLabel={t('pro.backToApp')}>
-            <T v="small" color="#5EEAD4">
+            <T v="small" color="#3DE0C8">
               {t('pro.backShort')}
             </T>
           </Pressable>
@@ -135,11 +135,11 @@ export default function ProApp() {
                 paddingHorizontal: 10,
                 height: 40,
                 borderRadius: 10,
-                backgroundColor: active ? 'rgba(20,184,166,0.16)' : hov(st) ? 'rgba(255,255,255,0.05)' : 'transparent',
+                backgroundColor: active ? 'rgba(61,224,200,0.14)' : hov(st) ? 'rgba(255,255,255,0.05)' : 'transparent',
               })}
             >
-              <Icon name={n.icon} size={18} color={active ? '#5EEAD4' : '#A1A5AE'} />
-              <T v="label" color={active ? '#F3F3F4' : '#C2C5CC'} style={{ flex: 1 }}>
+              <Icon name={n.icon} size={18} color={active ? '#3DE0C8' : '#93A0BF'} />
+              <T v="label" color={active ? '#F2F5FF' : '#C4CCE2'} style={{ flex: 1 }}>
                 {n.label}
               </T>
               {!!n.badge && (
@@ -149,7 +149,7 @@ export default function ProApp() {
                     height: 20,
                     borderRadius: 10,
                     paddingHorizontal: 6,
-                    backgroundColor: n.k === 'list' ? '#E5483A' : '#2F5BEA',
+                    backgroundColor: n.k === 'list' ? '#FF5C8A' : '#7C6CFF',
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}
@@ -166,7 +166,7 @@ export default function ProApp() {
       {wide && (
         <>
           <View style={{ flex: 1 }} />
-          <T v="small" color="#8A8E97" style={{ paddingHorizontal: 6, fontSize: 11, letterSpacing: 0.4 }}>
+          <T v="small" color="#7F8BAE" style={{ paddingHorizontal: 6, fontSize: 11, letterSpacing: 0.4 }}>
             {t('pro.signedAs').toUpperCase()}
           </T>
           <View style={{ gap: 4 }}>
@@ -191,10 +191,10 @@ export default function ProApp() {
                   </T>
                 </View>
                 <View style={{ flex: 1 }}>
-                  <T v="small" color={role === r ? '#F3F3F4' : '#A1A5AE'} style={{ fontFamily: fonts.medium }}>
+                  <T v="small" color={role === r ? '#F2F5FF' : '#93A0BF'} style={{ fontFamily: fonts.medium }}>
                     {TEAM[r].name}
                   </T>
-                  <T v="small" color="#8A8E97" style={{ fontSize: 11 }}>
+                  <T v="small" color="#7F8BAE" style={{ fontSize: 11 }}>
                     {t(`pro.role.${r}`)}
                   </T>
                 </View>
@@ -202,7 +202,7 @@ export default function ProApp() {
             ))}
           </View>
           <Pressable onPress={back} accessibilityRole="button" style={{ padding: 8 }}>
-            <T v="small" color="#5EEAD4">
+            <T v="small" color="#3DE0C8">
               {t('pro.backToApp')}
             </T>
           </Pressable>

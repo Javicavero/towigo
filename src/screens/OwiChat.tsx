@@ -16,7 +16,7 @@ import { owiThink, SUGGESTIONS, type Chip, type OwiAction, type OwiReply } from 
 import { backendConfigured, owiAsk } from '../services/backend';
 import { useStore } from '../state/store';
 import type { PetMood } from '../state/types';
-import { colors, fonts, MIN_TOUCH, radius } from '../theme';
+import { colors, fonts, gradients, MIN_TOUCH, radius } from '../theme';
 
 const hhmm = (x: string) => new Date(x).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 
@@ -95,7 +95,7 @@ export default function OwiChat() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.cream }}>
       {/* Cabecera */}
-      <View style={{ paddingTop: insets.top + 8, paddingHorizontal: 12, paddingBottom: 8, backgroundColor: colors.white, borderBottomWidth: 0.5, borderBottomColor: colors.borderStrong }}>
+      <View style={{ paddingTop: insets.top + 8, paddingHorizontal: 12, paddingBottom: 8, backgroundColor: gradients.hero[0], borderBottomWidth: 1, borderBottomColor: colors.line }}>
         <Row gap={8} style={{ maxWidth: 520, width: '100%', alignSelf: 'center' }}>
           <Pressable accessibilityRole="button" accessibilityLabel={t('common.back')} onPress={() => go('home')} style={{ width: MIN_TOUCH, height: MIN_TOUCH, alignItems: 'center', justifyContent: 'center' }}>
             <Icon name="back" size={26} />
@@ -115,7 +115,7 @@ export default function OwiChat() {
           const me = m.from === 'me';
           return (
             <FadeIn key={m.id} from={6}>
-              <View style={{ alignSelf: me ? 'flex-end' : 'flex-start', maxWidth: '86%', backgroundColor: me ? colors.greenText : colors.white, borderRadius: 18, borderBottomRightRadius: me ? 6 : 18, borderBottomLeftRadius: me ? 18 : 6, paddingHorizontal: 14, paddingVertical: 10, gap: 2 }}>
+              <View style={{ alignSelf: me ? 'flex-end' : 'flex-start', maxWidth: '86%', backgroundColor: me ? colors.greenText : colors.white, borderWidth: me ? 0 : 1, borderColor: colors.line, borderRadius: 18, borderBottomRightRadius: me ? 6 : 18, borderBottomLeftRadius: me ? 18 : 6, paddingHorizontal: 14, paddingVertical: 10, gap: 2 }}>
                 <T color={me ? colors.onAccent : colors.ink}>{m.text}</T>
                 <T v="small" color={me ? colors.onAccent : colors.secondary} style={{ fontSize: 11, alignSelf: 'flex-end' }}>
                   {hhmm(m.at)}

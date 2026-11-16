@@ -141,12 +141,12 @@ export default function PatientList() {
                     width: 36,
                     height: 36,
                     borderRadius: 18,
-                    backgroundColor: p.isMe ? '#14B8A6' : colors.chip,
+                    backgroundColor: p.isMe ? colors.greenText : colors.chip,
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}
                 >
-                  <T v="small" color={p.isMe ? '#04221C' : colors.ink} style={{ fontFamily: fonts.semibold }}>
+                  <T v="small" color={p.isMe ? colors.onAccent : colors.ink} style={{ fontFamily: fonts.semibold }}>
                     {p.name
                       .split(' ')
                       .slice(0, 2)

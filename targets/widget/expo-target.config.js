@@ -17,10 +17,10 @@ module.exports = (config) => ({
     'com.apple.security.application-groups': ['group.app.towigo'],
   },
   colors: {
-    owiGreen: '#17785A',
-    owiCoral: '#D9542F',
-    owiInk: '#1C1C1E',
-    owiSecondary: '#5F6670',
+    owiGreen: '#5B3DE0',
+    owiCoral: '#F2703F',
+    owiInk: '#1B1630',
+    owiSecondary: '#625B7C',
     $widgetBackground: '#FFFFFF',
   },
   // Las 12 ilustraciones de Owi como imágenes del widget: owi_happy, owi_sport...
