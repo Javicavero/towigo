@@ -19,6 +19,7 @@ export default function OwiAnimated({
   onPress,
   label,
   shadow = true,
+  reactKey,
 }: {
   mood: PetMood;
   level?: PetLevel;
@@ -26,6 +27,8 @@ export default function OwiAnimated({
   onPress?: () => void;
   label?: string;
   shadow?: boolean;
+  /** Cuando cambia (p. ej. tras un registro), Owi celebra unos segundos. */
+  reactKey?: number;
 }) {
   const pop = useRef(new Animated.Value(1)).current;
   const [reacting, setReacting] = useState(false);
@@ -33,6 +36,12 @@ export default function OwiAnimated({
     pop.setValue(0.9);
     Animated.spring(pop, { toValue: 1, speed: 10, bounciness: 10, useNativeDriver: ND }).start();
   }, [pop, mood]);
+  const firstKey = useRef(reactKey);
+  useEffect(() => {
+    if (reactKey === undefined || reactKey === firstKey.current) return;
+    firstKey.current = reactKey;
+    setReacting(true);
+  }, [reactKey]);
   useEffect(() => {
     if (!reacting) return;
     const id = setTimeout(() => setReacting(false), 2400);

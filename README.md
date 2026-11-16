@@ -46,6 +46,12 @@ npx expo start --web
 
 ## Historial
 
+### 1.5 (rediseño completo y Owi más vivo)
+- Rediseño Aurora/Holo en todas las pantallas, widgets y panel profesional.
+- **Voz de Owi** (`src/owi/voice.ts`): cada día un tema distinto con tus datos (racha, peso, inyección, tiempo en rango, ayunas, proteína, fuerza, ánimo, próximo hito, audios del equipo) y varias formas de decirlo. Al tocarlo, cambia de tema. Nunca da dosis.
+- **Evolución visible**: nivel bajo Owi con su progreso, chispas que orbitan según el nivel (aro dorado en el 4) y celebración al evolucionar.
+- **Reacciones**: Owi celebra al volver de registrar y con confeti al completar los tres anillos del día.
+
 ### 1.4 (Fase 0: cimientos)
 - Días reales: la racha y los hábitos se calculan a partir de un historial por fecha, con cierre de día. Fechas en hora local.
 - Guardado en iPhone y Android (AsyncStorage) y versiones del modelo de datos con migración automática.

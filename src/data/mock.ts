@@ -76,7 +76,8 @@ export function demoInjections(scenario: Scenario, plan: Glp1Plan, now = Date.no
   let last = lastWeekday(now, plan.weekday);
   if (last > now - 3600e3) last -= 7 * DAY; // la de hoy aún no
   const weeks = scenario === 'missedInjection' ? 10 : 11;
-  const start = scenario === 'missedInjection' ? last - 7 * DAY : last;
+  // Inyección olvidada: la última fue hace más de 8 días, sea el día de la semana que sea.
+  const start = scenario === 'missedInjection' ? Math.min(last - 7 * DAY, now - 9 * DAY) : last;
   return Array.from({ length: weeks }, (_, i) => {
     const t = start - (weeks - 1 - i) * 7 * DAY;
     const dose = i < 4 ? 0.25 : i < 8 ? 0.5 : 1;

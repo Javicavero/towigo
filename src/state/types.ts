@@ -194,6 +194,10 @@ export type AppState = {
   messages: Message[];
   /** Avisos del sistema en este móvil. Discreto: el texto no menciona salud. */
   notifications: { enabled: boolean; discreet: boolean };
+  /** Último nivel de Owi que el usuario ya ha visto (para celebrar cuando evoluciona). */
+  petLevelSeen: number;
+  /** Último día en que se celebraron los tres anillos completos. */
+  ringsDoneOn: string | null;
   /** Versión del modelo de datos guardado (ver migrate en logic.ts). */
   schemaVersion: number;
   /** Día local (AAAA-MM-DD) al que se refieren habitsToday, logsToday y freezeActiveToday. */

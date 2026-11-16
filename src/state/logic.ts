@@ -157,6 +157,8 @@ export function migrate(saved: Partial<AppState> | null, now = Date.now()): AppS
     goals: { ...base.goals, ...saved.goals },
     plan: { ...base.plan, ...saved.plan },
     notifications: { ...base.notifications, ...saved.notifications },
+    petLevelSeen: saved.petLevelSeen ?? 99, // datos antiguos: no celebrar niveles ya alcanzados
+    ringsDoneOn: saved.ringsDoneOn ?? null,
     insulin: saved.insulin ?? base.insulin,
     carbs: saved.carbs ?? base.carbs,
     insulinPlan: { ...base.insulinPlan, ...saved.insulinPlan },
@@ -196,6 +198,8 @@ export function initialState(): AppState {
     messages: initialMessages(profile),
     schemaVersion: SCHEMA_VERSION,
     notifications: { enabled: false, discreet: false },
+    petLevelSeen: 2,
+    ringsDoneOn: null,
     day: dayKey(),
     habitHistory: demoHabitHistory(),
     habitsToday: { log: false, walk: STEPS_TODAY >= STEPS_GOAL, listen: false },
@@ -222,6 +226,8 @@ export type Action =
   | { type: 'setPetName'; name: string }
   | { type: 'opened' }
   | { type: 'newDay'; day: string }
+  | { type: 'seenLevel'; level: number }
+  | { type: 'ringsDone'; day: string }
   | { type: 'setNotifications'; patch: Partial<AppState['notifications']> }
   | { type: 'hydrate'; state: AppState }
   | { type: 'setConsents'; consents: Consents }
@@ -292,6 +298,10 @@ export function reducer(s: AppState, a: Action): AppState {
       return { ...s, pet: { ...s.pet, name: a.name } };
     case 'setNotifications':
       return { ...s, notifications: { ...s.notifications, ...a.patch } };
+    case 'seenLevel':
+      return { ...s, petLevelSeen: a.level };
+    case 'ringsDone':
+      return { ...s, ringsDoneOn: a.day };
     case 'newDay':
       return rollDay(s, a.day);
     case 'hydrate':

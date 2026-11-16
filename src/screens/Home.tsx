@@ -4,25 +4,27 @@
  * con su frase basada en tus datos y acciones rápidas. Debajo: lo que toca hoy y el resumen.
  * Fase 1 (§8.2): datos, tendencias, hábitos y comunicación. Nunca indicaciones clínicas automáticas.
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AvatarBadge from '../components/AvatarBadge';
 import { CheckinCard } from '../components/checkin';
 import { CheerCard } from '../components/crew';
 import { Icon } from '../components/icons';
-import { FadeIn, Pop } from '../components/motion';
+import { Burst, FadeIn, Pop } from '../components/motion';
+import OwiAnimated from '../components/OwiAnimated';
 import OwiStage from '../components/OwiStage';
 import { MaintenanceCard, SupportCard } from '../components/program';
 import { RING, useDayRings } from '../components/rings';
 import { T1Card } from '../components/t1';
 import { SummaryGrid, TodayList } from '../components/today';
 import { Button, Row, SectionTitle, T } from '../components/ui';
-import { STEPS_TODAY, TEAM } from '../data/mock';
+import { STEPS_TODAY } from '../data/mock';
+import { owiLine } from '../owi/voice';
 import { t } from '../i18n';
 import { useNav } from '../nav';
 import { useStore } from '../state/store';
-import { isT1, usesGlp1 } from '../state/types';
+import { isT1 } from '../state/types';
 import { colors, fonts, isDark } from '../theme';
 
 function greeting() {
@@ -30,36 +32,17 @@ function greeting() {
   return h < 6 ? 'home.night' : h < 13 ? 'home.morning' : h < 21 ? 'home.afternoon' : 'home.night';
 }
 
-/** Frase de Owi con tus datos (o el aviso del plan). */
+/** Frase de Owi: el aviso del plan si lo hay; si no, la "voz" del día con tus datos (src/owi/voice.ts). */
 function useOwiLine(poke: number) {
   const { state, d } = useStore();
   const name = state.userName || t('common.friend');
-  const glp1 = usesGlp1(state.profile);
-  const unreadAudio = state.messages.find((m) => !m.read && m.kind === 'audio' && m.from !== 'patient' && m.from !== 'owi');
-  const unreadFrom = unreadAudio ? TEAM[unreadAudio.from as keyof typeof TEAM] : null;
   const reminder = d.petMood === 'remind' || d.petMood === 'sport' ? d.reminders[0] : null;
-  const vars = {
-    name,
-    streak: d.streak,
-    who: unreadFrom?.short ?? TEAM.nutri.short,
-    lost: d.lostKg.toFixed(1).replace('.', ','),
-    pct: d.lostPct.toFixed(1).replace('.', ','),
-    weeks: d.injectionWeeks,
-    v: d.lastGlucose?.v ?? 0,
-    tir: d.tir24,
-  };
-  let message: string;
-  if (reminder) message = t(reminder.text, { ...reminder.vars, name });
-  else if (d.petMood === 'caringHigh' && d.worstSymptomToday >= 2) message = t('owi.say.sideEffects', vars);
-  else if (d.petMood === 'attentive' && d.injectionOverdue) message = t('owi.say.missedInjection', vars);
-  else if (d.petMood === 'attentive' && d.plateau) message = t('owi.say.plateau', vars);
-  else if (d.petMood === 'celebrate') message = t('owi.say.milestone', vars);
-  else if (d.petMood === 'happy' && poke) message = t(`owi.poke.${poke % 4}`, vars);
-  else if (d.petMood === 'happy')
-    message = isT1(state.profile) ? t('owi.say.happyT1', vars) : d.maintenance ? t('owi.say.happyMaint', { ...vars, weeks: d.maintWeeks }) : glp1 ? t('owi.say.happyGlp1', vars) : t('owi.say.happyT2', vars);
-  else message = t(`owi.say.${d.petMood}`, vars);
+  const message = reminder ? t(reminder.text, { ...reminder.vars, name }) : owiLine(state, d, poke).text;
   return { message, reminder };
 }
+
+/** Registros vistos la última vez que se abrió Hoy (para que Owi celebre al volver de Registrar). */
+let lastSeenLogs = -1;
 
 function Stat({ color, label, value, onPress }: { color: string; label: string; value: string; onPress: () => void }) {
   return (
@@ -82,13 +65,53 @@ export default function Home() {
   const [poke, setPoke] = useState(0);
   const name = state.userName || t('common.friend');
   const rings = useDayRings();
-  const { message, reminder } = useOwiLine(poke);
+  const owi = useOwiLine(poke);
+  const reminder = owi.reminder;
+  const message = !reminder && rings.plan >= 1 && rings.move >= 1 && rings.food >= 1 && !poke ? t('owi.ringsDone') : owi.message;
   const rawDate = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+  const [reactTick, setReactTick] = useState(0);
+  const [burst, setBurst] = useState(0);
+  const allRings = rings.plan >= 1 && rings.move >= 1 && rings.food >= 1;
+  const leveledUp = d.petLevel > state.petLevelSeen;
+
+  // Owi celebra cuando vuelves de registrar algo.
+  useEffect(() => {
+    if (lastSeenLogs >= 0 && state.logsToday > lastSeenLogs) {
+      const id = setTimeout(() => setReactTick((x) => x + 1), 350);
+      lastSeenLogs = state.logsToday;
+      return () => clearTimeout(id);
+    }
+    lastSeenLogs = state.logsToday;
+  }, [state.logsToday]);
+  // Tres anillos completos: confeti una vez al día.
+  useEffect(() => {
+    if (allRings && state.ringsDoneOn !== state.day) {
+      dispatch({ type: 'ringsDone', day: state.day });
+      setBurst((x) => x + 1);
+      setReactTick((x) => x + 1);
+    }
+  }, [allRings, state.ringsDoneOn, state.day]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Datos antiguos con un nivel visto mayor que el actual: se ajusta sin celebrar.
+  useEffect(() => {
+    if (state.petLevelSeen > d.petLevel) dispatch({ type: 'seenLevel', level: d.petLevel });
+    if (leveledUp) setBurst((x) => x + 1);
+  }, [d.petLevel]); // eslint-disable-line react-hooks/exhaustive-deps
+  const lvName = t(`bond.lv${d.petLevel}`);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.cream }}>
       <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
-        <OwiStage mood={d.petMood} level={d.petLevel} rings={rings} size={300} top={insets.top + 64} onPressOwi={() => setPoke((p) => p + 1)} label={t(`owi.mood.${d.petMood}`, { name: state.pet.name })}>
+        <OwiStage
+          mood={d.petMood}
+          level={d.petLevel}
+          rings={rings}
+          size={300}
+          top={insets.top + 64}
+          reactKey={reactTick}
+          onPressOwi={() => setPoke((p) => p + 1)}
+          label={t(`owi.mood.${d.petMood}`, { name: state.pet.name })}
+          levelInfo={{ label: t('owi.level', { n: d.petLevel, name: lvName }), progress: d.petProgress, a11y: t('owi.levelA11y', { owi: state.pet.name, n: d.petLevel, name: lvName, pct: Math.round(d.petProgress * 100) }) }}
+        >
           {/* Cabecera flotante sobre el escenario */}
           <View style={{ position: 'absolute', top: insets.top + 12, left: 0, right: 0, paddingHorizontal: 18, maxWidth: 560, alignSelf: 'center', width: '100%' }}>
             <Row style={{ justifyContent: 'space-between' }}>
@@ -170,6 +193,21 @@ export default function Home() {
           </FadeIn>
         </View>
       </ScrollView>
+      {leveledUp && (
+        <View style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(6,10,22,0.55)', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+          <View accessibilityViewIsModal accessibilityLiveRegion="polite" style={{ width: '100%', maxWidth: 360, backgroundColor: colors.white, borderRadius: 28, borderWidth: 1, borderColor: colors.line, padding: 22, alignItems: 'center', gap: 10 }}>
+            <OwiAnimated mood="celebrate" level={d.petLevel} size={170} shadow={false} />
+            <T v="title" center>
+              {t('owi.levelUp.title', { owi: state.pet.name })}
+            </T>
+            <T center color={colors.secondary}>
+              {t('owi.levelUp.text', { level: t('owi.level', { n: d.petLevel, name: lvName }) })}
+            </T>
+            <Button style={{ alignSelf: 'stretch' }} label={t('owi.levelUp.ok')} onPress={() => dispatch({ type: 'seenLevel', level: d.petLevel })} />
+          </View>
+        </View>
+      )}
+      <Burst fire={burst} />
     </View>
   );
 }

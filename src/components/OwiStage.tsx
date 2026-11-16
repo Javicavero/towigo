@@ -7,7 +7,8 @@ import { useEffect, useRef } from 'react';
 import { Animated, Easing, Platform, View } from 'react-native';
 import Svg, { Circle, Defs, RadialGradient, Stop } from 'react-native-svg';
 import type { PetMood } from '../state/types';
-import { isDark } from '../theme';
+import { fonts, isDark } from '../theme';
+import { T } from './ui';
 import OwiAnimated from './OwiAnimated';
 import { RING } from './rings';
 
@@ -56,10 +57,56 @@ function Arc({ r, value, color, w, c0 }: { r: number; value: number; color: stri
   );
 }
 
+/**
+ * Evolución visible: a partir del nivel 2 aparecen "chispas" que orbitan alrededor de Owi
+ * (2, 4 o 6 según el nivel), y en el nivel 4 un aro dorado.
+ */
+const ORBITS: Record<1 | 2 | 3 | 4, number> = { 1: 0, 2: 2, 3: 4, 4: 6 };
+
+function Orbit({ size, level, color }: { size: number; level: 1 | 2 | 3 | 4; color: string }) {
+  const spin = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    const loop = Animated.loop(Animated.timing(spin, { toValue: 1, duration: 16000, easing: Easing.linear, useNativeDriver: ND }));
+    loop.start();
+    return () => loop.stop();
+  }, [spin]);
+  const n = ORBITS[level];
+  if (!n) return null;
+  const r = size * 0.37;
+  return (
+    <Animated.View pointerEvents="none" style={{ position: 'absolute', width: size, height: size, transform: [{ rotate: spin.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] }) }] }}>
+      {Array.from({ length: n }, (_, i) => {
+        const a = (i / n) * Math.PI * 2;
+        const d = i % 2 ? 6 : 9;
+        return (
+          <View
+            key={i}
+            style={{
+              position: 'absolute',
+              left: size / 2 + Math.cos(a) * r - d / 2,
+              top: size / 2 + Math.sin(a) * r - d / 2,
+              width: d,
+              height: d,
+              borderRadius: d,
+              backgroundColor: color,
+              shadowColor: color,
+              shadowOpacity: 0.9,
+              shadowRadius: 8,
+              opacity: i % 2 ? 0.7 : 1,
+            }}
+          />
+        );
+      })}
+    </Animated.View>
+  );
+}
+
 export default function OwiStage({
   mood,
   level,
   rings,
+  levelInfo,
+  reactKey,
   size = 300,
   onPressOwi,
   label,
@@ -74,6 +121,10 @@ export default function OwiStage({
   label: string;
   children?: React.ReactNode;
   top?: number;
+  /** Nivel visible bajo Owi: nombre y progreso al siguiente (0–1). */
+  levelInfo?: { label: string; progress: number; a11y: string };
+  /** Cambia cuando el usuario registra algo: Owi lo celebra. */
+  reactKey?: number;
 }) {
   const [a, b, halo] = SKY[mood];
   const glow = useRef(new Animated.Value(0)).current;
@@ -116,10 +167,22 @@ export default function OwiStage({
             <Arc c0={c0} r={c0 - w * 3.1} value={rings.food} color={RING.food} w={w} />
           </Svg>
         </Animated.View>
+        <Orbit size={size} level={level} color={halo} />
+        {level === 4 && <View pointerEvents="none" style={{ position: 'absolute', width: size * 0.8, height: size * 0.8, borderRadius: size, borderWidth: 2, borderColor: isDark ? 'rgba(255,209,102,0.55)' : 'rgba(217,146,31,0.45)' }} />}
         <View style={{ marginTop: size * 0.02 }}>
-          <OwiAnimated mood={mood} level={level} size={size * 0.84} onPress={onPressOwi} label={label} shadow={false} />
+          <OwiAnimated mood={mood} level={level} size={size * 0.84} onPress={onPressOwi} label={label} shadow={false} reactKey={reactKey} />
         </View>
       </View>
+      {levelInfo && (
+        <View accessible accessibilityLabel={levelInfo.a11y} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: -4, marginBottom: 6, paddingHorizontal: 12, height: 28, borderRadius: 14, backgroundColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.75)' }}>
+          <T v="small" style={{ fontFamily: fonts.semibold, fontSize: 12 }}>
+            {levelInfo.label}
+          </T>
+          <View style={{ width: 54, height: 5, borderRadius: 3, backgroundColor: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(27,22,48,0.10)', overflow: 'hidden' }}>
+            <View style={{ width: `${Math.round(Math.max(0.04, Math.min(1, levelInfo.progress)) * 100)}%`, height: '100%', backgroundColor: halo }} />
+          </View>
+        </View>
+      )}
       {children}
     </LinearGradient>
   );
