@@ -9,14 +9,15 @@ aspecto en web, iPhone y Android.
     marrón oscuro `#753315` (cejas, nariz y detalles), blanco (brillos) y negro (pupilas).
   - Púas estilizadas en forma de hoja, ordenadas, que forman una melena alrededor de la cara.
   - Ojos grandes marrones con dos brillos, cejas gruesas, cinta deportiva naranja solo en deporte.
-- **Solo 2D y solo con la plantilla**: las poses y los rasgos se recortan directamente de la hoja de diseño (sin 3D).
-- **Animaciones** (12 emociones, bucles tipo GIF a 20 fps): `tools/owi/anim2d` las genera con transformaciones de dibujo
-  animado y efectos, y la app las reproduce con `src/components/OwiSprite.tsx`.
-  - Contento (frente, boca abierta, bota) · Atento (vista 3/4) · Cariñoso (ojos felices y corazón) · Preocupado (cejas
-    preocupadas, tiembla, gota) · Celebra (expresión cómica, saltos) · Duerme (ojos cerrados, respira, "z") · Confundido
-    (ojos sorprendidos, "?") · Avisa (pose neutra, "!") · Deporte (pose con cinta, corre) · Te echa de menos (cejas tristes).
-- **Ilustraciones fijas** (`assets/owi/<emoción>.png`, 256 px) para el chat, los widgets y las miniaturas: primer
-  fotograma de cada animación.
+- **Solo 2D y solo con las piezas del usuario** (`docs/owi/piezas/`): cuerpo base sin cara, brazos, pies, ojos, iris y nariz.
+- **Animaciones** (12 emociones, bucles tipo GIF a 20 fps): `tools/owi/rig2d` monta a Owi como marioneta 2D y mueve cada
+  pieza (parpadeo, mirada, cejas, boca, brazos con pivote en el hombro, pies), y la app las reproduce con `src/components/OwiSprite.tsx`.
+  - Contento (salta y saluda, risa) · Atento (mira a un lado y a otro) · Cariñoso (abraza un corazón, rubor) · Preocupado
+    (cejas preocupadas, mirada inquieta, gota) · Celebra (ojos ^ ^, brazos arriba, confeti) · Duerme (ojos cerrados, respira, "z")
+    · Confundido (una ceja arriba, se rasca la cabeza, "?") · Avisa (levanta la mano, "!") · Deporte (corre con brazos y pies)
+    · Te echa de menos (ojos de cachorro, saluda despacio, corazón).
+- **Ilustraciones fijas** (`assets/owi/<emoción>.png`, 256 px) para el chat, los widgets y las miniaturas: un fotograma
+  representativo de cada animación.
 - Evoluciona con el vínculo: crece un poco con el nivel.
 
 ## Avatar del usuario

@@ -46,6 +46,11 @@ npx expo start --web
 
 ## Historial
 
+### 1.6 (Owi marioneta 2D con sus piezas)
+- Owi se monta **solo con las piezas entregadas** (cuerpo base, brazos, pies, ojos, iris y nariz en `docs/owi/piezas/`), sin 3D.
+- Se mueve por partes: parpadea, mira a los lados, pone ojos felices, dormidos o "de cachorro"; cejas y boca cambian con cada
+  emoción; saluda, abraza, levanta los brazos, se rasca la cabeza, corre y salta. Herramientas en `tools/owi/rig2d`.
+
 ### 1.5 (rediseño completo y Owi más vivo)
 - Rediseño Aurora/Holo en todas las pantallas, widgets y panel profesional.
 - **Voz de Owi** (`src/owi/voice.ts`): cada día un tema distinto con tus datos (racha, peso, inyección, tiempo en rango, ayunas, proteína, fuerza, ánimo, próximo hito, audios del equipo) y varias formas de decirlo. Al tocarlo, cambia de tema. Nunca da dosis.

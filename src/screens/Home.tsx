@@ -1,6 +1,6 @@
 /**
  * Hoy — Owi es el protagonista.
- * Escenario a pantalla completa: Owi animado (bucles 3D tipo GIF) dentro de los anillos del día,
+ * Escenario a pantalla completa: Owi animado (marioneta 2D tipo GIF) dentro de los anillos del día,
  * con su frase basada en tus datos y acciones rápidas. Debajo: lo que toca hoy y el resumen.
  * Fase 1 (§8.2): datos, tendencias, hábitos y comunicación. Nunca indicaciones clínicas automáticas.
  */

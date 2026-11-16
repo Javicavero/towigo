@@ -1,5 +1,5 @@
 /**
- * Owi animado: animaciones tipo GIF renderizadas desde el modelo 3D (OwiSprite) + reacción al tocarlo
+ * Owi animado: animaciones tipo GIF de la marioneta 2D hecha con las piezas de Owi (OwiSprite, tools/owi/rig2d) + reacción al tocarlo
  * (da un salto con giro y vuelve a su emoción) y "pop" al cambiar de emoción.
  */
 import { useEffect, useRef, useState } from 'react';
