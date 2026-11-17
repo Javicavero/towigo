@@ -46,6 +46,13 @@ npx expo start --web
 
 ## Historial
 
+### 1.13 (Tratamiento al estilo de los registros de dosis)
+- Diseño **Tratamiento**: semicírculo del ciclo semanal ("Faltan 5 días" / "Hoy toca inyección") con su botón, y cifras
+  de inyecciones, última dosis y semanas seguidas.
+- Subventana **Resultados**: rango (1 mes · 3 meses · 6 meses · todo), seis cifras (cambio total, peso, %, por semana,
+  al objetivo, semanas de tratamiento) y la gráfica de peso **coloreada por la dosis** de cada tramo, con la línea del objetivo.
+- Sin "nivel estimado de fármaco": calcularlo convertiría la app en producto sanitario (ver modelo de negocio, paso 6).
+
 ### 1.12 (Hoy más limpio: subventanas)
 - A la vista, solo lo esencial; el detalle se abre en **subventanas** que suben desde abajo (`src/components/sheet.tsx`).
 - Panel: índice + cifra clave, Owi, lo de "ahora" y una lista corta (Tu semana, Para hoy, Anillos del día, Tu glucosa,

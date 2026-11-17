@@ -12,7 +12,6 @@
  */
 import { useState } from 'react';
 import { Modal, Pressable, ScrollView, View } from 'react-native';
-import Svg, { Circle, Text as SvgText } from 'react-native-svg';
 import { MoodFace } from '../../components/checkin';
 import { Icon, type IconName } from '../../components/icons';
 import { Sparkline } from '../../components/kpi';
@@ -20,6 +19,7 @@ import OwiSticker from '../../components/OwiSticker';
 import { BAND_COLOR, ScoreGauge } from '../../components/score';
 import { DrillGroup, DrillRow, Sheet } from '../../components/sheet';
 import { T1Card } from '../../components/t1';
+import { ResultsPanel, SemiGauge } from '../../components/treatment';
 import { TodayList } from '../../components/today';
 import { Button, Row, T } from '../../components/ui';
 import { STEPS_GOAL, STEPS_TODAY } from '../../data/mock';
@@ -32,7 +32,15 @@ import { hasDiabetes, isT1, usesGlp1, type HomeLayout } from '../../state/types'
 import { colors, fonts, isDark } from '../../theme';
 
 export const HOME_LAYOUTS: HomeLayout[] = ['panel', 'score', 'treatment', 'program', 'diary', 'timeline', 'summary'];
-const LAYOUT_ICON: Record<HomeLayout, IconName> = { panel: 'home', score: 'trophy', treatment: 'syringe', program: 'check', diary: 'meal', timeline: 'clock', summary: 'widget' };
+const LAYOUT_ICON: Record<HomeLayout, IconName> = {
+  panel: 'home',
+  score: 'trophy',
+  treatment: 'syringe',
+  program: 'check',
+  diary: 'meal',
+  timeline: 'clock',
+  summary: 'widget',
+};
 
 const f1 = (n: number) => (Math.round(n * 10) / 10).toString().replace('.', ',');
 const panelBg = isDark ? 'rgba(255,255,255,0.045)' : colors.white;
@@ -55,7 +63,17 @@ export function LayoutButton() {
         accessibilityRole="button"
         accessibilityLabel={`${t('layout.a11y')}: ${t(`layout.${cur}`)}`}
         onPress={() => setOpen(true)}
-        style={({ pressed }) => ({ width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', backgroundColor: panelBg, borderWidth: 1, borderColor: border, opacity: pressed ? 0.7 : 1 })}
+        style={({ pressed }) => ({
+          width: 34,
+          height: 34,
+          borderRadius: 17,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: panelBg,
+          borderWidth: 1,
+          borderColor: border,
+          opacity: pressed ? 0.7 : 1,
+        })}
       >
         <Icon name="widget" size={17} color={colors.ink} />
       </Pressable>
@@ -73,9 +91,26 @@ export function LayoutButton() {
                   dispatch({ type: 'setHomeLayout', layout: l });
                   setOpen(false);
                 }}
-                style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderBottomWidth: i < HOME_LAYOUTS.length - 1 ? 1 : 0, borderBottomColor: border, backgroundColor: on ? colors.softGreen : pressed ? 'rgba(27,22,48,0.03)' : 'transparent' })}
+                style={({ pressed }) => ({
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 12,
+                  padding: 14,
+                  borderBottomWidth: i < HOME_LAYOUTS.length - 1 ? 1 : 0,
+                  borderBottomColor: border,
+                  backgroundColor: on ? colors.softGreen : pressed ? 'rgba(27,22,48,0.03)' : 'transparent',
+                })}
               >
-                <View style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: on ? colors.greenText : colors.softGreen, alignItems: 'center', justifyContent: 'center' }}>
+                <View
+                  style={{
+                    width: 34,
+                    height: 34,
+                    borderRadius: 10,
+                    backgroundColor: on ? colors.greenText : colors.softGreen,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
                   <Icon name={LAYOUT_ICON[l]} size={17} color={on ? colors.onAccent : colors.greenText} />
                 </View>
                 <View style={{ flex: 1 }}>
@@ -93,6 +128,19 @@ export function LayoutButton() {
         </DrillGroup>
       </Sheet>
     </>
+  );
+}
+
+function Stat3({ l, v }: { l: string; v: string }) {
+  return (
+    <View style={[box, { flex: 1, padding: 12, gap: 2, borderRadius: 16 }]}>
+      <T v="small" color={colors.secondary} style={{ fontSize: 11 }} numberOfLines={1}>
+        {l}
+      </T>
+      <T v="h2" style={{ fontSize: 18 }}>
+        {v}
+      </T>
+    </View>
   );
 }
 
@@ -142,7 +190,13 @@ export function TreatmentLayout() {
       <View style={{ gap: 12 }}>
         {isT1(state.profile) ? <T1Card compact /> : null}
         <DrillGroup>
-          <DrillRow icon="syringe" title={t('layout.treatment.title')} value={isT1(state.profile) ? `${d.rapidTodayU} u` : `${d.medsToday.filter((m) => m.taken).length}/${d.medsToday.length}`} onPress={() => setOpen('calendar')} last />
+          <DrillRow
+            icon="syringe"
+            title={t('layout.treatment.title')}
+            value={isT1(state.profile) ? `${d.rapidTodayU} u` : `${d.medsToday.filter((m) => m.taken).length}/${d.medsToday.length}`}
+            onPress={() => setOpen('calendar')}
+            last
+          />
         </DrillGroup>
         <Sheet open={open !== null} onClose={() => setOpen(null)} title={t('layout.treatment.title')}>
           {isT1(state.profile) ? <T1Card /> : <TodayList />}
@@ -150,46 +204,56 @@ export function TreatmentLayout() {
       </View>
     );
   }
-  const days = d.injectedToday ? 7 : Math.max(0, d.daysToInjection ?? 0);
-  const frac = d.injectedToday ? 1 : 1 - Math.min(7, days) / 7;
-  const next = d.nextInjectionAt ? new Date(d.nextInjectionAt) : null;
-  const ring = 2 * Math.PI * 50;
   const maxLoss = Math.max(0.1, ...byDose.map((x) => -x.delta));
   const total = byDose.reduce((a, x) => a + x.delta, 0);
+  const shots = state.injections.length;
   return (
     <View style={{ gap: 12 }}>
-      <View style={[box, { flexDirection: 'row', alignItems: 'center', gap: 16 }]}>
-        <Svg width={116} height={116} accessibilityLabel={t('layout.treatment.ringA11y', { n: days })}>
-          <Circle cx={58} cy={58} r={50} stroke={isDark ? 'rgba(255,255,255,0.09)' : '#ECE7F8'} strokeWidth={10} fill="none" />
-          <Circle cx={58} cy={58} r={50} stroke={d.injectionOverdue ? colors.coralText : colors.greenText} strokeWidth={10} fill="none" strokeLinecap="round" strokeDasharray={`${Math.max(0.02, frac) * ring} ${ring}`} transform="rotate(-90 58 58)" />
-          <SvgText x={58} y={58} textAnchor="middle" fontFamily={fonts.bold} fontSize={28} fill={colors.ink}>
-            {d.injectedToday ? '✓' : `${days} d`}
-          </SvgText>
-          <SvgText x={58} y={78} textAnchor="middle" fontFamily={fonts.regular} fontSize={11} fill={colors.secondary}>
-            {d.injectedToday ? t('home.injDone') : t('layout.treatment.toNext')}
-          </SvgText>
-        </Svg>
-        <View style={{ flex: 1, gap: 4 }}>
-          <T v="small" color={colors.secondary} style={label}>
-            {t('sum.injection').toUpperCase()}
-          </T>
-          <T v="h2">{next ? `${next.toLocaleDateString('es-ES', { weekday: 'long' })} · ${next.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}` : '—'}</T>
-          <Button style={{ minHeight: 40, marginTop: 4 }} label={t('layout.treatment.log')} onPress={() => go('log', 'injection')} />
-        </View>
+      <View style={[box, { alignItems: 'center', paddingTop: 20 }]}>
+        <SemiGauge size={250} />
+        <Button
+          style={{ alignSelf: 'stretch', minHeight: 44 }}
+          label={d.injectedToday ? t('treat.doneToday') : d.daysToInjection === 0 || d.injectionOverdue ? t('treat.markDone') : t('treat.log')}
+          disabled={d.injectedToday}
+          onPress={() => go('log', 'injection')}
+        />
       </View>
+      <Row gap={8}>
+        <Stat3 l={t('treat.count')} v={`${shots}`} />
+        <Stat3 l={t('treat.lastDose')} v={d.lastInjection ? `${fmtDose(d.lastInjection.dose)} mg` : '—'} />
+        <Stat3 l={t('treat.streak')} v={`${d.injectionWeeks}`} />
+      </Row>
       <DrillGroup>
-        <DrillRow icon="clock" title={t('layout.treatment.calendar')} value={t('layout.treatment.weeks', { a: weeks.filter((w) => w !== null).length, b: 12 })} onPress={() => setOpen('calendar')} />
-        <DrillRow icon="scale" title={t('layout.treatment.byDose')} value={`${total <= 0 ? '−' : '+'}${f1(Math.abs(total))} kg`} onPress={() => setOpen('dose')} last />
+        <DrillRow icon="scale" title={t('treat.results')} value={d.lostKg > 0 ? `−${f1(d.lostKg)} kg` : `${f1(total)} kg`} onPress={() => setOpen('dose')} />
+        <DrillRow
+          icon="clock"
+          title={t('layout.treatment.calendar')}
+          value={t('layout.treatment.weeks', { a: weeks.filter((w) => w !== null).length, b: 12 })}
+          onPress={() => setOpen('calendar')}
+          last
+        />
       </DrillGroup>
 
-      <Sheet open={open === 'calendar'} onClose={() => setOpen(null)} title={t('layout.treatment.calendar')} subtitle={t('layout.treatment.weeks', { a: weeks.filter((w) => w !== null).length, b: 12 })}>
+      <Sheet
+        open={open === 'calendar'}
+        onClose={() => setOpen(null)}
+        title={t('layout.treatment.calendar')}
+        subtitle={t('layout.treatment.weeks', { a: weeks.filter((w) => w !== null).length, b: 12 })}
+      >
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
           {weeks.map((w, i) => (
             <View
               key={i}
               accessible
               accessibilityLabel={w === null ? t('layout.treatment.gap') : `${fmtDose(w)} mg`}
-              style={{ width: '14.7%', height: 40, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: w === null ? (isDark ? 'rgba(255,122,182,0.16)' : '#FDE3E8') : isDark ? 'rgba(124,108,255,0.25)' : '#E2DAFB' }}
+              style={{
+                width: '14.7%',
+                height: 40,
+                borderRadius: 10,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: w === null ? (isDark ? 'rgba(255,122,182,0.16)' : '#FDE3E8') : isDark ? 'rgba(124,108,255,0.25)' : '#E2DAFB',
+              }}
             >
               <T v="small" style={{ fontFamily: fonts.semibold, fontSize: 12 }} color={w === null ? colors.coralText : colors.greenText}>
                 {w === null ? '—' : fmtDose(w)}
@@ -197,13 +261,21 @@ export function TreatmentLayout() {
             </View>
           ))}
         </View>
-        {d.lastInjection && <T color={colors.secondary}>{t('layout.treatment.last', { site: t(`site.${d.lastInjection.site}`).toLowerCase(), dose: fmtDose(d.lastInjection.dose) })}</T>}
+        {d.lastInjection && (
+          <T color={colors.secondary}>
+            {t('layout.treatment.last', { site: t(`site.${d.lastInjection.site}`).toLowerCase(), dose: fmtDose(d.lastInjection.dose) })}
+          </T>
+        )}
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           <Chip text={t('layout.treatment.nextSite', { site: t(`site.${d.suggestedSite}`).toLowerCase() })} />
           <Chip text={t('layout.treatment.effects', { n: effectWeeks })} />
         </View>
       </Sheet>
-      <Sheet open={open === 'dose'} onClose={() => setOpen(null)} title={t('layout.treatment.byDose')}>
+      <Sheet open={open === 'dose'} onClose={() => setOpen(null)} title={t('treat.results')}>
+        <ResultsPanel />
+        <T v="label" style={{ fontFamily: fonts.semibold, marginTop: 4 }}>
+          {t('layout.treatment.byDose')}
+        </T>
         <View style={box}>
           {byDose.map((x) => (
             <Row key={x.dose} gap={10}>
@@ -211,7 +283,9 @@ export function TreatmentLayout() {
                 {fmtDose(x.dose)} mg
               </T>
               <View style={{ flex: 1, height: 8, borderRadius: 4, backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : '#ECE7F8' }}>
-                <View style={{ width: `${Math.max(4, Math.min(100, (-x.delta / maxLoss) * 100))}%`, height: 8, borderRadius: 4, backgroundColor: colors.greenText }} />
+                <View
+                  style={{ width: `${Math.max(4, Math.min(100, (-x.delta / maxLoss) * 100))}%`, height: 8, borderRadius: 4, backgroundColor: colors.greenText }}
+                />
               </View>
               <T v="label" style={{ width: 70, textAlign: 'right', fontFamily: fonts.semibold }}>
                 {x.delta <= 0 ? '−' : '+'}
@@ -220,9 +294,6 @@ export function TreatmentLayout() {
             </Row>
           ))}
         </View>
-        <T v="small" color={colors.secondary}>
-          {t('layout.treatment.byDoseNote')}
-        </T>
       </Sheet>
     </View>
   );
@@ -276,13 +347,24 @@ export function ScoreLayout({ onOpenScore }: { onOpenScore: () => void }) {
         )}
       </Sheet>
       <Sheet open={open === 'days'} onClose={() => setOpen(null)} title={t('layout.score.last7')}>
-        <View style={{ flexDirection: 'row', gap: 8, alignItems: 'flex-end', height: 160 }} accessible accessibilityLabel={t('layout.score.last7a11y', { list: last7.join(', ') })}>
+        <View
+          style={{ flexDirection: 'row', gap: 8, alignItems: 'flex-end', height: 160 }}
+          accessible
+          accessibilityLabel={t('layout.score.last7a11y', { list: last7.join(', ') })}
+        >
           {last7.map((v, i) => (
             <View key={i} style={{ flex: 1, alignItems: 'center', gap: 4, height: '100%', justifyContent: 'flex-end' }}>
               <T v="small" color={colors.secondary} style={{ fontSize: 11 }}>
                 {v}
               </T>
-              <View style={{ width: '100%', height: `${Math.max(8, (v / max) * 82)}%`, borderRadius: 6, backgroundColor: i === last7.length - 1 ? c1 : isDark ? 'rgba(124,108,255,0.45)' : '#CFC4F7' }} />
+              <View
+                style={{
+                  width: '100%',
+                  height: `${Math.max(8, (v / max) * 82)}%`,
+                  borderRadius: 6,
+                  backgroundColor: i === last7.length - 1 ? c1 : isDark ? 'rgba(124,108,255,0.45)' : '#CFC4F7',
+                }}
+              />
             </View>
           ))}
         </View>
@@ -311,7 +393,12 @@ export function ProgramLayout() {
   const tasks: { done: boolean; text: string; meta: string; onPress: () => void }[] = [
     { done: weighed, text: t('layout.program.weigh'), meta: d.weightNow !== null ? `${f1(d.weightNow)} kg` : '', onPress: () => go('log', 'weight') },
     { done: !!d.checkinToday, text: t('checkin.pill'), meta: d.checkinToday ? t(`checkin.v${d.checkinToday.v}`) : '', onPress: () => go('progress') },
-    { done: d.proteinToday >= state.goals.proteinG, text: t('layout.program.protein', { g: state.goals.proteinG }), meta: `${d.proteinToday} / ${state.goals.proteinG} g`, onPress: () => go('log', 'intake') },
+    {
+      done: d.proteinToday >= state.goals.proteinG,
+      text: t('layout.program.protein', { g: state.goals.proteinG }),
+      meta: `${d.proteinToday} / ${state.goals.proteinG} g`,
+      onPress: () => go('log', 'intake'),
+    },
     { done: strength, text: t('layout.program.strength'), meta: t('layout.program.strengthMeta'), onPress: () => go('log', 'strength') },
     { done: read, text: t('layout.program.lesson'), meta: t('layout.program.min'), onPress: () => setOpen('lesson') },
   ];
@@ -347,18 +434,40 @@ export function ProgramLayout() {
         <T v="h2" color={colors.onAccent} style={{ fontSize: 20, lineHeight: 26 }}>
           {t(`lesson.${lesson}.title`)}
         </T>
-        <Pressable accessibilityRole="button" onPress={() => setOpen('lesson')} style={({ pressed }) => ({ alignSelf: 'flex-start', height: 40, paddingHorizontal: 18, borderRadius: 20, backgroundColor: '#FFFFFF', justifyContent: 'center', opacity: pressed ? 0.8 : 1 })}>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => setOpen('lesson')}
+          style={({ pressed }) => ({
+            alignSelf: 'flex-start',
+            height: 40,
+            paddingHorizontal: 18,
+            borderRadius: 20,
+            backgroundColor: '#FFFFFF',
+            justifyContent: 'center',
+            opacity: pressed ? 0.8 : 1,
+          })}
+        >
           <T v="label" color={isDark ? '#0A0F1E' : colors.greenText}>
             {read ? t('layout.program.again') : t('layout.program.start')}
           </T>
         </Pressable>
       </View>
       <DrillGroup>
-        <DrillRow icon="check" title={t('layout.program.plan')} value={t('layout.program.planValue', { a: tasks.filter((x) => x.done).length, b: tasks.length })} onPress={() => setOpen('plan')} />
+        <DrillRow
+          icon="check"
+          title={t('layout.program.plan')}
+          value={t('layout.program.planValue', { a: tasks.filter((x) => x.done).length, b: tasks.length })}
+          onPress={() => setOpen('plan')}
+        />
         <DrillRow icon="steth" title={t('layout.program.fromTeam')} value={team ? hhmm(team.at) : ''} onPress={() => go('team')} last />
       </DrillGroup>
 
-      <Sheet open={open === 'plan'} onClose={() => setOpen(null)} title={t('layout.program.plan')} subtitle={t('layout.program.planValue', { a: tasks.filter((x) => x.done).length, b: tasks.length })}>
+      <Sheet
+        open={open === 'plan'}
+        onClose={() => setOpen(null)}
+        title={t('layout.program.plan')}
+        subtitle={t('layout.program.planValue', { a: tasks.filter((x) => x.done).length, b: tasks.length })}
+      >
         <DrillGroup>
           {tasks.map((x, i) => (
             <Pressable
@@ -370,9 +479,29 @@ export function ProgramLayout() {
                 setOpen(null);
                 x.onPress();
               }}
-              style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, paddingVertical: 13, borderBottomWidth: i < tasks.length - 1 ? 1 : 0, borderBottomColor: border, opacity: pressed ? 0.7 : 1 })}
+              style={({ pressed }) => ({
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 12,
+                paddingHorizontal: 14,
+                paddingVertical: 13,
+                borderBottomWidth: i < tasks.length - 1 ? 1 : 0,
+                borderBottomColor: border,
+                opacity: pressed ? 0.7 : 1,
+              })}
             >
-              <View style={{ width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center', backgroundColor: x.done ? colors.greenText : 'transparent', borderWidth: x.done ? 0 : 2, borderColor: colors.borderStrong }}>
+              <View
+                style={{
+                  width: 26,
+                  height: 26,
+                  borderRadius: 13,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: x.done ? colors.greenText : 'transparent',
+                  borderWidth: x.done ? 0 : 2,
+                  borderColor: colors.borderStrong,
+                }}
+              >
                 {x.done && <Icon name="check" size={14} color={colors.onAccent} stroke={3} />}
               </View>
               <T style={{ flex: 1, fontSize: 15, textDecorationLine: x.done ? 'line-through' : 'none' }} color={x.done ? colors.secondary : colors.ink}>
@@ -387,7 +516,18 @@ export function ProgramLayout() {
       </Sheet>
       <Modal visible={open === 'lesson'} transparent animationType="fade" onRequestClose={() => setOpen(null)}>
         <View style={{ flex: 1, backgroundColor: 'rgba(6,10,22,0.55)', justifyContent: 'center', alignItems: 'center', padding: 16 }}>
-          <View accessibilityViewIsModal style={{ width: '100%', maxWidth: 460, maxHeight: '90%', backgroundColor: colors.white, borderRadius: 26, borderWidth: 1, borderColor: colors.line }}>
+          <View
+            accessibilityViewIsModal
+            style={{
+              width: '100%',
+              maxWidth: 460,
+              maxHeight: '90%',
+              backgroundColor: colors.white,
+              borderRadius: 26,
+              borderWidth: 1,
+              borderColor: colors.line,
+            }}
+          >
             <ScrollView contentContainerStyle={{ padding: 20, gap: 12 }}>
               <Row gap={10}>
                 <OwiSticker mood="happy" size={44} />
@@ -452,16 +592,34 @@ export function DiaryLayout() {
           <Num v={`${left} g`} l={t('layout.diary.remaining')} accent />
         </Row>
         <View style={{ height: 8, borderRadius: 4, backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : '#ECE7F8' }}>
-          <View style={{ width: `${Math.min(100, Math.round((d.proteinToday / goal) * 100))}%`, height: 8, borderRadius: 4, backgroundColor: colors.greenText }} />
+          <View
+            style={{ width: `${Math.min(100, Math.round((d.proteinToday / goal) * 100))}%`, height: 8, borderRadius: 4, backgroundColor: colors.greenText }}
+          />
         </View>
         <Row gap={8}>
-          <Button style={{ flex: 1, minHeight: 42 }} label={t('layout.diary.photo')} icon={<Icon name="camera" size={18} color={colors.onAccent} />} onPress={() => go('log', logTarget)} />
+          <Button
+            style={{ flex: 1, minHeight: 42 }}
+            label={t('layout.diary.photo')}
+            icon={<Icon name="camera" size={18} color={colors.onAccent} />}
+            onPress={() => go('log', logTarget)}
+          />
           <Button style={{ flex: 1, minHeight: 42 }} kind="secondary" label={t('layout.diary.write')} onPress={() => go('owi')} />
         </Row>
       </View>
       <DrillGroup>
-        <DrillRow icon="meal" title={t('layout.diary.meals')} value={carbs.length ? t('layout.diary.mealsValue', { n: carbs.length }) : t('layout.diary.mealsNone')} onPress={() => setOpen('meals')} />
-        <DrillRow icon="drop" title={t('layout.diary.more')} value={`${f1(d.waterToday / 4)} L · ${worst ? t(`sym.${worst.id}`) : t('layout.diary.none')}`} onPress={() => setOpen('more')} last />
+        <DrillRow
+          icon="meal"
+          title={t('layout.diary.meals')}
+          value={carbs.length ? t('layout.diary.mealsValue', { n: carbs.length }) : t('layout.diary.mealsNone')}
+          onPress={() => setOpen('meals')}
+        />
+        <DrillRow
+          icon="drop"
+          title={t('layout.diary.more')}
+          value={`${f1(d.waterToday / 4)} L · ${worst ? t(`sym.${worst.id}`) : t('layout.diary.none')}`}
+          onPress={() => setOpen('more')}
+          last
+        />
       </DrillGroup>
 
       <Sheet open={open === 'meals'} onClose={() => setOpen(null)} title={t('layout.diary.meals')}>
@@ -506,7 +664,10 @@ export function DiaryLayout() {
       <Sheet open={open === 'more'} onClose={() => setOpen(null)} title={t('layout.diary.more')}>
         <Row gap={8}>
           <Mini v={`${f1(d.waterToday / 4)} L`} l={t('layout.diary.water')} />
-          <Mini v={isT1(state.profile) ? `${d.carbsToday} g` : `${STEPS_TODAY.toLocaleString('es-ES')}`} l={isT1(state.profile) ? t('sum.carbs') : t('rings.move')} />
+          <Mini
+            v={isT1(state.profile) ? `${d.carbsToday} g` : `${STEPS_TODAY.toLocaleString('es-ES')}`}
+            l={isT1(state.profile) ? t('sum.carbs') : t('rings.move')}
+          />
           <Mini v={worst ? t(`layout.diary.level${worst.level}`) : t('layout.diary.none')} l={worst ? t(`sym.${worst.id}`) : t('layout.diary.effects')} />
         </Row>
         <Button
@@ -554,17 +715,47 @@ function useDayEvents(owiMessage: string): Ev[] {
   const { state } = useStore();
   const { go } = useNav();
   const ev: Ev[] = [];
-  for (const w of state.weights.filter((x) => isToday(x.at))) ev.push({ at: w.at, icon: 'scale', kicker: t('sum.weight'), text: `${f1(w.kg)} kg`, onPress: () => go('progress') });
-  for (const x of state.injections.filter((y) => isToday(y.at))) ev.push({ at: x.at, icon: 'syringe', kicker: t('layout.timeline.injection'), text: `${fmtDose(x.dose)} mg · ${t(`site.${x.site}`).toLowerCase()}` });
-  for (const g of state.glucose.filter((y) => isToday(y.at) && y.context !== 'sensor')) ev.push({ at: g.at, icon: 'drop', kicker: t('sum.glucose'), text: `${g.v} mg/dL · ${t(`ctx.${g.context}`)}` });
-  for (const x of state.insulin.filter((y) => isToday(y.at))) ev.push({ at: x.at, icon: 'syringe', kicker: t(x.kind === 'basal' ? 'layout.timeline.basal' : 'layout.timeline.rapid'), text: `${String(x.units).replace('.', ',')} u` });
-  for (const x of state.carbs.filter((y) => isToday(y.at))) ev.push({ at: x.at, icon: 'meal', kicker: t('layout.timeline.meal'), text: `${x.label ?? t('layout.diary.meal')} · ${x.g} g HC` });
+  for (const w of state.weights.filter((x) => isToday(x.at)))
+    ev.push({ at: w.at, icon: 'scale', kicker: t('sum.weight'), text: `${f1(w.kg)} kg`, onPress: () => go('progress') });
+  for (const x of state.injections.filter((y) => isToday(y.at)))
+    ev.push({ at: x.at, icon: 'syringe', kicker: t('layout.timeline.injection'), text: `${fmtDose(x.dose)} mg · ${t(`site.${x.site}`).toLowerCase()}` });
+  for (const g of state.glucose.filter((y) => isToday(y.at) && y.context !== 'sensor'))
+    ev.push({ at: g.at, icon: 'drop', kicker: t('sum.glucose'), text: `${g.v} mg/dL · ${t(`ctx.${g.context}`)}` });
+  for (const x of state.insulin.filter((y) => isToday(y.at)))
+    ev.push({
+      at: x.at,
+      icon: 'syringe',
+      kicker: t(x.kind === 'basal' ? 'layout.timeline.basal' : 'layout.timeline.rapid'),
+      text: `${String(x.units).replace('.', ',')} u`,
+    });
+  for (const x of state.carbs.filter((y) => isToday(y.at)))
+    ev.push({ at: x.at, icon: 'meal', kicker: t('layout.timeline.meal'), text: `${x.label ?? t('layout.diary.meal')} · ${x.g} g HC` });
   for (const x of state.sideEffects.filter((y) => isToday(y.at)))
-    ev.push({ at: x.at, icon: 'alert', kicker: t('layout.timeline.feel'), text: x.symptoms.map((s) => `${t(`sym.${s.id}`)} (${t(`layout.diary.level${s.level}`).toLowerCase()})`).join(', ') });
-  for (const x of state.strength.filter((y) => isToday(y.at))) ev.push({ at: x.at, icon: 'dumbbell', kicker: t('layout.timeline.strength'), text: t('layout.timeline.strengthDone') });
-  for (const c of state.cheers.filter((y) => isToday(y.at))) ev.push({ at: c.at, icon: 'heart', kicker: t('layout.timeline.people', { who: state.crew.find((m) => m.id === c.from)?.name ?? t('crew.someone') }), text: c.text, tone: 'people' });
+    ev.push({
+      at: x.at,
+      icon: 'alert',
+      kicker: t('layout.timeline.feel'),
+      text: x.symptoms.map((s) => `${t(`sym.${s.id}`)} (${t(`layout.diary.level${s.level}`).toLowerCase()})`).join(', '),
+    });
+  for (const x of state.strength.filter((y) => isToday(y.at)))
+    ev.push({ at: x.at, icon: 'dumbbell', kicker: t('layout.timeline.strength'), text: t('layout.timeline.strengthDone') });
+  for (const c of state.cheers.filter((y) => isToday(y.at)))
+    ev.push({
+      at: c.at,
+      icon: 'heart',
+      kicker: t('layout.timeline.people', { who: state.crew.find((m) => m.id === c.from)?.name ?? t('crew.someone') }),
+      text: c.text,
+      tone: 'people',
+    });
   for (const m of state.messages.filter((y) => isToday(y.at) && y.from !== 'patient' && y.from !== 'owi'))
-    ev.push({ at: m.at, icon: m.kind === 'audio' ? 'headphones' : 'chat', kicker: t('layout.timeline.team'), text: m.text ? t(m.text) : t('layout.program.audio', { s: m.durationSec ?? 0 }), tone: 'team', onPress: () => go('team') });
+    ev.push({
+      at: m.at,
+      icon: m.kind === 'audio' ? 'headphones' : 'chat',
+      kicker: t('layout.timeline.team'),
+      text: m.text ? t(m.text) : t('layout.program.audio', { s: m.durationSec ?? 0 }),
+      tone: 'team',
+      onPress: () => go('team'),
+    });
   ev.sort((a, b) => a.at.localeCompare(b.at));
   ev.push({ at: new Date().toISOString(), icon: 'smile', kicker: t('layout.timeline.owi', { owi: state.pet.name }), text: owiMessage, tone: 'owi' });
   return ev;
@@ -572,13 +763,40 @@ function useDayEvents(owiMessage: string): Ev[] {
 
 function EventRow({ e }: { e: Ev }) {
   const { d } = useStore();
-  const bg = e.tone === 'people' ? (isDark ? 'rgba(255,154,107,0.12)' : '#FFF6F1') : e.tone === 'team' ? (isDark ? 'rgba(61,224,200,0.08)' : '#F0FBF8') : e.tone === 'owi' ? (isDark ? 'rgba(124,108,255,0.14)' : '#EFEAFE') : panelBg;
+  const bg =
+    e.tone === 'people'
+      ? isDark
+        ? 'rgba(255,154,107,0.12)'
+        : '#FFF6F1'
+      : e.tone === 'team'
+        ? isDark
+          ? 'rgba(61,224,200,0.08)'
+          : '#F0FBF8'
+        : e.tone === 'owi'
+          ? isDark
+            ? 'rgba(124,108,255,0.14)'
+            : '#EFEAFE'
+          : panelBg;
   return (
     <Row gap={12} style={{ alignItems: 'flex-start' }}>
       <T v="small" color={colors.secondary} style={{ width: 44, textAlign: 'right', paddingTop: 12 }}>
         {e.tone === 'owi' ? t('layout.timeline.now') : hhmm(e.at)}
       </T>
-      <Pressable accessibilityRole={e.onPress ? 'button' : 'text'} onPress={e.onPress} style={{ flex: 1, flexDirection: 'row', gap: 10, alignItems: 'center', backgroundColor: bg, borderWidth: 1, borderColor: border, borderRadius: 16, padding: 12 }}>
+      <Pressable
+        accessibilityRole={e.onPress ? 'button' : 'text'}
+        onPress={e.onPress}
+        style={{
+          flex: 1,
+          flexDirection: 'row',
+          gap: 10,
+          alignItems: 'center',
+          backgroundColor: bg,
+          borderWidth: 1,
+          borderColor: border,
+          borderRadius: 16,
+          padding: 12,
+        }}
+      >
         {e.tone === 'owi' ? <OwiSticker mood={d.petMood} size={30} /> : <Icon name={e.icon} size={18} color={colors.greenText} />}
         <View style={{ flex: 1 }}>
           <T v="small" color={colors.secondary} style={{ fontFamily: fonts.semibold, fontSize: 12 }}>
@@ -605,10 +823,33 @@ export function TimelineLayout({ owiMessage }: { owiMessage: string }) {
       ))}
       {ev.length > 3 && (
         <DrillGroup>
-          <DrillRow icon="clock" title={t('layout.timeline.all')} value={t('layout.diary.mealsValue', { n: ev.length - 1 })} onPress={() => setOpen(true)} last />
+          <DrillRow
+            icon="clock"
+            title={t('layout.timeline.all')}
+            value={t('layout.diary.mealsValue', { n: ev.length - 1 })}
+            onPress={() => setOpen(true)}
+            last
+          />
         </DrillGroup>
       )}
-      <Pressable accessibilityRole="button" accessibilityLabel={t('layout.timeline.compose')} onPress={() => go('owi')} style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, height: 48, borderRadius: 24, paddingLeft: 16, paddingRight: 4, backgroundColor: panelBg, borderWidth: 1, borderColor: border, opacity: pressed ? 0.8 : 1 })}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={t('layout.timeline.compose')}
+        onPress={() => go('owi')}
+        style={({ pressed }) => ({
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 10,
+          height: 48,
+          borderRadius: 24,
+          paddingLeft: 16,
+          paddingRight: 4,
+          backgroundColor: panelBg,
+          borderWidth: 1,
+          borderColor: border,
+          opacity: pressed ? 0.8 : 1,
+        })}
+      >
         <T color={colors.secondary} style={{ flex: 1, fontSize: 14 }} numberOfLines={1}>
           {t('layout.timeline.compose')}
         </T>
@@ -633,7 +874,10 @@ export function SummaryLayout({ onOpenScore }: { onOpenScore: () => void }) {
   const sc = towigoScore(state);
   const hist = scoreHistory(state, 8);
   const [w, setW] = useState(300);
-  const ws = [...state.weights].sort((a, b) => a.at.localeCompare(b.at)).slice(-12).map((x) => x.kg);
+  const ws = [...state.weights]
+    .sort((a, b) => a.at.localeCompare(b.at))
+    .slice(-12)
+    .map((x) => x.kg);
   const glp1 = usesGlp1(state.profile) && !d.maintenance && d.nextInjectionAt;
   const g = d.lastGlucose;
   const lastMood = [...state.checkins].sort((a, b) => b.date.localeCompare(a.date))[0];
@@ -646,21 +890,29 @@ export function SummaryLayout({ onOpenScore }: { onOpenScore: () => void }) {
               {sc.value}
             </T>
             <T v="small" color={colors.secondary}>
-              {' '}/100 · {t(`score.band.${sc.band}`)}
+              {' '}
+              /100 · {t(`score.band.${sc.band}`)}
             </T>
           </T>
           <Sparkline values={hist} color={BAND_COLOR[sc.band][0]} width={90} height={30} fill={false} />
         </Row>
       </Tile>
       {glp1 ? (
-        <Tile title={t('sum.injection')} color={colors.blue} right={d.lastInjection ? `${fmtDose(d.lastInjection.dose)} mg` : ''} onPress={() => go('log', 'injection')}>
+        <Tile
+          title={t('sum.injection')}
+          color={colors.blue}
+          right={d.lastInjection ? `${fmtDose(d.lastInjection.dose)} mg` : ''}
+          onPress={() => go('log', 'injection')}
+        >
           <T>
             <T v="display" style={{ fontSize: 28 }}>
               {d.injectedToday ? '✓' : `${d.daysToInjection ?? 0}`}
             </T>
             <T v="small" color={colors.secondary}>
               {' '}
-              {d.injectedToday ? t('sum.injDone') : `${t('layout.summary.days')} · ${new Date(d.nextInjectionAt!).toLocaleDateString('es-ES', { weekday: 'long' })}`}
+              {d.injectedToday
+                ? t('sum.injDone')
+                : `${t('layout.summary.days')} · ${new Date(d.nextInjectionAt!).toLocaleDateString('es-ES', { weekday: 'long' })}`}
             </T>
           </T>
         </Tile>
@@ -671,21 +923,45 @@ export function SummaryLayout({ onOpenScore }: { onOpenScore: () => void }) {
               {g.v}
             </T>
             <T v="small" color={colors.secondary}>
-              {' '}mg/dL{isT1(state.profile) ? ` · ${t('home.tirShort').toLowerCase()} ${d.tir24} %` : ''}
+              {' '}
+              mg/dL{isT1(state.profile) ? ` · ${t('home.tirShort').toLowerCase()} ${d.tir24} %` : ''}
             </T>
           </T>
         </Tile>
       ) : null}
       <DrillGroup>
-        <DrillRow icon="scale" title={t('layout.summary.highlight')} value={d.weightNow !== null ? `${f1(d.weightNow)} kg` : ''} onPress={() => setOpen('weight')} />
+        <DrillRow
+          icon="scale"
+          title={t('layout.summary.highlight')}
+          value={d.weightNow !== null ? `${f1(d.weightNow)} kg` : ''}
+          onPress={() => setOpen('weight')}
+        />
         <DrillRow icon="widget" title={t('layout.summary.more')} value={t('layout.summary.moreValue')} onPress={() => setOpen('more')} last />
       </DrillGroup>
 
       <Sheet open={open === 'more'} onClose={() => setOpen(null)} title={t('layout.summary.more')}>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
-          <HalfTile title={t('sum.weight')} color={isDark ? '#A58FFF' : '#6A4FE0'} value={d.weightNow !== null ? f1(d.weightNow) : '—'} unit="kg" sub={d.lostKg > 0 ? t('sum.lost', { kg: f1(d.lostKg) }) : ''} />
-          <HalfTile title={t('rings.food')} color="#D9542F" value={`${d.proteinToday}`} unit={`/ ${state.goals.proteinG} g`} bar={d.proteinToday / state.goals.proteinG} />
-          <HalfTile title={t('layout.summary.steps')} color={good} value={STEPS_TODAY.toLocaleString('es-ES')} unit="" sub={t('layout.summary.stepsGoal', { n: STEPS_GOAL.toLocaleString('es-ES') })} />
+          <HalfTile
+            title={t('sum.weight')}
+            color={isDark ? '#A58FFF' : '#6A4FE0'}
+            value={d.weightNow !== null ? f1(d.weightNow) : '—'}
+            unit="kg"
+            sub={d.lostKg > 0 ? t('sum.lost', { kg: f1(d.lostKg) }) : ''}
+          />
+          <HalfTile
+            title={t('rings.food')}
+            color="#D9542F"
+            value={`${d.proteinToday}`}
+            unit={`/ ${state.goals.proteinG} g`}
+            bar={d.proteinToday / state.goals.proteinG}
+          />
+          <HalfTile
+            title={t('layout.summary.steps')}
+            color={good}
+            value={STEPS_TODAY.toLocaleString('es-ES')}
+            unit=""
+            sub={t('layout.summary.stepsGoal', { n: STEPS_GOAL.toLocaleString('es-ES') })}
+          />
           <HalfTile title={t('layout.summary.mood')} color="#C2417F" value={lastMood ? t(`checkin.v${lastMood.v}`) : '—'} unit="" face={lastMood?.v} />
         </View>
       </Sheet>
@@ -703,7 +979,12 @@ export function SummaryLayout({ onOpenScore }: { onOpenScore: () => void }) {
 
 function Tile({ title, color, right, onPress, children }: { title: string; color: string; right?: string; onPress?: () => void; children: React.ReactNode }) {
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={title} onPress={onPress} style={({ pressed }) => [box, { borderRadius: 18, padding: 14, gap: 4, opacity: pressed ? 0.8 : 1 }]}>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      onPress={onPress}
+      style={({ pressed }) => [box, { borderRadius: 18, padding: 14, gap: 4, opacity: pressed ? 0.8 : 1 }]}
+    >
       <Row style={{ justifyContent: 'space-between' }}>
         <T v="small" color={color} style={{ fontFamily: fonts.semibold, fontSize: 13 }}>
           {title}
@@ -718,7 +999,23 @@ function Tile({ title, color, right, onPress, children }: { title: string; color
     </Pressable>
   );
 }
-function HalfTile({ title, color, value, unit, sub, bar, face }: { title: string; color: string; value: string; unit: string; sub?: string; bar?: number; face?: 1 | 2 | 3 | 4 | 5 }) {
+function HalfTile({
+  title,
+  color,
+  value,
+  unit,
+  sub,
+  bar,
+  face,
+}: {
+  title: string;
+  color: string;
+  value: string;
+  unit: string;
+  sub?: string;
+  bar?: number;
+  face?: 1 | 2 | 3 | 4 | 5;
+}) {
   return (
     <View accessible accessibilityLabel={`${title}: ${value} ${unit}`} style={[box, { flexBasis: '46%', flexGrow: 1, borderRadius: 18, padding: 14, gap: 4 }]}>
       <T v="small" color={color} style={{ fontFamily: fonts.semibold, fontSize: 13 }}>
