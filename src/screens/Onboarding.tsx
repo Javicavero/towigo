@@ -12,7 +12,8 @@ import OwiAnimated from '../components/OwiAnimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import SpeechBubble from '../components/SpeechBubble';
 import { Button, Card, Choice, ProgressBar, Row, Screen, T } from '../components/ui';
-import { APP_NAME, DEFAULT_AVATAR_NAME } from '../config';
+import { APP_NAME, DEFAULT_AVATAR_NAME, FLAGS } from '../config';
+import { usePresenter } from '../demo/Presenter';
 import { TEAM } from '../data/mock';
 import { t } from '../i18n';
 import { useStore } from '../state/store';
@@ -72,6 +73,7 @@ function Check({ checked, onToggle, label, detail }: { checked: boolean; onToggl
 }
 
 export default function Onboarding() {
+  const presenter = usePresenter();
   const { state, dispatch, d } = useStore();
   const [i, setI] = useState(0);
   const step: Step = STEPS[i];
@@ -131,6 +133,7 @@ export default function Onboarding() {
 
       <View style={{ gap: 12, marginTop: 4 }}>
         {step === 'hello' && <Button label={t('onb.helloBtn', { owi })} onPress={next} />}
+        {step === 'hello' && FLAGS.demoScenarios && <Button kind="ghost" label={t('pres.entry')} icon={<Icon name="play" size={18} color={colors.greenText} />} onPress={presenter.openSheet} />}
 
         {step === 'name' && (
           <>

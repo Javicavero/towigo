@@ -145,9 +145,12 @@ export function demoCgm(scenario: Scenario, now = Date.now()): GlucoseEntry[] {
     if (dayIdx === 3 && h > 16.5 && h < 17.6) v = 62 + (rnd() - 0.5) * 6; // una bajada
     out.push({ id: `c${t}`, at: iso(t), v: Math.round(Math.max(48, Math.min(320, v))), context: 'sensor' });
   }
-  if (scenario === 'highGlucose') out.push({ id: 'cx', at: iso(now - 5 * 60e3), v: 248, context: 'sensor' });
-  if (scenario === 'lowGlucose') out.push({ id: 'cx', at: iso(now - 5 * 60e3), v: 63, context: 'sensor' });
-  return out;
+  // La lectura de la situación de ejemplo tiene que ser la última (si no, una lectura normal más reciente la tapa).
+  const last = now - 5 * 60e3;
+  const kept = scenario === 'highGlucose' || scenario === 'lowGlucose' ? out.filter((g) => new Date(g.at).getTime() < last) : out;
+  if (scenario === 'highGlucose') kept.push({ id: 'cx', at: iso(last), v: 248, context: 'sensor' });
+  if (scenario === 'lowGlucose') kept.push({ id: 'cx', at: iso(last), v: 63, context: 'sensor' });
+  return kept;
 }
 
 export function demoInsulin(now = Date.now()): InsulinEntry[] {

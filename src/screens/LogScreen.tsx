@@ -184,7 +184,7 @@ export default function LogScreen() {
   const glp1 = usesGlp1(state.profile);
   const t2 = hasDiabetes(state.profile);
   const t1 = isT1(state.profile);
-  const sections: LogSection[] = [
+  const all: LogSection[] = [
     ...(t1 ? (['insulin', 'carbs'] as LogSection[]) : []),
     ...(glp1 && !d.maintenance ? (['injection'] as LogSection[]) : []),
     ...(t2 ? (['glucose'] as LogSection[]) : []),
@@ -194,6 +194,8 @@ export default function LogScreen() {
     'intake',
     'strength',
   ];
+  // Si se llega a una sección concreta (aviso, widget, presentación), va la primera para que se vea sin desplazarse.
+  const sections = section && all.includes(section) ? [section, ...all.filter((x) => x !== section)] : all;
 
   const toggle = (s: LogSection) => {
     setOpen(open === s ? null : s);

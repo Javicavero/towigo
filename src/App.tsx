@@ -12,6 +12,7 @@ import { Linking, Pressable, View } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon, type IconName } from './components/icons';
 import { FadeIn } from './components/motion';
+import { CoverSlide, EndSlide, OwiShowSlide, PresenterBar, PresenterProvider, StartSheet } from './demo/Presenter';
 import { T } from './components/ui';
 import { t } from './i18n';
 import { NavContext, type LogSection, type Tab } from './nav';
@@ -103,6 +104,7 @@ function TabScreen({ id, children }: { id: Tab; children: React.ReactNode }) {
 
 function Root() {
   const { state } = useStore();
+  const insets = useSafeAreaInsets();
   useDexcomSync();
   useWidgetSync();
   useNotificationSync();
@@ -131,20 +133,41 @@ function Root() {
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   if (isProRoute()) return <ProApp />;
-  if (!state.onboarded) return <Onboarding />;
   return (
     <NavContext.Provider value={{ tab, section, go }}>
-      <View style={{ flex: 1, backgroundColor: colors.cream }}>
-        <TabScreen id={tab}>
-          {tab === 'home' && <Home />}
-          {tab === 'log' && <LogScreen />}
-          {tab === 'team' && <Team />}
-          {tab === 'progress' && <Progress />}
-          {tab === 'me' && <Me />}
-          {tab === 'owi' && <OwiChat />}
-        </TabScreen>
-        <TabBar tab={tab} go={(t) => go(t)} />
-      </View>
+      <PresenterProvider go={go}>
+        {(p) => {
+          const v = p.active ? p.step?.view : null;
+          const pro = v === 'pro' || v === 'proPatient';
+          const slide = v === 'cover' || v === 'owiShow' || v === 'end';
+          return (
+            <View style={{ flex: 1, backgroundColor: colors.cream }}>
+              {pro ? (
+                <ProApp key={v} onBack={p.next} initialPatient={v === 'proPatient' ? 'me' : undefined} />
+              ) : !state.onboarded ? (
+                <Onboarding />
+              ) : (
+                <>
+                  <TabScreen id={tab}>
+                    {tab === 'home' && <Home />}
+                    {tab === 'log' && <LogScreen />}
+                    {tab === 'team' && <Team />}
+                    {tab === 'progress' && <Progress />}
+                    {tab === 'me' && <Me />}
+                    {tab === 'owi' && <OwiChat />}
+                  </TabScreen>
+                  <TabBar tab={tab} go={(t) => go(t)} />
+                </>
+              )}
+              {v === 'cover' && <CoverSlide />}
+              {v === 'owiShow' && <OwiShowSlide />}
+              {v === 'end' && <EndSlide p={p} />}
+              <PresenterBar p={p} bottom={pro || slide ? insets.bottom + 14 : Math.max(insets.bottom, 6) + 76} />
+              <StartSheet p={p} />
+            </View>
+          );
+        }}
+      </PresenterProvider>
     </NavContext.Provider>
   );
 }

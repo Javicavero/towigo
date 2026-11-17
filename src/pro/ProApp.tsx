@@ -49,14 +49,14 @@ type View_ = { k: 'list' } | { k: 'inbox' } | { k: 'patient'; id: string; tab?: 
 
 export const SIDEBAR_BG = isDark ? '#060A16' : '#0A0F1E'; // azul noche de Aurora
 
-export default function ProApp() {
+export default function ProApp({ onBack, initialPatient }: { onBack?: () => void; initialPatient?: string } = {}) {
   const { state: me, dispatch } = useStore();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const wide = width >= 900;
   const [cohort, setCohort] = useState(() => buildCohort());
   const [role, setRole] = useState<TeamRole>('endo');
-  const [view, setView] = useState<View_>({ k: 'list' });
+  const [view, setView] = useState<View_>(initialPatient ? { k: 'patient', id: initialPatient } : { k: 'list' });
   const [notes, setNotes] = useState<Record<string, Note[]>>(loadNotes);
 
   const patients = useMemo(() => {
@@ -92,6 +92,7 @@ export default function ProApp() {
     { k: 'inbox', icon: 'chat', label: t('pro.nav.inbox'), badge: pending },
   ];
   const back = () => {
+    if (onBack) return onBack();
     window.location.hash = '';
     window.location.reload();
   };

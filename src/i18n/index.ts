@@ -4,9 +4,10 @@
  * Las claves ausentes en un idioma caen al español.
  */
 import { es as base } from './es';
+import { demoEs } from './demo.es';
 import { proEs } from './pro.es';
 
-const es: Record<string, string> = { ...base, ...proEs };
+const es: Record<string, string> = { ...base, ...proEs, ...demoEs };
 
 export type Locale = 'es' | 'en';
 type Dict = Record<string, string>;

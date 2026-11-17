@@ -46,6 +46,16 @@ npx expo start --web
 
 ## Historial
 
+### 1.7 (modo presentación)
+- **Enseñar la demo**: recorrido guiado que mueve la app solo. En cada paso carga el perfil y la situación de ejemplo
+  (GLP-1, tipo 1, efectos secundarios, glucosa baja, logro…), abre la pantalla y muestra qué contar.
+- Cuatro recorridos: rápida, completa, pacientes y equipo sanitario. Portada, galería con las 12 emociones de Owi,
+  panel profesional y cierre con los siguientes pasos.
+- Avance manual o automático; con teclado: ← → para moverse, espacio para pausar y H para ocultar el guion.
+- Tus datos se guardan al empezar y vuelven al salir; aguanta recargar la página.
+- Se abre desde Yo → "Enseñar la demo", desde la bienvenida o con el enlace terminado en `#demo`:
+  https://javicavero.github.io/towigo/#demo
+
 ### 1.6 (Owi marioneta 2D con sus piezas)
 - Owi se monta **solo con las piezas entregadas** (cuerpo base, brazos, pies, ojos, iris y nariz en `docs/owi/piezas/`), sin 3D.
 - En reposo es **idéntico a la imagen de frente**: se usa como base, con las piezas colocadas encima en su sitio exacto.

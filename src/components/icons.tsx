@@ -39,7 +39,10 @@ export type IconName =
   | 'dumbbell'
   | 'doc'
   | 'flag'
-  | 'steps';
+  | 'steps'
+  | 'close'
+  | 'minimize'
+  | 'next';
 
 export function Icon({ name, size = 26, color = colors.ink, stroke = 2.2 }: { name: IconName; size?: number; color?: string; stroke?: number }) {
   const p = { stroke: color, strokeWidth: stroke, fill: 'none', strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
@@ -47,6 +50,9 @@ export function Icon({ name, size = 26, color = colors.ink, stroke = 2.2 }: { na
     <Svg width={size} height={size} viewBox="0 0 24 24" accessibilityElementsHidden importantForAccessibility="no">
       {name === 'home' && <Path {...p} d="M3 11 12 4l9 7v8a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" />}
       {name === 'plus' && <Path {...p} d="M12 5v14M5 12h14" />}
+      {name === 'close' && <Path {...p} d="M6 6l12 12M18 6 6 18" />}
+      {name === 'minimize' && <Path {...p} d="M6 9l6 6 6-6" />}
+      {name === 'next' && <Path {...p} d="M9 5l7 7-7 7" />}
       {name === 'chat' && <Path {...p} d="M4 5h16v11H9l-5 4z" />}
       {name === 'trophy' && (
         <>

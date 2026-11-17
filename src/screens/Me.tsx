@@ -7,7 +7,7 @@ import { Pressable, ScrollView, TextInput, View } from 'react-native';
 import AvatarBadge from '../components/AvatarBadge';
 import AvatarEditor from '../components/AvatarEditor';
 import DexcomCard from '../components/DexcomCard';
-import { Glyph } from '../components/icons';
+import { Glyph, Icon } from '../components/icons';
 import OwiAnimated from '../components/OwiAnimated';
 import OwiSticker from '../components/OwiSticker';
 import PlanSettings from '../components/PlanSettings';
@@ -25,6 +25,7 @@ import { useStore } from '../state/store';
 import { hasDiabetes, hasT2, usesGlp1, type Profile, type ReminderKind, type Scenario, type TextScale } from '../state/types';
 import { colors, fonts, MIN_TOUCH, readAppearancePref, setAppearancePref, type Appearance_ } from '../theme';
 import { openPro } from '../pro/openPro';
+import { usePresenter } from '../demo/Presenter';
 
 type Section = 'appearance' | 'pro' | 'crew' | 'avatar' | 'owi' | 'widgets' | 'profile' | 'plan' | 'report' | 'sensor' | 'text' | 'privacy' | 'demo';
 const SCENARIOS: Scenario[] = ['normal', 'injectionDay', 'missedInjection', 'sideEffects', 'plateau', 'milestone', 'highGlucose', 'lowGlucose', 'night'];
@@ -36,6 +37,7 @@ export default function Me() {
   const [notice, setNotice] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const toggle = (s: Section) => setOpen((o) => (o === s ? null : s));
+  const presenter = usePresenter();
   const glp1 = usesGlp1(state.profile);
   const t2 = hasDiabetes(state.profile);
 
@@ -188,6 +190,26 @@ export default function Me() {
         )}
       </Disclosure>
 
+      {FLAGS.demoScenarios && !presenter.active && (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('pres.entry')}
+          accessibilityHint={t('pres.entrySub')}
+          onPress={presenter.openSheet}
+          style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 18, backgroundColor: colors.greenText, opacity: pressed ? 0.85 : 1 })}
+        >
+          <OwiSticker mood="happy" size={44} />
+          <View style={{ flex: 1 }}>
+            <T v="label" color={colors.onAccent}>
+              {t('pres.entry')}
+            </T>
+            <T v="small" color={colors.onAccent} style={{ opacity: 0.85 }}>
+              {t('pres.entrySub')}
+            </T>
+          </View>
+          <Icon name="play" size={22} color={colors.onAccent} />
+        </Pressable>
+      )}
       {FLAGS.demoScenarios && (
         <Disclosure icon={<Glyph name="demo" bg="#5B4BC4" />} title={t('demo.section')} subtitle={t('demo.sectionSub')} open={open === 'demo'} onToggle={() => toggle('demo')}>
           <T v="label">{t('demo.profile')}</T>
