@@ -24,7 +24,14 @@ export default function ImportCard() {
   const pick = async () => {
     setMsg(null);
     setBusy(true);
-    const f = await pickTextFile('.csv,text/csv');
+    let f: { name: string; text: string } | null = null;
+    try {
+      f = await pickTextFile('.csv,text/csv');
+    } catch {
+      setBusy(false);
+      setMsg(t('import.readError'));
+      return;
+    }
     setBusy(false);
     if (!f) return;
     const r = parseClarityCsv(f.text);

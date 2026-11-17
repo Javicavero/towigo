@@ -17,7 +17,8 @@
       },
       "infoPlist": {
         "NSSupportsLiveActivities": true
-      }
+      },
+      "usesIcloudStorage": true
     },
     "android": {
       "package": "app.towigo",
@@ -45,6 +46,7 @@
           "cameraPermission": "Towigo usa la cámara para hacer fotos de tus comidas y estimar las raciones, solo si tú lo eliges."
         }
       ],
+      "expo-document-picker",
       "@bacons/apple-targets",
       [
         "react-native-android-widget",

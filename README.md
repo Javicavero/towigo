@@ -46,6 +46,13 @@ npx expo start --web
 
 ## Historial
 
+### 1.16 (importar también desde el móvil)
+- La importación de Dexcom Clarity funciona en **iPhone y Android**: selector de documentos del sistema
+  (`expo-document-picker`) y lectura con `expo-file-system` (`src/services/pickFile.ts`); en la web, el selector del
+  navegador (`pickFile.web.ts`). En iPhone se pueden elegir archivos de iCloud Drive (`ios.usesIcloudStorage`).
+- Al ser módulos nativos, hace falta **una compilación nueva** de la app (`npx eas-cli@latest build --profile development`
+  o la de producción). En Expo Go ya vienen incluidos.
+
 ### 1.15 (tus datos del sensor y tema sin mezclas)
 - **Importar mis datos del sensor** (Yo): carga la exportación CSV de Dexcom Clarity (glucosa, insulina y carbohidratos;
   inglés o español, "," o ";", mg/dL o mmol/L). Se guarda **solo en el dispositivo** (últimos 30 días); opción "verlos
