@@ -15,6 +15,7 @@ import OwiAnimated from '../components/OwiAnimated';
 import OwiSticker from '../components/OwiSticker';
 import TrendChart from '../components/TrendChart';
 import { Button, Card, ProgressBar, Row, Screen, Segmented, T } from '../components/ui';
+import { KpiGrid } from '../components/kpi';
 import { ACCESSORIES } from '../data/avatarOptions';
 import { t } from '../i18n';
 import { dayKeyAgo } from '../state/dates';
@@ -33,7 +34,7 @@ const fmt = (n: number) => n.toFixed(1).replace('.', ',');
 
 export default function Progress() {
   const { state, dispatch, d } = useStore();
-  const [tab, setTab] = useState<'habits' | 'health' | 'owi'>('habits');
+  const [tab, setTab] = useState<'habits' | 'health' | 'owi'>('health');
   const glp1 = usesGlp1(state.profile);
   const t2 = hasDiabetes(state.profile);
   const days = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
@@ -64,9 +65,9 @@ export default function Progress() {
       <ScreenHeader title={t('progress.title')} line={t('progress.owiLine', { n: d.streak })} />
       <Segmented
         options={[
+          { id: 'health', label: t('progress.tab.data') },
           { id: 'habits', label: t('progress.tab.habits') },
-          { id: 'health', label: t('progress.tab.health') },
-          { id: 'owi', label: state.pet.name },
+          { id: 'owi', label: t('progress.tab.assistant') },
         ]}
         value={tab}
         onChange={setTab}
@@ -152,6 +153,20 @@ export default function Progress() {
       {tab === 'habits' && <StrengthCard />}
       {tab === 'habits' && <MoodHistory />}
 
+      {tab === 'health' && (
+        <View style={{ gap: 10 }}>
+          <View style={{ gap: 2 }}>
+            <T v="h2">{t('progress.dataTitle')}</T>
+            <T v="small" color={colors.secondary}>
+              {t('home.weekSub')}
+            </T>
+          </View>
+          <KpiGrid />
+          <T v="small" color={colors.secondary}>
+            {t('progress.dataNote')}
+          </T>
+        </View>
+      )}
       {tab === 'health' && <ReportCard />}
       {tab === 'health' && d.maintenance && <MaintenanceCard />}
       {tab === 'health' && glp1 && !d.maintenance && <TitrationCard />}

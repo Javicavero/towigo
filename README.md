@@ -46,6 +46,15 @@ npx expo start --web
 
 ## Historial
 
+### 1.9 (análisis de datos)
+- **Tu semana** (Hoy) y **Progreso → Datos**: indicadores de los últimos 7 días frente a los 7 anteriores, con su tendencia
+  (▲/▼ en verde si mejora, en rosa si empeora) y mini gráfica: peso, adherencia GLP-1, tiempo en rango, glucosa media,
+  variabilidad (CV), días con registro, ánimo y fuerza. Cálculo puro en `src/state/kpis.ts`, con pruebas.
+- **Hoy**: mini gráfica en el panel (glucosa de las últimas 24 h con la franja 70–180, o evolución del peso).
+- **Progreso** se abre en "Datos"; la pestaña de Owi pasa a llamarse "Asistente". Owi fijo (sin animación) en la tarjeta del asistente.
+- **Panel profesional**: los mismos indicadores semanales en la ficha de cada paciente.
+- El sensor de ejemplo guarda 14 días para poder comparar semanas.
+
 ### 1.8 (más profesional: los datos mandan)
 - **Hoy** es un panel de datos: anillos del día y la cifra clave de cada perfil (próxima inyección, glucosa ahora con
   tendencia, tiempo en rango o peso). Owi pasa a segundo plano como **asistente**, en una tarjeta pequeña con su dato del día.

@@ -125,11 +125,11 @@ export function insulinPlanFor(): InsulinPlan {
   return { rapidName: 'Insulina rápida', basalName: 'Insulina lenta', basalTime: '22:00', basalUnits: 18 };
 }
 
-/** Lecturas del sensor cada 15 min durante 7 días, con subidas tras las comidas. */
+/** Lecturas del sensor cada 15 min durante 14 días, con subidas tras las comidas. */
 export function demoCgm(scenario: Scenario, now = Date.now()): GlucoseEntry[] {
   const rnd = seeded(11);
   const out: GlucoseEntry[] = [];
-  const start = now - 7 * DAY;
+  const start = now - 14 * DAY;
   let drift = 0;
   for (let t = start - (start % (15 * 60e3)); t <= now; t += 15 * 60e3) {
     const d = new Date(t);

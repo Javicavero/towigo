@@ -7,6 +7,7 @@ import { Pressable, TextInput, useWindowDimensions, View } from 'react-native';
 import TrendChart from '../components/TrendChart';
 import { Button, Choice, Row, Segmented, T } from '../components/ui';
 import { TEAM } from '../data/mock';
+import { KpiGrid } from '../components/kpi';
 import { t } from '../i18n';
 import { buildReportHtml } from '../report/buildReport';
 import { exportReport } from '../report/exportReport';
@@ -134,6 +135,12 @@ export default function PatientDetail({ id, tab: initial, onBack }: { id: string
             {hasDiabetes(s.profile) && d.hba1cNow !== null && (
               <Kpi label="HbA1c" value={f1(d.hba1cNow)} unit="%" sub={d.hba1cPrev !== null ? t('pro.kpi.prev', { v: f1(d.hba1cPrev) }) : ''} />
             )}
+          </View>
+          <View style={{ gap: 8 }}>
+            <T v="label" color={colors.secondary}>
+              {t('pro.weekChanges')}
+            </T>
+            <KpiGrid of={s} tileWidth={196} />
           </View>
 
           <View style={{ flexDirection: wide ? 'row' : 'column', gap: 12, alignItems: 'stretch' }}>

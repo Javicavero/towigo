@@ -14,8 +14,9 @@ import AvatarBadge from '../components/AvatarBadge';
 import { CheckinCard } from '../components/checkin';
 import { CheerCard } from '../components/crew';
 import { Icon } from '../components/icons';
+import { KpiStrip, Sparkline } from '../components/kpi';
 import { Burst, FadeIn, Pop } from '../components/motion';
-import OwiSprite from '../components/OwiSprite';
+import OwiSticker from '../components/OwiSticker';
 import { MaintenanceCard, SupportCard } from '../components/program';
 import { RING, useDayRings } from '../components/rings';
 import { glucoseColor, T1Card, TREND_ARROW } from '../components/t1';
@@ -88,10 +89,14 @@ function useKeyMetric() {
   const { state, d } = useStore();
   const g = d.lastGlucose;
   const ago = g ? Math.round((Date.now() - new Date(g.at).getTime()) / 60e3) : 0;
+  const sensor24 = state.glucose.filter((x) => Date.now() - new Date(x.at).getTime() < 24 * 3600e3).sort((a, b) => a.at.localeCompare(b.at)).map((x) => x.v);
+  const wSeries = [...state.weights].sort((a, b) => a.at.localeCompare(b.at)).slice(-12).map((w) => w.kg);
   const weight = d.weightNow !== null ? { label: t('sum.weight'), value: fmt1(d.weightNow), unit: 'kg', sub: d.lostKg > 0 ? t('sum.lost', { kg: fmt1(d.lostKg) }) : '' } : null;
   if (isT1(state.profile) && g)
     return {
       main: { label: t('home.glucoseNow'), value: String(g.v), unit: 'mg/dL', arrow: d.trend ? TREND_ARROW[d.trend] : '', color: glucoseColor(g.v), sub: ago <= 1 ? t('t1.now') : t('home.ago', { min: ago }) },
+      series: sensor24,
+      seriesLabel: t('home.spark24'),
       side: { label: t('home.tirShort'), value: `${d.tir24}`, unit: '%', sub: t('home.tir24') },
     };
   if (usesGlp1(state.profile) && !d.maintenance && d.nextInjectionAt) {
@@ -106,11 +111,13 @@ function useKeyMetric() {
         sub: d.injectedToday ? t('sum.injDone') : `${when.toLocaleDateString('es-ES', { weekday: 'long' })} · ${when.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`,
       },
       side: weight,
+      series: wSeries,
+      seriesLabel: t('home.sparkWeight'),
     };
   }
   if (hasDiabetes(state.profile) && g)
-    return { main: { label: t('sum.glucose'), value: String(g.v), unit: 'mg/dL', arrow: '', color: glucoseColor(g.v), sub: t(`ctx.${g.context}`) }, side: weight };
-  return { main: weight ? { ...weight, arrow: '', color: colors.ink } : null, side: null };
+    return { main: { label: t('sum.glucose'), value: String(g.v), unit: 'mg/dL', arrow: '', color: glucoseColor(g.v), sub: t(`ctx.${g.context}`) }, side: weight, series: wSeries, seriesLabel: t('home.sparkWeight') };
+  return { main: weight ? { ...weight, arrow: '', color: colors.ink } : null, side: null, series: wSeries, seriesLabel: t('home.sparkWeight') };
 }
 
 export default function Home() {
@@ -127,6 +134,7 @@ export default function Home() {
   const [burst, setBurst] = useState(0);
   const allRings = rings.plan >= 1 && rings.move >= 1 && rings.food >= 1;
   const km = useKeyMetric();
+  const [sparkW, setSparkW] = useState(300);
 
   // Tres anillos completos: confeti discreto una vez al día.
   useEffect(() => {
@@ -215,6 +223,20 @@ export default function Home() {
                     )}
                   </View>
                 </Row>
+                {km.series.length > 2 && (
+                  <View accessible accessibilityLabel={km.seriesLabel} onLayout={(e) => setSparkW(e.nativeEvent.layout.width)} style={{ gap: 4 }}>
+                    <Row style={{ justifyContent: 'space-between' }}>
+                      <T v="small" color={colors.secondary} style={{ fontSize: 11, letterSpacing: 0.4, fontFamily: fonts.semibold }}>
+                        {km.seriesLabel.toUpperCase()}
+                      </T>
+                      <T v="small" color={colors.secondary} style={{ fontSize: 11 }}>
+                        {fmt1(Math.min(...km.series))}–{fmt1(Math.max(...km.series))}
+                        {isT1(state.profile) ? ' mg/dL' : ' kg'}
+                      </T>
+                    </Row>
+                    <Sparkline values={km.series} color={isT1(state.profile) ? (isDark ? '#3DE0C8' : '#0FA394') : isDark ? '#A58FFF' : '#6A4FE0'} width={sparkW} height={44} band={isT1(state.profile) ? [70, 180] : undefined} />
+                  </View>
+                )}
                 <Row style={{ borderTopWidth: 1, borderTopColor: border, paddingTop: 12 }}>
                   <Stat color={RING.plan} label={t('rings.plan')} value={`${rings.tasksDone}/${rings.tasksTotal}`} onPress={() => go('log')} />
                   <Stat color={RING.move} label={t('rings.move')} value={STEPS_TODAY.toLocaleString('es-ES')} onPress={() => go('progress')} />
@@ -232,7 +254,7 @@ export default function Home() {
                   onPress={() => setPoke((p) => p + 1)}
                   style={{ width: 48, height: 48, borderRadius: 16, backgroundColor: colors.softGreen, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}
                 >
-                  <OwiSprite mood={d.petMood} size={54} />
+                  <OwiSticker mood={d.petMood} size={50} />
                 </Pressable>
                 <View style={{ flex: 1, gap: 2 }}>
                   <T v="small" color={colors.greenText} style={{ fontFamily: fonts.semibold, letterSpacing: 0.5, fontSize: 11 }}>
@@ -270,6 +292,15 @@ export default function Home() {
         </LinearGradient>
 
         <View style={{ width: '100%', maxWidth: 560, alignSelf: 'center', paddingHorizontal: 16, gap: 12, marginTop: 10 }}>
+          <Row style={{ justifyContent: 'space-between', alignItems: 'flex-end' }}>
+            <SectionTitle>{t('home.week')}</SectionTitle>
+            <Pressable accessibilityRole="button" onPress={() => go('progress')} hitSlop={8}>
+              <T v="small" color={colors.greenText} style={{ fontFamily: fonts.semibold }}>
+                {t('home.seeAll')}
+              </T>
+            </Pressable>
+          </Row>
+          <KpiStrip />
           {/* "Ahora": una sola cosa importante cada vez (apoyo > ánimo de tu gente > check-in). */}
           {d.supportReason ? <SupportCard /> : state.cheers.some((c) => !c.read) ? <CheerCard /> : !d.checkinToday ? <CheckinCard /> : null}
           {isT1(state.profile) && <T1Card compact />}

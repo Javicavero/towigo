@@ -1,5 +1,6 @@
 /** Textos del panel profesional (Towigo Pro). Tono técnico y sobrio, para profesionales sanitarios. */
 export const proEs: Record<string, string> = {
+  'pro.weekChanges': 'Últimos 7 días frente a los 7 anteriores',
   'pro.clinic': 'Unidad de Diabetes y Obesidad',
   'pro.nav.patients': 'Pacientes',
   'pro.nav.inbox': 'Bandeja',
