@@ -1,5 +1,5 @@
 /**
- * Diseño "Rendimiento" de Hoy (formato app de recuperación): superficie negra, tres diales (Bienestar · Índice ·
+ * Diseño "Rendimiento" de Hoy (formato app de recuperación): superficie negra en oscuro y blanca en claro, tres diales (Bienestar · Índice ·
  * Actividad 0–21), objetivo de actividad según tu índice, estadísticas clave frente a tu media de 30 días, diario de
  * hábitos de sí/no y "lo que influye en tu índice". El detalle se abre en subventanas.
  * Fase 1: hábitos y datos; las asociaciones no son causas ni indicaciones clínicas.
@@ -17,22 +17,42 @@ import { dayKey, dayKeyAgo, dayKeyToDate } from '../../state/dates';
 import { activityLoad, activityTarget, JOURNAL, journalDays, journalImpact, keyStats, wellbeing, type KeyStat } from '../../state/journal';
 import { scoreHistory, towigoScore, type Score } from '../../state/score';
 import { useStore } from '../../state/store';
-import { colors, fonts } from '../../theme';
+import { colors, fonts, isDark } from '../../theme';
 
-/** Paleta fija (la superficie de este diseño es siempre oscura, también en modo claro). */
-const P = {
-  bg: '#07090D',
-  card: '#12161E',
-  line: 'rgba(255,255,255,0.08)',
-  text: '#F3F5F9',
-  sub: '#A3ACBB',
-  track: 'rgba(255,255,255,0.09)',
-  green: '#22E39A',
-  yellow: '#F6C945',
-  red: '#FF5C6C',
-  blue: '#4AA8FF',
-  violet: '#9B8CFF',
-};
+/** Paleta del diseño: negro profundo en modo oscuro; blanco limpio en modo claro (nunca se mezclan). */
+const P = isDark
+  ? {
+      bg: '#07090D',
+      card: '#12161E',
+      line: 'rgba(255,255,255,0.08)',
+      text: '#F3F5F9',
+      sub: '#A3ACBB',
+      track: 'rgba(255,255,255,0.09)',
+      press: 'rgba(255,255,255,0.04)',
+      green: '#22E39A',
+      yellow: '#F6C945',
+      red: '#FF5C6C',
+      blue: '#4AA8FF',
+      blueSoft: 'rgba(74,168,255,0.35)',
+      blueBand: 'rgba(74,168,255,0.25)',
+      violet: '#9B8CFF',
+    }
+  : {
+      bg: '#FFFFFF',
+      card: '#F5F3FA',
+      line: 'rgba(27,22,48,0.08)',
+      text: '#1B1630',
+      sub: '#5E5873',
+      track: 'rgba(27,22,48,0.08)',
+      press: 'rgba(27,22,48,0.04)',
+      green: '#0B8F5E',
+      yellow: '#B7791F',
+      red: '#C8324A',
+      blue: '#1E6FD9',
+      blueSoft: 'rgba(30,111,217,0.28)',
+      blueBand: 'rgba(30,111,217,0.16)',
+      violet: '#6A4FE0',
+    };
 const bandColor = (b: Score['band']) => (b === 'great' || b === 'good' ? P.green : b === 'fair' ? P.yellow : P.red);
 const f1 = (n: number) => (Math.round(n * 10) / 10).toString().replace('.', ',');
 const lbl = { fontFamily: fonts.semibold, fontSize: 11, letterSpacing: 1 } as const;
@@ -125,7 +145,7 @@ function DarkRow({
         minHeight: 56,
         borderBottomWidth: last ? 0 : 1,
         borderBottomColor: P.line,
-        backgroundColor: pressed ? 'rgba(255,255,255,0.04)' : 'transparent',
+        backgroundColor: pressed ? P.press : 'transparent',
       })}
     >
       <Icon name={icon} size={18} color={accent ?? P.sub} />
@@ -146,7 +166,7 @@ function LoadBar({ load, target, width }: { load: number; target: [number, numbe
   return (
     <Svg width={width} height={26}>
       <Rect x={0} y={9} width={width} height={8} rx={4} fill={P.track} />
-      <Rect x={X(target[0])} y={6} width={X(target[1]) - X(target[0])} height={14} rx={7} fill="rgba(74,168,255,0.25)" />
+      <Rect x={X(target[0])} y={6} width={X(target[1]) - X(target[0])} height={14} rx={7} fill={P.blueBand} />
       <Rect x={0} y={9} width={Math.max(4, X(load))} height={8} rx={4} fill={P.blue} />
       <Circle cx={X(load)} cy={13} r={7} fill={P.text} stroke={P.blue} strokeWidth={3} />
     </Svg>
@@ -176,7 +196,7 @@ export function PulseLayout({ onOpenScore }: { onOpenScore: () => void }) {
   const jd = journalDays(state);
 
   return (
-    <View style={{ backgroundColor: P.bg, borderRadius: 26, padding: 16, gap: 16 }}>
+    <View style={{ backgroundColor: P.bg, borderRadius: 26, padding: 16, gap: 16, borderWidth: isDark ? 0 : 1, borderColor: P.line }}>
       <Row style={{ justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <Dial
           size={92}
@@ -298,10 +318,7 @@ export function PulseLayout({ onOpenScore }: { onOpenScore: () => void }) {
             accessibilityLabel={t('pulse.last7a11y', { list: loads7.map(f1).join(', ') })}
           >
             {loads7.map((v, i) => (
-              <View
-                key={i}
-                style={{ flex: 1, height: `${Math.max(6, (v / 21) * 100)}%`, borderRadius: 5, backgroundColor: i === 6 ? P.blue : 'rgba(74,168,255,0.35)' }}
-              />
+              <View key={i} style={{ flex: 1, height: `${Math.max(6, (v / 21) * 100)}%`, borderRadius: 5, backgroundColor: i === 6 ? P.blue : P.blueSoft }} />
             ))}
           </View>
         </View>
@@ -462,10 +479,7 @@ export function PulseLayout({ onOpenScore }: { onOpenScore: () => void }) {
           </T>
           <View style={{ flexDirection: 'row', gap: 6, alignItems: 'flex-end', height: 80 }}>
             {loads7.map((v, i) => (
-              <View
-                key={i}
-                style={{ flex: 1, height: `${Math.max(6, (v / 21) * 100)}%`, borderRadius: 5, backgroundColor: i === 6 ? P.blue : 'rgba(74,168,255,0.35)' }}
-              />
+              <View key={i} style={{ flex: 1, height: `${Math.max(6, (v / 21) * 100)}%`, borderRadius: 5, backgroundColor: i === 6 ? P.blue : P.blueSoft }} />
             ))}
           </View>
         </View>

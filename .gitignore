@@ -53,3 +53,7 @@ targets/*/Info.plist
 !modules/*/ios/
 !modules/*/android/
 tools/owi/rig2d/.cache_base.png
+
+# Datos personales de salud: nunca al repositorio (es público)
+*.csv
+clarity*.pdf

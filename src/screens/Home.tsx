@@ -6,7 +6,7 @@
  * Fase 1 (§8.2): datos, tendencias, hábitos y comunicación. Nunca indicaciones clínicas automáticas.
  */
 import { useEffect, useState } from 'react';
-import { DiaryLayout, LayoutButton, ProgramLayout, ScoreLayout, SummaryLayout, TimelineLayout, TreatmentLayout } from './home/layouts';
+import { DiaryLayout, LayoutButton, ThemeButton, ProgramLayout, ScoreLayout, SummaryLayout, TimelineLayout, TreatmentLayout } from './home/layouts';
 import { PulseLayout } from './home/pulse';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, ScrollView, View } from 'react-native';
@@ -185,38 +185,41 @@ export default function Home() {
         <LinearGradient colors={isDark ? ['#141A3A', colors.cream] : ['#E9E3FF', colors.cream]} style={{ paddingTop: insets.top + 12, paddingBottom: 6 }}>
           <View style={{ width: '100%', maxWidth: 560, alignSelf: 'center', paddingHorizontal: 16, gap: 14 }}>
             {/* Cabecera */}
-            <Row style={{ justifyContent: 'space-between' }}>
-              <View>
-                <T v="small" color={colors.secondary} style={{ fontFamily: fonts.medium, letterSpacing: 0.6, fontSize: 11 }}>
+            <View style={{ gap: 6 }}>
+              <Row style={{ justifyContent: 'space-between' }}>
+                <T v="small" color={colors.secondary} style={{ fontFamily: fonts.medium, letterSpacing: 0.6, fontSize: 11, flex: 1 }} numberOfLines={1}>
                   {rawDate.toUpperCase()}
                 </T>
-                <T v="h2">{t(greeting(), { name })}</T>
-              </View>
-              <Row gap={8}>
-                <LayoutButton />
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel={t('home.streakA11y', { n: d.streak })}
-                  onPress={() => go('progress')}
-                  style={({ pressed }) => ({
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: 4,
-                    backgroundColor: panel,
-                    borderWidth: 1,
-                    borderColor: border,
-                    paddingHorizontal: 10,
-                    height: 34,
-                    borderRadius: 17,
-                    opacity: pressed ? 0.7 : 1,
-                  })}
-                >
-                  <Icon name="flame" size={16} color={colors.coralDark} />
-                  <T v="label">{d.streak}</T>
-                </Pressable>
-                <AvatarBadge avatar={d.owiAvatar} size={36} onPress={() => go('me')} label={t('avatar.you', { name })} />
+                <Row gap={6}>
+                  <ThemeButton />
+                  <LayoutButton />
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={t('home.streakA11y', { n: d.streak })}
+                    onPress={() => go('progress')}
+                    style={({ pressed }) => ({
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 4,
+                      backgroundColor: panel,
+                      borderWidth: 1,
+                      borderColor: border,
+                      paddingHorizontal: 10,
+                      height: 34,
+                      borderRadius: 17,
+                      opacity: pressed ? 0.7 : 1,
+                    })}
+                  >
+                    <Icon name="flame" size={16} color={colors.coralDark} />
+                    <T v="label">{d.streak}</T>
+                  </Pressable>
+                  <AvatarBadge avatar={d.owiAvatar} size={36} onPress={() => go('me')} label={t('avatar.you', { name })} />
+                </Row>
               </Row>
-            </Row>
+              <T v="title" style={{ fontSize: 24, lineHeight: 30 }}>
+                {t(greeting(), { name })}
+              </T>
+            </View>
 
             {/* Panel del día: índice + cifra clave (diseño por defecto) */}
             {layout === 'panel' && (

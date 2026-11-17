@@ -46,8 +46,18 @@ npx expo start --web
 
 ## Historial
 
+### 1.15 (tus datos del sensor y tema sin mezclas)
+- **Importar mis datos del sensor** (Yo): carga la exportación CSV de Dexcom Clarity (glucosa, insulina y carbohidratos;
+  inglés o español, "," o ";", mg/dL o mmol/L). Se guarda **solo en el dispositivo** (últimos 30 días); opción "verlos
+  como si fueran de hoy" (adelanta días enteros y conserva las horas). Ignora nombre, fecha de nacimiento y demás datos
+  personales. Parser en `src/data/clarityImport.ts`, con pruebas. Web por ahora; en el móvil llegará con el selector de documentos.
+- **Tema claro u oscuro sin mezclas**: botón de sol/luna en Hoy (además de Yo → Apariencia). En claro, Rendimiento y la
+  barra lateral del panel profesional también son claros.
+- Cabecera de Hoy reorganizada (fecha y botones arriba, saludo debajo).
+- `.gitignore`: nunca se suben archivos CSV ni informes de Clarity (el repositorio es público).
+
 ### 1.14 (Rendimiento, formato app de recuperación)
-- Nuevo diseño de Hoy **Rendimiento**, sobre negro: tres diales (**Bienestar** de los check-ins, **Índice Towigo** y
+- Nuevo diseño de Hoy **Rendimiento** (negro en modo oscuro, blanco en claro): tres diales (**Bienestar** de los check-ins, **Índice Towigo** y
   **Actividad** de 0 a 21 con pasos y fuerza), frase del día y **objetivo de actividad** según tu índice.
 - Subventanas: **estadísticas clave** frente a tu media de 30 días (peso, proteína, pasos, ánimo, glucosa y tiempo en
   rango), **diario de hoy** (7 hábitos de sí/no), **qué influye en tu índice** (diferencia media entre días con "sí" y

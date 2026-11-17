@@ -47,7 +47,35 @@ export const usePro = () => {
 
 type View_ = { k: 'list' } | { k: 'inbox' } | { k: 'patient'; id: string; tab?: string };
 
-export const SIDEBAR_BG = isDark ? '#060A16' : '#0A0F1E'; // azul noche de Aurora
+/** Barra lateral: azul noche en modo oscuro, blanca en modo claro (el tema nunca se mezcla). */
+const S = isDark
+  ? {
+      bg: '#060A16',
+      title: '#F2F5FF',
+      sub: '#7F8BAE',
+      accent: '#3DE0C8',
+      onAccent: '#06131A',
+      activeBg: 'rgba(61,224,200,0.14)',
+      hover: 'rgba(255,255,255,0.05)',
+      icon: '#93A0BF',
+      label: '#C4CCE2',
+      roleBg: 'rgba(255,255,255,0.06)',
+      border: 'transparent',
+    }
+  : {
+      bg: '#FFFFFF',
+      title: '#1B1630',
+      sub: '#5E5873',
+      accent: '#5B3DE0',
+      onAccent: '#FFFFFF',
+      activeBg: 'rgba(91,61,224,0.10)',
+      hover: 'rgba(27,22,48,0.04)',
+      icon: '#6B6680',
+      label: '#3A3550',
+      roleBg: 'rgba(27,22,48,0.05)',
+      border: 'rgba(27,22,48,0.08)',
+    };
+export const SIDEBAR_BG = S.bg;
 
 export default function ProApp({ onBack, initialPatient }: { onBack?: () => void; initialPatient?: string } = {}) {
   const { state: me, dispatch } = useStore();
@@ -98,22 +126,34 @@ export default function ProApp({ onBack, initialPatient }: { onBack?: () => void
   };
 
   const sidebar = (
-    <View style={{ width: wide ? 248 : '100%', backgroundColor: SIDEBAR_BG, paddingTop: insets.top + 18, paddingHorizontal: 14, paddingBottom: 14, gap: 18 }}>
+    <View
+      style={{
+        width: wide ? 248 : '100%',
+        backgroundColor: S.bg,
+        borderRightWidth: wide ? 1 : 0,
+        borderBottomWidth: wide ? 0 : 1,
+        borderColor: S.border,
+        paddingTop: insets.top + 18,
+        paddingHorizontal: 14,
+        paddingBottom: 14,
+        gap: 18,
+      }}
+    >
       <Row gap={10} style={{ paddingHorizontal: 6 }}>
-        <View style={{ width: 30, height: 30, borderRadius: 9, backgroundColor: '#3DE0C8', alignItems: 'center', justifyContent: 'center' }}>
-          <Icon name="steth" size={18} color="#06131A" />
+        <View style={{ width: 30, height: 30, borderRadius: 9, backgroundColor: S.accent, alignItems: 'center', justifyContent: 'center' }}>
+          <Icon name="steth" size={18} color={S.onAccent} />
         </View>
         <View style={{ flex: 1 }}>
-          <T v="label" color="#F2F5FF">
+          <T v="label" color={S.title}>
             Towigo Pro
           </T>
-          <T v="small" color="#7F8BAE" style={{ fontSize: 11 }}>
+          <T v="small" color={S.sub} style={{ fontSize: 11 }}>
             {t('pro.clinic')}
           </T>
         </View>
         {!wide && (
           <Pressable onPress={back} accessibilityRole="button" accessibilityLabel={t('pro.backToApp')}>
-            <T v="small" color="#3DE0C8">
+            <T v="small" color={S.accent}>
               {t('pro.backShort')}
             </T>
           </Pressable>
@@ -136,11 +176,11 @@ export default function ProApp({ onBack, initialPatient }: { onBack?: () => void
                 paddingHorizontal: 10,
                 height: 40,
                 borderRadius: 10,
-                backgroundColor: active ? 'rgba(61,224,200,0.14)' : hov(st) ? 'rgba(255,255,255,0.05)' : 'transparent',
+                backgroundColor: active ? S.activeBg : hov(st) ? S.hover : 'transparent',
               })}
             >
-              <Icon name={n.icon} size={18} color={active ? '#3DE0C8' : '#93A0BF'} />
-              <T v="label" color={active ? '#F2F5FF' : '#C4CCE2'} style={{ flex: 1 }}>
+              <Icon name={n.icon} size={18} color={active ? S.accent : S.icon} />
+              <T v="label" color={active ? S.title : S.label} style={{ flex: 1 }}>
                 {n.label}
               </T>
               {!!n.badge && (
@@ -167,7 +207,7 @@ export default function ProApp({ onBack, initialPatient }: { onBack?: () => void
       {wide && (
         <>
           <View style={{ flex: 1 }} />
-          <T v="small" color="#7F8BAE" style={{ paddingHorizontal: 6, fontSize: 11, letterSpacing: 0.4 }}>
+          <T v="small" color={S.sub} style={{ paddingHorizontal: 6, fontSize: 11, letterSpacing: 0.4 }}>
             {t('pro.signedAs').toUpperCase()}
           </T>
           <View style={{ gap: 4 }}>
@@ -183,7 +223,7 @@ export default function ProApp({ onBack, initialPatient }: { onBack?: () => void
                   gap: 10,
                   padding: 8,
                   borderRadius: 10,
-                  backgroundColor: role === r ? 'rgba(255,255,255,0.06)' : 'transparent',
+                  backgroundColor: role === r ? S.roleBg : 'transparent',
                 }}
               >
                 <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: TEAM[r].color, alignItems: 'center', justifyContent: 'center' }}>
@@ -192,10 +232,10 @@ export default function ProApp({ onBack, initialPatient }: { onBack?: () => void
                   </T>
                 </View>
                 <View style={{ flex: 1 }}>
-                  <T v="small" color={role === r ? '#F2F5FF' : '#93A0BF'} style={{ fontFamily: fonts.medium }}>
+                  <T v="small" color={role === r ? S.title : S.icon} style={{ fontFamily: fonts.medium }}>
                     {TEAM[r].name}
                   </T>
-                  <T v="small" color="#7F8BAE" style={{ fontSize: 11 }}>
+                  <T v="small" color={S.sub} style={{ fontSize: 11 }}>
                     {t(`pro.role.${r}`)}
                   </T>
                 </View>
@@ -203,7 +243,7 @@ export default function ProApp({ onBack, initialPatient }: { onBack?: () => void
             ))}
           </View>
           <Pressable onPress={back} accessibilityRole="button" style={{ padding: 8 }}>
-            <T v="small" color="#3DE0C8">
+            <T v="small" color={S.accent}>
               {t('pro.backToApp')}
             </T>
           </Pressable>

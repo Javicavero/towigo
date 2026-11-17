@@ -42,7 +42,9 @@ export type IconName =
   | 'steps'
   | 'close'
   | 'minimize'
-  | 'next';
+  | 'next'
+  | 'sun'
+  | 'moon';
 
 export function Icon({ name, size = 26, color = colors.ink, stroke = 2.2 }: { name: IconName; size?: number; color?: string; stroke?: number }) {
   const p = { stroke: color, strokeWidth: stroke, fill: 'none', strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
@@ -53,6 +55,13 @@ export function Icon({ name, size = 26, color = colors.ink, stroke = 2.2 }: { na
       {name === 'close' && <Path {...p} d="M6 6l12 12M18 6 6 18" />}
       {name === 'minimize' && <Path {...p} d="M6 9l6 6 6-6" />}
       {name === 'next' && <Path {...p} d="M9 5l7 7-7 7" />}
+      {name === 'sun' && (
+        <>
+          <Circle {...p} cx={12} cy={12} r={4} />
+          <Path {...p} d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+        </>
+      )}
+      {name === 'moon' && <Path {...p} d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" />}
       {name === 'chat' && <Path {...p} d="M4 5h16v11H9l-5 4z" />}
       {name === 'trophy' && (
         <>
@@ -162,7 +171,18 @@ export function Icon({ name, size = 26, color = colors.ink, stroke = 2.2 }: { na
 export function Glyph({ name, bg, size = 34 }: { name: IconName; bg: string; size?: number }) {
   const c = catColor(bg);
   return (
-    <View style={{ width: size, height: size, borderRadius: size * 0.3, backgroundColor: tint(c, isDark ? 0.18 : 0.13), borderWidth: 1, borderColor: tint(c, isDark ? 0.28 : 0.18), alignItems: 'center', justifyContent: 'center' }}>
+    <View
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size * 0.3,
+        backgroundColor: tint(c, isDark ? 0.18 : 0.13),
+        borderWidth: 1,
+        borderColor: tint(c, isDark ? 0.28 : 0.18),
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
       <Icon name={name} size={size * 0.56} color={c} stroke={2.2} />
     </View>
   );

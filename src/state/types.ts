@@ -225,6 +225,9 @@ export type AppState = {
   journal?: Record<string, Partial<Record<JournalQ, boolean>>>;
   lastOpenAt: string | null;
   previousOpenAt: string | null;
-  dataSource: 'demo' | 'dexcom';
+  /** Origen de las lecturas del sensor: ejemplo, Dexcom conectado o importadas de un archivo (solo en este dispositivo). */
+  dataSource: 'demo' | 'dexcom' | 'import';
+  /** Resumen de la última importación. */
+  imported?: { from: string; to: string; count: number; shiftDays: number } | null;
   dexcom: { connected: boolean; readings: Reading[]; lastSyncAt: string | null; error: string | null };
 };

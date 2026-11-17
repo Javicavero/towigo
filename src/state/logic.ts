@@ -286,6 +286,7 @@ export type Action =
   | { type: 'snooze'; id: string; minutes: number }
   | { type: 'setDemoReminder'; kind: ReminderKind | null }
   | { type: 'setDataSource'; source: AppState['dataSource'] }
+  | { type: 'importSensor'; glucose: { at: number; v: number }[]; insulin: { at: number; units: number; kind: 'rapid' | 'basal' }[]; carbs: { at: number; g: number }[]; shiftDays: number }
   | { type: 'dexcom'; patch: Partial<AppState['dexcom']> }
   | { type: 'reset' };
 
@@ -307,7 +308,8 @@ export function reducer(s: AppState, a: Action): AppState {
     case 'setName':
       return { ...s, userName: a.name };
     case 'setProfile':
-      return { ...s, profile: a.profile, ...demoData(a.profile, s.scenario), messages: initialMessages(a.profile) };
+      // Cambiar de perfil vuelve a los datos de ejemplo (también si había datos importados).
+      return { ...s, profile: a.profile, ...demoData(a.profile, s.scenario), messages: initialMessages(a.profile), ...(s.dataSource === 'import' ? { dataSource: 'demo' as const, imported: null } : {}) };
     case 'setAvatar':
       return { ...s, avatar: { ...s.avatar, ...a.patch } };
     case 'toggleAccessory':
@@ -347,7 +349,7 @@ export function reducer(s: AppState, a: Action): AppState {
       return { ...s, textScale: a.scale };
     case 'setScenario':
       // Prototipo: el escenario regenera los datos de demostración.
-      return { ...s, scenario: a.scenario, demoReminder: null, ...demoData(s.profile, a.scenario) };
+      return { ...s, scenario: a.scenario, demoReminder: null, ...demoData(s.profile, a.scenario), ...(s.dataSource === 'import' ? { dataSource: 'demo' as const, imported: null } : {}) };
     case 'setGlp1':
       return { ...s, glp1: { ...s.glp1, ...a.patch } };
     case 'addInjection':
@@ -457,6 +459,18 @@ export function reducer(s: AppState, a: Action): AppState {
       return { ...s, snoozedUntil: { ...s.snoozedUntil, [a.id]: Date.now() + a.minutes * 60000 }, demoReminder: null };
     case 'setDemoReminder':
       return { ...s, demoReminder: a.kind, remindersDone: {}, snoozedUntil: {} };
+    case 'importSensor': {
+      // Se guardan los últimos 30 días (lo que usan Hoy, el índice y las tendencias); nada que quede en el futuro.
+      const shift = a.shiftDays * DAY;
+      const nowMs = Date.now();
+      const keep = (t: number) => t + shift <= nowMs && t + shift > nowMs - 30 * DAY;
+      const glucose = a.glucose.filter((g) => keep(g.at)).map((g) => ({ id: `i${g.at}`, at: new Date(g.at + shift).toISOString(), v: g.v, context: 'sensor' as const }));
+      const insulin = a.insulin.filter((x) => keep(x.at)).map((x) => ({ id: `ii${x.at}`, at: new Date(x.at + shift).toISOString(), units: x.units, kind: x.kind }));
+      const carbs = a.carbs.filter((x) => keep(x.at)).map((x) => ({ id: `ic${x.at}`, at: new Date(x.at + shift).toISOString(), g: x.g }));
+      const first = glucose[0]?.at ?? new Date(nowMs).toISOString();
+      const last = glucose[glucose.length - 1]?.at ?? first;
+      return { ...s, dataSource: 'import', glucose, insulin, carbs, imported: { from: first, to: last, count: glucose.length, shiftDays: a.shiftDays } };
+    }
     case 'setDataSource':
       return { ...s, dataSource: a.source };
     case 'dexcom':

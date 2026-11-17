@@ -29,7 +29,7 @@ import { dayKey } from '../../state/dates';
 import { scoreHistory, towigoScore } from '../../state/score';
 import { useStore } from '../../state/store';
 import { hasDiabetes, isT1, usesGlp1, type HomeLayout } from '../../state/types';
-import { colors, fonts, isDark } from '../../theme';
+import { colors, fonts, isDark, setAppearancePref } from '../../theme';
 
 export const HOME_LAYOUTS: HomeLayout[] = ['panel', 'pulse', 'score', 'treatment', 'program', 'diary', 'timeline', 'summary'];
 const LAYOUT_ICON: Record<HomeLayout, IconName> = {
@@ -52,6 +52,30 @@ const good = isDark ? '#3DE0C8' : '#0E8F7E';
 const isToday = (at: string) => dayKey(new Date(at).getTime()) === dayKey(Date.now());
 const hhmm = (at: string) => new Date(at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 const fmtDose = (x: number) => String(x).replace('.', ',');
+
+/** Botón de tema (cabecera de Hoy): cambia entre modo claro y oscuro. Toda la app usa un solo tema, sin mezclas. */
+export function ThemeButton() {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={isDark ? t('theme.toLight') : t('theme.toDark')}
+      onPress={() => setAppearancePref(isDark ? 'light' : 'dark')}
+      style={({ pressed }) => ({
+        width: 32,
+        height: 32,
+        borderRadius: 17,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: panelBg,
+        borderWidth: 1,
+        borderColor: border,
+        opacity: pressed ? 0.7 : 1,
+      })}
+    >
+      <Icon name={isDark ? 'sun' : 'moon'} size={17} color={colors.ink} />
+    </Pressable>
+  );
+}
 
 /** Botón "Diseño" (cabecera de Hoy): abre la subventana para elegir cómo se ve Hoy. */
 export function LayoutButton() {

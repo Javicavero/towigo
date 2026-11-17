@@ -1117,7 +1117,7 @@ export const es: Record<string, string> = {
   'me.appearance.system': 'Automática',
   'me.appearance.light': 'Clara',
   'me.appearance.dark': 'Oscura',
-  'me.appearanceNote': 'Automática sigue el modo claro u oscuro de tu teléfono.',
+  'me.appearanceNote': 'Automática sigue el modo claro u oscuro de tu teléfono. También puedes cambiarlo con el botón de sol o luna en Hoy. Toda la app usa el mismo modo.',
   'me.pro': 'Panel profesional',
   'me.proSub': 'Vista para tu equipo sanitario (demo)',
   'me.proOpen': 'Abrir el panel profesional',
