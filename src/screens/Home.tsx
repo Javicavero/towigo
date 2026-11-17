@@ -6,7 +6,7 @@
  * Fase 1 (§8.2): datos, tendencias, hábitos y comunicación. Nunca indicaciones clínicas automáticas.
  */
 import { useEffect, useState } from 'react';
-import { DiaryLayout, LayoutPicker, ProgramLayout, ScoreLayout, SummaryLayout, TimelineLayout, TreatmentLayout } from './home/layouts';
+import { DiaryLayout, LayoutButton, ProgramLayout, ScoreLayout, SummaryLayout, TimelineLayout, TreatmentLayout } from './home/layouts';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -17,14 +17,16 @@ import { usePresenter } from '../demo/Presenter';
 import { towigoScore } from '../state/score';
 import { CheerCard } from '../components/crew';
 import { Icon } from '../components/icons';
-import { KpiStrip, Sparkline } from '../components/kpi';
+import { KpiGrid, Sparkline } from '../components/kpi';
+import { DrillGroup, DrillRow, Sheet } from '../components/sheet';
+import { weeklyKpis } from '../state/kpis';
 import { Burst, FadeIn, Pop } from '../components/motion';
 import OwiSticker from '../components/OwiSticker';
 import { MaintenanceCard, SupportCard } from '../components/program';
 import { RING, useDayRings } from '../components/rings';
 import { agoText, glucoseColor, T1Card, TREND_ARROW } from '../components/t1';
 import { SummaryGrid, TodayList } from '../components/today';
-import { Button, Row, SectionTitle, T } from '../components/ui';
+import { Button, Row, T } from '../components/ui';
 import { STEPS_TODAY } from '../data/mock';
 import { owiLine } from '../owi/voice';
 import { t } from '../i18n';
@@ -156,6 +158,11 @@ export default function Home() {
   }, [state.day]); // eslint-disable-line react-hooks/exhaustive-deps
   const [sparkW, setSparkW] = useState(300);
   const layout = state.homeLayout ?? 'panel';
+  const [more, setMore] = useState<null | 'week' | 'today' | 'rings' | 'glucose' | 'summary' | 'cheer'>(null);
+  const wk = weeklyKpis(state);
+  const weekValue = wk.filter((k) => k.good === true).length
+    ? t('home.more.weekValue', { n: wk.filter((k) => k.good === true).length })
+    : t('home.more.weekNone');
 
   // Tres anillos completos: confeti discreto una vez al día.
   useEffect(() => {
@@ -185,6 +192,7 @@ export default function Home() {
                 <T v="h2">{t(greeting(), { name })}</T>
               </View>
               <Row gap={8}>
+                <LayoutButton />
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel={t('home.streakA11y', { n: d.streak })}
@@ -208,8 +216,6 @@ export default function Home() {
                 <AvatarBadge avatar={d.owiAvatar} size={36} onPress={() => go('me')} label={t('avatar.you', { name })} />
               </Row>
             </Row>
-
-            <LayoutPicker />
 
             {/* Panel del día: índice + cifra clave (diseño por defecto) */}
             {layout === 'panel' && (
@@ -266,31 +272,6 @@ export default function Home() {
                         </Row>
                       )}
                     </View>
-                  </Row>
-                  {km.series.length > 2 && (
-                    <View accessible accessibilityLabel={km.seriesLabel} onLayout={(e) => setSparkW(e.nativeEvent.layout.width)} style={{ gap: 4 }}>
-                      <Row style={{ justifyContent: 'space-between' }}>
-                        <T v="small" color={colors.secondary} style={{ fontSize: 11, letterSpacing: 0.4, fontFamily: fonts.semibold }}>
-                          {km.seriesLabel.toUpperCase()}
-                        </T>
-                        <T v="small" color={colors.secondary} style={{ fontSize: 11 }}>
-                          {fmt1(Math.min(...km.series))}–{fmt1(Math.max(...km.series))}
-                          {isT1(state.profile) ? ' mg/dL' : ' kg'}
-                        </T>
-                      </Row>
-                      <Sparkline
-                        values={km.series}
-                        color={isT1(state.profile) ? (isDark ? '#3DE0C8' : '#0FA394') : isDark ? '#A58FFF' : '#6A4FE0'}
-                        width={sparkW}
-                        height={44}
-                        band={isT1(state.profile) ? [70, 180] : undefined}
-                      />
-                    </View>
-                  )}
-                  <Row style={{ borderTopWidth: 1, borderTopColor: border, paddingTop: 12 }}>
-                    <Stat color={RING.plan} label={t('rings.plan')} value={`${rings.tasksDone}/${rings.tasksTotal}`} onPress={() => go('log')} />
-                    <Stat color={RING.move} label={t('rings.move')} value={STEPS_TODAY.toLocaleString('es-ES')} onPress={() => go('progress')} />
-                    <Stat color={RING.food} label={t('rings.food')} value={`${d.proteinToday}/${state.goals.proteinG} g`} onPress={() => go('log', 'intake')} />
                   </Row>
                 </View>
               </FadeIn>
@@ -379,43 +360,90 @@ export default function Home() {
         </LinearGradient>
 
         <View style={{ width: '100%', maxWidth: 560, alignSelf: 'center', paddingHorizontal: 16, gap: 12, marginTop: 10 }}>
-          {layout === 'panel' && (
-            <Row style={{ justifyContent: 'space-between', alignItems: 'flex-end' }}>
-              <SectionTitle>{t('home.week')}</SectionTitle>
-              <Pressable accessibilityRole="button" onPress={() => go('progress')} hitSlop={8}>
-                <T v="small" color={colors.greenText} style={{ fontFamily: fonts.semibold }}>
-                  {t('home.seeAll')}
-                </T>
-              </Pressable>
-            </Row>
-          )}
-          {layout === 'panel' && <KpiStrip />}
           {/* "Ahora": una sola cosa importante cada vez (apoyo > ánimo de tu gente > check-in). */}
           {d.supportReason ? (
             <SupportCard />
           ) : state.cheers.some((c) => !c.read) ? (
-            <CheerCard />
+            <DrillGroup>
+              <DrillRow
+                icon="heart"
+                title={t('home.cheerNew', { who: state.crew.find((m) => m.id === state.cheers.find((c) => !c.read)?.from)?.name ?? t('crew.someone') })}
+                value={t('home.cheerOpen')}
+                onPress={() => setMore('cheer')}
+                last
+              />
+            </DrillGroup>
           ) : !d.checkinToday ? (
             <CheckinPill onPress={() => setCheckinOpen(true)} />
           ) : null}
-          {layout === 'panel' && isT1(state.profile) && <T1Card compact />}
           {d.maintenance && <MaintenanceCard />}
           {layout === 'panel' && (
-            <>
-              <SectionTitle>{t('home.forToday')}</SectionTitle>
-              <FadeIn delay={100}>
-                <TodayList />
-              </FadeIn>
-              <SectionTitle>{t('home.summary')}</SectionTitle>
-              <FadeIn delay={140}>
-                <SummaryGrid />
-              </FadeIn>
-            </>
+            <DrillGroup>
+              <DrillRow icon="trophy" title={t('home.more.week')} value={weekValue} onPress={() => setMore('week')} />
+              <DrillRow
+                icon="check"
+                title={t('home.more.today')}
+                value={t('layout.program.planValue', { a: rings.tasksDone, b: rings.tasksTotal })}
+                onPress={() => setMore('today')}
+              />
+              <DrillRow
+                icon="steps"
+                title={t('home.more.rings')}
+                value={`${STEPS_TODAY.toLocaleString('es-ES')} · ${d.proteinToday}/${state.goals.proteinG} g`}
+                onPress={() => setMore('rings')}
+              />
+              {isT1(state.profile) && <DrillRow icon="drop" title={t('home.more.glucose')} value={`${d.tir24} %`} onPress={() => setMore('glucose')} />}
+              <DrillRow icon="widget" title={t('home.more.summary')} value={t('home.more.summaryValue')} onPress={() => setMore('summary')} last />
+            </DrillGroup>
           )}
         </View>
       </ScrollView>
       <Burst fire={burst} />
       <ScoreSheet open={scoreOpen} onClose={() => setScoreOpen(false)} />
+      <Sheet open={more === 'week'} onClose={() => setMore(null)} title={t('home.more.week')} subtitle={t('home.weekSub')}>
+        <KpiGrid />
+      </Sheet>
+      <Sheet open={more === 'today'} onClose={() => setMore(null)} title={t('home.more.today')}>
+        <TodayList />
+      </Sheet>
+      <Sheet open={more === 'rings'} onClose={() => setMore(null)} title={t('home.more.rings')}>
+        <View style={{ backgroundColor: panel, borderWidth: 1, borderColor: border, borderRadius: 22, padding: 16, gap: 14 }}>
+          {km.series.length > 2 && (
+            <View accessible accessibilityLabel={km.seriesLabel} onLayout={(e) => setSparkW(e.nativeEvent.layout.width)} style={{ gap: 4 }}>
+              <Row style={{ justifyContent: 'space-between' }}>
+                <T v="small" color={colors.secondary} style={{ fontSize: 11, letterSpacing: 0.4, fontFamily: fonts.semibold }}>
+                  {km.seriesLabel.toUpperCase()}
+                </T>
+                <T v="small" color={colors.secondary} style={{ fontSize: 11 }}>
+                  {fmt1(Math.min(...km.series))}–{fmt1(Math.max(...km.series))}
+                  {isT1(state.profile) ? ' mg/dL' : ' kg'}
+                </T>
+              </Row>
+              <Sparkline
+                values={km.series}
+                color={isT1(state.profile) ? (isDark ? '#3DE0C8' : '#0FA394') : isDark ? '#A58FFF' : '#6A4FE0'}
+                width={sparkW}
+                height={44}
+                band={isT1(state.profile) ? [70, 180] : undefined}
+              />
+            </View>
+          )}
+          <Row style={{ borderTopWidth: 1, borderTopColor: border, paddingTop: 12 }}>
+            <Stat color={RING.plan} label={t('rings.plan')} value={`${rings.tasksDone}/${rings.tasksTotal}`} onPress={() => go('log')} />
+            <Stat color={RING.move} label={t('rings.move')} value={STEPS_TODAY.toLocaleString('es-ES')} onPress={() => go('progress')} />
+            <Stat color={RING.food} label={t('rings.food')} value={`${d.proteinToday}/${state.goals.proteinG} g`} onPress={() => go('log', 'intake')} />
+          </Row>
+        </View>
+      </Sheet>
+      <Sheet open={more === 'cheer'} onClose={() => setMore(null)} title={t('home.cheerTitle')}>
+        <CheerCard />
+      </Sheet>
+      <Sheet open={more === 'glucose'} onClose={() => setMore(null)} title={t('home.more.glucose')}>
+        <T1Card />
+      </Sheet>
+      <Sheet open={more === 'summary'} onClose={() => setMore(null)} title={t('home.more.summary')}>
+        <SummaryGrid />
+      </Sheet>
       <CheckinModal open={checkinOpen} onClose={() => setCheckinOpen(false)} />
     </View>
   );

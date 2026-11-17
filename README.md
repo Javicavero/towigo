@@ -46,6 +46,13 @@ npx expo start --web
 
 ## Historial
 
+### 1.12 (Hoy más limpio: subventanas)
+- A la vista, solo lo esencial; el detalle se abre en **subventanas** que suben desde abajo (`src/components/sheet.tsx`).
+- Panel: índice + cifra clave, Owi, lo de "ahora" y una lista corta (Tu semana, Para hoy, Anillos del día, Tu glucosa,
+  Resumen) que abre cada detalle. El mensaje de ánimo de tu gente también se abre al tocarlo.
+- Los otros 6 diseños siguen la misma regla (calendario de dosis, peso por dosis, plan del día, comidas, todo el día,
+  más cifras… en subventanas). El cambio de diseño pasa a un botón en la cabecera.
+
 ### 1.11 (7 diseños de la pantalla Hoy)
 - Hoy tiene un selector arriba con 7 diseños, y Owi está en todos como asistente: **Panel** (por defecto), **Índice**
   (puntuación del día en grande), **Tratamiento** (próxima dosis, calendario de 12 semanas y peso con cada dosis),
