@@ -11,7 +11,7 @@ Documento vivo: lo construimos paso a paso. Cada paso recoge las decisiones toma
 | 5 | Canales y salida al mercado (piloto, primeros 1.000 usuarios) | ✅ Decidido |
 | 6 | Regulación y confianza (Fase 1 vs. producto sanitario, RGPD, evidencia) | ✅ Decidido |
 | 7 | Costes, equipo y métricas clave | ✅ Decidido |
-| 8 | Plan financiero y ronda | ⏳ Siguiente |
+| 8 | Plan financiero y ronda | ✅ Decidido |
 
 ---
 
@@ -483,4 +483,114 @@ alcance de los meses 0–2).
 
 ---
 
-## 8. Plan financiero y ronda *(siguiente paso)*
+## 8. Plan financiero y ronda
+
+> Cifras orientativas para planificar y conversar con inversores. Las condiciones de ayudas y préstamos cambian en cada
+> convocatoria: confirmarlas siempre en la web oficial antes de solicitar.
+
+### Decisión
+| Pregunta | Decisión |
+|---|---|
+| Aportación propia | **Menos de 10.000 €** (Javi y entorno) |
+| Fuente principal del primer año | **Lanzadera** (Valencia) |
+| Empresa que se cede en esta fase | **Hasta un 10 %** |
+| Año 2 | **Ronda semilla** de 500.000–1.000.000 € con los datos del piloto |
+
+### Financiación del primer año (≈ 100.000 €)
+| Fuente | Importe | Condiciones |
+|---|---|---|
+| Aportación propia | ≈ 8.000 € | Capital de la sociedad y primeros gastos (constitución, cuentas, consultora inicial) |
+| **Lanzadera** | ≈ 90.000–100.000 € | Préstamo sin avales a Euríbor + 0 %, por tramos según hitos; programa de ~9 meses con mentoría; hay que instalarse en Marina de Empresas (Valencia). Puede ser préstamo participativo convertible: Lanzadera podría pasar a ser socia (dentro del 10 %) |
+| **Total** | **≈ 100.000 €** | Cubre el presupuesto del paso 7 (≈ 90.000 €) + un sueldo mínimo del fundador desde el mes 4 (≈ 1.000 €/mes) |
+
+**Por qué Lanzadera:** está en la ciudad del piloto, no pide avales ni fondos propios altos (al contrario que ENISA,
+que exige aportar el 50 % de lo que presta), da mentoría y red, y su sector salud está entre los más activos.
+
+**Plan B (si no entramos en Lanzadera o tarda):**
+1. Una ronda pequeña de business angels de hasta el 10 % (p. ej. 60.000–80.000 €), incluyendo al asesor médico si quiere invertir.
+2. Con ese capital, pedir **ENISA Jóvenes Emprendedores** (25.000–75.000 €, sin avales, sin ceder empresa).
+3. Recortar el primer año a lo imprescindible: piloto con 1 clínica, contenido propio, sin campañas pagadas.
+
+### Cuenta de resultados a 3 años (escenario base)
+| | Año 1 (piloto) | Año 2 (Valencia → España) | Año 3 (España) |
+|---|---|---|---|
+| Usuarios al final del año | ≈ 1.000 | ≈ 10.000 | ≈ 40.000 |
+| Suscriptores de pago al final | ≈ 300 | ≈ 3.000 | ≈ 12.000 |
+| Clínicas | 2 → 8 | ≈ 30 | ≈ 100 |
+| Ingresos por suscripciones | ≈ 6.000 € | ≈ 110.000 € | ≈ 500.000 € |
+| Ingresos de clínicas (panel, 49 €/mes por profesional) | 0 € (piloto gratis) | ≈ 25.000 € | ≈ 120.000 € |
+| Otros (primer acuerdo con aseguradora o mutua) | — | — | ≈ 100.000 € |
+| **Ingresos totales** | **≈ 6.000 €** | **≈ 135.000 €** | **≈ 720.000 €** |
+| Equipo | Fundador + freelance + asesores | 5 personas: fundador, 2 desarrollo, éxito de clínicas, marketing | 9–10 personas |
+| **Gastos totales** | **≈ 100.000 €** | **≈ 510.000 €** | **≈ 900.000 €** |
+| Incluye marcado CE (Fase 2) | — | ≈ 60.000 € | ≈ 60.000 € |
+| **Resultado** | **≈ −94.000 €** | **≈ −375.000 €** | **≈ −180.000 €** |
+
+**Punto de equilibrio:** hacia el **año 4** (≈ mes 40), con unos 17.000 suscriptores y 150 clínicas, o antes si llegan
+acuerdos con aseguradoras.
+
+### Ronda semilla (año 2)
+- **Cuándo:** hacia el mes 12–15, con los resultados del piloto (uso, persistencia, conversión, clínicas).
+- **Cuánto:** **750.000 €** (rango 500.000–1.000.000 €). Cubre las pérdidas de los años 2 y 3 (≈ 555.000 €) + margen de seguridad.
+- **Con quién:** fondos de salud digital y de etapa semilla, business angels del sector salud, y **CDTI Neotec 2027**
+  (subvención de hasta el 70 % de un proyecto de 175.000–750.000 €; pide capital social de 20.000 € y menos de 3 años de antigüedad).
+- **Cuánta empresa:** lo habitual en esta fase es ceder **15–20 %**.
+- **Para qué:** equipo propio (técnico y de clínicas), salir a toda España, marcado CE y primer acuerdo con una aseguradora.
+
+### Reparto de la empresa (orientativo)
+| | Tras el año 1 | Tras la ronda semilla |
+|---|---|---|
+| Javi (fundador) | ≈ 90–92 % | ≈ 72–78 % |
+| Asesor médico | ≈ 0,5–1 % | ≈ 0,5–1 % |
+| Lanzadera o business angels (si convierten o invierten) | ≈ 7–9 % | ≈ 6–7 % |
+| Inversores de la ronda semilla | — | ≈ 15–20 % |
+| Reserva para futuro equipo (opciones) | — | ≈ 5–8 % |
+
+### Lo que vale cada cliente
+| Concepto | Valor |
+|---|---|
+| Ingreso neto medio por suscriptor | ≈ 5,60 €/mes |
+| Bajas mensuales (objetivo) | 6 % → vida media ≈ 17 meses |
+| **Valor de un suscriptor en su vida (margen ≈ 85 %)** | **≈ 79 €** |
+| **Coste máximo para conseguir un suscriptor** (para ganar 3 € por cada 1 € invertido) | **≈ 26 €** |
+
+Por eso el canal de clínicas (coste casi cero) y el contenido son la base; los anuncios solo cuando su coste por
+suscriptor esté por debajo de ~26 €.
+
+### Riesgos principales y respuesta
+| Riesgo | Respuesta |
+|---|---|
+| No entrar en Lanzadera | Plan B: business angels (≤ 10 %) + ENISA |
+| Conversión a pago por debajo del 30 % | Ajustar qué es de pago, precio anual, acuerdos para que la clínica incluya Plus en su programa |
+| Los pacientes se van al dejar el fármaco | Modo mantenimiento como pieza central (paso 4) |
+| Retrasos regulatorios | Fase 1 fuera de producto sanitario; consultora desde el día 1 (paso 6) |
+| Dependencia del freelance | Código propio, pruebas y documentación; equipo propio con la ronda semilla (paso 7) |
+| Competidor grande entra en España | Ventaja local: clínicas conectadas, español, marca de la clínica, evidencia propia |
+
+**Fuentes:** [Lanzadera – condiciones de financiación (Emprendedores)](https://www.emprendedores.es/ideas-de-negocio/a32626290/como-aplicar-a-lanzadera-la-aceleradora-de-juan-roig/) ·
+[Lanzadera – programa Traction, préstamo participativo convertible](https://inscripcion.lanzadera.es/hubfs/inscripcion-garaje/traction/Bases-programa-Traction-Nov2019.pdf) ·
+[Lanzadera – startups de salud (Ecosistema Startup)](https://ecosistemastartup.com/?p=105268) ·
+[ENISA Jóvenes Emprendedores (Legálitas)](https://www.legalitas.com/actualidad/enisa-jovenes-emprendedores) ·
+[ENISA 2026 (Ecosistema Startup)](https://ecosistemastartup.com/prestamo-enisa-2026-hasta-15me-sin-ceder-equity/) ·
+[CDTI – preguntas frecuentes Neotec 2026](https://www.cdti.es/sites/default/files/2026-04/faq_neotec_2026_v1.0.pdf) ·
+[Crowe – Neotec 2026](https://www.crowe.com/es/insights/neotec-2026) ·
+[Ministerio de Ciencia – convocatoria Neotec 2026](https://www.ciencia.gob.es/gl/Noticias/2026/abril/MICIU-lanza-convocatoria-NEOTEC-2026.html)
+
+---
+
+## Resumen en una página
+- **Propósito:** hábitos acompañados — *Together we go*.
+- **Misión:** acompañar cada día a las personas con diabetes u obesidad en tratamiento con GLP-1, convirtiendo sus datos
+  en hábitos y conectándolas con su equipo sanitario.
+- **Visión:** plataforma de referencia en España y Europa para el seguimiento diario de las enfermedades metabólicas.
+- **Primer mercado:** personas con obesidad en tratamiento con GLP-1 en clínicas privadas; piloto en **Valencia**.
+- **Problema:** la mitad abandona el tratamiento en el primer año; quien sigue pierde mucho más peso.
+- **Propuesta:** "Saca todo el partido a tu tratamiento y mantén el resultado después"; a la clínica, "tus pacientes
+  siguen el tratamiento y vuelven". Diferencias: **equipo conectado** e **Índice Towigo**.
+- **Ingresos:** freemium, **Towigo Plus 9,99 €/mes o 79,99 €/año**; clínicas gratis en el piloto y 49 €/mes por profesional después.
+- **Canales:** clínicas (código y marca de la clínica en la app), contenido útil, comunidades, farmacias y recomendaciones.
+- **Regulación:** Fase 1 fuera de producto sanitario; RGPD con evaluación de impacto; IA con datos mínimos; estudio con
+  comité de ética; marcado CE en la Fase 2.
+- **Equipo y costes:** fundador a tiempo completo, desarrollo externo, asesor médico y nutricionista; ≈ 100.000 € el primer año.
+- **Financiación:** aportación propia + **Lanzadera** el primer año (≤ 10 % de la empresa); **ronda semilla de ≈ 750.000 €**
+  en el año 2; punto de equilibrio hacia el año 4.
