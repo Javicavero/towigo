@@ -31,9 +31,10 @@ import { useStore } from '../../state/store';
 import { hasDiabetes, isT1, usesGlp1, type HomeLayout } from '../../state/types';
 import { colors, fonts, isDark } from '../../theme';
 
-export const HOME_LAYOUTS: HomeLayout[] = ['panel', 'score', 'treatment', 'program', 'diary', 'timeline', 'summary'];
+export const HOME_LAYOUTS: HomeLayout[] = ['panel', 'pulse', 'score', 'treatment', 'program', 'diary', 'timeline', 'summary'];
 const LAYOUT_ICON: Record<HomeLayout, IconName> = {
   panel: 'home',
+  pulse: 'signal',
   score: 'trophy',
   treatment: 'syringe',
   program: 'check',

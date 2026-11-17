@@ -20,6 +20,7 @@ import Thread from './Thread';
 
 const f1 = (n: number) => n.toFixed(1).replace('.', ',');
 const f2 = (n: number) => (Math.round(n * 100) / 100).toString().replace('.', ',');
+const r2 = (n: number) => Math.round(Math.max(0, n) * 100) / 100;
 type Tab = 'summary' | 'plan' | 'messages' | 'notes';
 
 export default function PatientDetail({ id, tab: initial, onBack }: { id: string; tab?: string; onBack: () => void }) {
@@ -262,6 +263,24 @@ export default function PatientDetail({ id, tab: initial, onBack }: { id: string
 }
 
 /** Editor de pauta y objetivos. Lo que se guarda llega a la app del paciente (y se le avisa con un mensaje). */
+/** Fila con − valor + (definida fuera del editor para no recrearse en cada pulsación). */
+function Num({ label, value, onChange, step, unit }: { label: string; value: number; onChange: (n: number) => void; step: number; unit: string }) {
+  return (
+    <Row style={{ justifyContent: 'space-between', minHeight: 44 }}>
+      <T v="label" style={{ flex: 1 }}>
+        {label}
+      </T>
+      <Row gap={6}>
+        <Choice label="−" style={{ minWidth: 40, minHeight: 36 }} onPress={() => onChange(r2(value - step))} />
+        <T v="label" style={{ minWidth: 80, textAlign: 'center' }}>
+          {f2(value)} {unit}
+        </T>
+        <Choice label="+" style={{ minWidth: 40, minHeight: 36 }} onPress={() => onChange(r2(value + step))} />
+      </Row>
+    </Row>
+  );
+}
+
 function PlanEditor({ id }: { id: string }) {
   const { get, send, role } = usePro();
   const p = get(id)!;
@@ -271,20 +290,6 @@ function PlanEditor({ id }: { id: string }) {
   const [goals, setGoals] = useState(s.goals);
   const [saved, setSaved] = useState(false);
   const r = (n: number) => Math.round(Math.max(0, n) * 100) / 100;
-  const Num = ({ label, value, onChange, step, unit }: { label: string; value: number; onChange: (n: number) => void; step: number; unit: string }) => (
-    <Row style={{ justifyContent: 'space-between', minHeight: 44 }}>
-      <T v="label" style={{ flex: 1 }}>
-        {label}
-      </T>
-      <Row gap={6}>
-        <Choice label="−" style={{ minWidth: 40, minHeight: 36 }} onPress={() => onChange(r(value - step))} />
-        <T v="label" style={{ minWidth: 80, textAlign: 'center' }}>
-          {f2(value)} {unit}
-        </T>
-        <Choice label="+" style={{ minWidth: 40, minHeight: 36 }} onPress={() => onChange(r(value + step))} />
-      </Row>
-    </Row>
-  );
   const save = () => {
     if (usesGlp1(s.profile)) send(id, { type: 'setTitration', steps });
     if (isT1(s.profile)) send(id, { type: 'setInsulinPlan', patch: { basalUnits: basal } });

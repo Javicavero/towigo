@@ -46,6 +46,14 @@ npx expo start --web
 
 ## Historial
 
+### 1.14 (Rendimiento, formato app de recuperación)
+- Nuevo diseño de Hoy **Rendimiento**, sobre negro: tres diales (**Bienestar** de los check-ins, **Índice Towigo** y
+  **Actividad** de 0 a 21 con pasos y fuerza), frase del día y **objetivo de actividad** según tu índice.
+- Subventanas: **estadísticas clave** frente a tu media de 30 días (peso, proteína, pasos, ánimo, glucosa y tiempo en
+  rango), **diario de hoy** (7 hábitos de sí/no), **qué influye en tu índice** (diferencia media entre días con "sí" y
+  con "no"; asociaciones, no causas) y **tendencias** (índice 14 días, actividad 7 días). Lógica en `src/state/journal.ts`.
+- Calidad: 25 avisos de revisión menos (de 99 a 74) y `npm run check` (lo mismo que comprueba GitHub).
+
 ### 1.13 (Tratamiento al estilo de los registros de dosis)
 - Diseño **Tratamiento**: semicírculo del ciclo semanal ("Faltan 5 días" / "Hoy toca inyección") con su botón, y cifras
   de inyecciones, última dosis y semanas seguidas.

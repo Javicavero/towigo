@@ -83,15 +83,19 @@ function demoStart(me: AppState): AppState {
 
 export function PresenterProvider({ go, children }: { go: (t: Tab, s?: LogSection) => void; children: (p: PresenterApi) => ReactNode }) {
   const { state, dispatch } = useStore();
-  const saved = useRef(read());
-  const [aud, setAud] = useState<Audience | null>(saved.current?.aud ?? null);
-  const [i, setI] = useState(saved.current?.i ?? 0);
-  const [auto, setAuto] = useState(saved.current?.auto ?? false);
+  // Lo guardado (si se recargó la página a mitad de la presentación): se lee una vez al montar.
+  const [saved] = useState(read);
+  const [aud, setAud] = useState<Audience | null>(saved?.aud ?? null);
+  const [i, setI] = useState(saved?.i ?? 0);
+  const [auto, setAuto] = useState(saved?.auto ?? false);
   const [mini, setMini] = useState(false);
-  const [sheet, setSheet] = useState(() => !saved.current && wantsDemo());
-  const snapshot = useRef<AppState | null>(saved.current?.snapshot ?? null);
+  const [sheet, setSheet] = useState(() => !saved && wantsDemo());
+  const snapshot = useRef<AppState | null>(saved?.snapshot ?? null);
+  // Último estado, para leerlo en los manejadores y efectos sin volver a crearlos.
   const stateRef = useRef(state);
-  stateRef.current = state;
+  useEffect(() => {
+    stateRef.current = state;
+  });
 
   const steps = useMemo(() => (aud ? stepsFor(aud) : []), [aud]);
   const step = aud ? steps[Math.min(i, steps.length - 1)] : null;
@@ -149,15 +153,13 @@ export function PresenterProvider({ go, children }: { go: (t: Tab, s?: LogSectio
   }, [step?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Avance automático.
+  // En el último paso el avance automático se detiene solo (sin cambiar el estado desde el efecto).
+  const playing = auto && i < steps.length - 1;
   useEffect(() => {
-    if (!step || !auto) return;
-    if (i >= steps.length - 1) {
-      setAuto(false);
-      return;
-    }
+    if (!step || !playing) return;
     const id = setTimeout(next, (step.secs ?? 9) * 1000);
     return () => clearTimeout(id);
-  }, [auto, i, step, steps.length, next]);
+  }, [playing, step, next]);
 
   // Teclado (web): ← → espacio H Esc.
   useEffect(() => {
@@ -186,7 +188,7 @@ export function PresenterProvider({ go, children }: { go: (t: Tab, s?: LogSectio
     step,
     index: i,
     total: steps.length,
-    auto,
+    auto: playing,
     mini,
     sheet,
     next: () => (setAuto(false), next()),

@@ -7,6 +7,7 @@
  */
 import { useEffect, useState } from 'react';
 import { DiaryLayout, LayoutButton, ProgramLayout, ScoreLayout, SummaryLayout, TimelineLayout, TreatmentLayout } from './home/layouts';
+import { PulseLayout } from './home/pulse';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -278,6 +279,7 @@ export default function Home() {
             )}
             {layout !== 'panel' && (
               <FadeIn key={layout}>
+                {layout === 'pulse' && <PulseLayout onOpenScore={() => setScoreOpen(true)} />}
                 {layout === 'score' && <ScoreLayout onOpenScore={() => setScoreOpen(true)} />}
                 {layout === 'treatment' && <TreatmentLayout />}
                 {layout === 'program' && <ProgramLayout />}

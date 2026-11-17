@@ -35,6 +35,7 @@ import {
   usesGlp1,
   type AppState,
   type HomeLayout,
+  type JournalQ,
   type Avatar,
   type CheckIn,
   type CrewPerms,
@@ -244,6 +245,7 @@ export type Action =
   | { type: 'ringsDone'; day: string }
   | { type: 'checkinPrompted'; day: string }
   | { type: 'setHomeLayout'; layout: HomeLayout }
+  | { type: 'journal'; q: JournalQ; v: boolean | null }
   | { type: 'setNotifications'; patch: Partial<AppState['notifications']> }
   | { type: 'hydrate'; state: AppState }
   | { type: 'setConsents'; consents: Consents }
@@ -316,6 +318,13 @@ export function reducer(s: AppState, a: Action): AppState {
       return { ...s, notifications: { ...s.notifications, ...a.patch } };
     case 'seenLevel':
       return { ...s, petLevelSeen: a.level };
+    case 'journal': {
+      const day = dayKey(Date.now());
+      const cur = { ...(s.journal?.[day] ?? {}) };
+      if (a.v === null) delete cur[a.q];
+      else cur[a.q] = a.v;
+      return { ...s, journal: { ...(s.journal ?? {}), [day]: cur } };
+    }
     case 'setHomeLayout':
       return { ...s, homeLayout: a.layout };
     case 'checkinPrompted':

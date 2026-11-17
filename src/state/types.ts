@@ -4,7 +4,9 @@ import type { AccessoryId, BODY_TYPES, BROWS, FACE_SHAPES, FACIAL_HAIR, GLASSES,
 /** Los cuatro caminos de la app. */
 export type Profile = 't1' | 't2' | 'glp1' | 't2_glp1';
 /** Diseño elegido para la pantalla Hoy. */
-export type HomeLayout = 'panel' | 'score' | 'treatment' | 'program' | 'diary' | 'timeline' | 'summary';
+export type HomeLayout = 'panel' | 'pulse' | 'score' | 'treatment' | 'program' | 'diary' | 'timeline' | 'summary';
+/** Preguntas del diario de hábitos (sí/no). */
+export type JournalQ = 'proteinBreakfast' | 'sleep7' | 'walk30' | 'water' | 'alcohol' | 'stress' | 'eatOut';
 export const usesGlp1 = (p: Profile) => p === 'glp1' || p === 't2_glp1';
 /** Lleva control de glucosa (tipo 1 o tipo 2). */
 export const hasDiabetes = (p: Profile) => p !== 'glp1';
@@ -219,6 +221,8 @@ export type AppState = {
   checkinPromptedOn?: string | null;
   /** Diseño de la pantalla Hoy (por defecto, el panel). */
   homeLayout?: HomeLayout;
+  /** Diario de hábitos: respuestas sí/no por día. */
+  journal?: Record<string, Partial<Record<JournalQ, boolean>>>;
   lastOpenAt: string | null;
   previousOpenAt: string | null;
   dataSource: 'demo' | 'dexcom';

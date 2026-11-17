@@ -4,7 +4,7 @@ import { t } from '../src/i18n';
 import { initialState, reducer } from '../src/state/logic';
 import type { HomeLayout } from '../src/state/types';
 
-const LAYOUTS: HomeLayout[] = ['panel', 'score', 'treatment', 'program', 'diary', 'timeline', 'summary'];
+const LAYOUTS: HomeLayout[] = ['panel', 'pulse', 'score', 'treatment', 'program', 'diary', 'timeline', 'summary'];
 
 test('se puede elegir cualquier diseño de Hoy y todos tienen nombre y descripción', () => {
   let s = initialState();
