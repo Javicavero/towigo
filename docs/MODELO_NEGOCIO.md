@@ -10,8 +10,8 @@ Documento vivo: lo construimos paso a paso. Cada paso recoge las decisiones toma
 | 4 | Modelo de ingresos y precios | ✅ Decidido |
 | 5 | Canales y salida al mercado (piloto, primeros 1.000 usuarios) | ✅ Decidido |
 | 6 | Regulación y confianza (Fase 1 vs. producto sanitario, RGPD, evidencia) | ✅ Decidido |
-| 7 | Costes, equipo y métricas clave | ⏳ Siguiente |
-| 8 | Plan financiero y ronda | Pendiente |
+| 7 | Costes, equipo y métricas clave | ✅ Decidido |
+| 8 | Plan financiero y ronda | ⏳ Siguiente |
 
 ---
 
@@ -411,4 +411,76 @@ prepare la hoja de ruta del marcado CE.
 
 ---
 
-## 7. Costes, equipo y métricas clave *(siguiente paso)*
+## 7. Costes, equipo y métricas clave
+
+### Decisión
+| Pregunta | Decisión |
+|---|---|
+| Fundador | **Javi a dedicación completa** como CEO: clínicas, pacientes, piloto, inversores y producto |
+| Tecnología | **Freelance o agencia**, por proyecto |
+| Parte clínica | **Asesor médico (endocrino) + nutricionista** |
+| Presupuesto primer año | **Ajustado: menos de 100.000 €** |
+
+### Equipo del primer año
+| Papel | Quién | Dedicación | Cómo se paga |
+|---|---|---|---|
+| CEO / producto | Javi | Completa | Sueldo mínimo o ninguno el primer año (ver presupuesto) |
+| Desarrollo (app, nube, seguridad) | Freelance o agencia de React Native / Expo | ≈ 400 h en los meses 0–2; ≈ 40 h/mes después | Por horas o por proyecto |
+| Asesor médico | Endocrino (idealmente de la clínica del piloto o cercano) | 4–6 h/mes | Pequeño pago + participación (≈ 0,5–1 %, a 2 años) |
+| Contenido y nutrición | Nutricionista | ≈ 20 h/mes desde el mes 3 | Por horas |
+| Regulación y datos | Consultora externa (paso 6) | Por proyecto + delegado de protección de datos | Por proyecto + cuota |
+| Administración | Gestoría | Mensual | Cuota |
+
+**Riesgo del modelo freelance:** el conocimiento de la app queda fuera de la empresa. **Cómo lo cubrimos:** el código es
+siempre de Towigo (repositorio propio), con pruebas automáticas y documentación (ya existen), contrato con cesión de
+derechos y entregas pequeñas revisadas. **Cuando llegue la financiación del paso 8**, incorporar un perfil técnico
+fijo o un cofundador técnico.
+
+### Presupuesto del primer año (estimación)
+| Partida | Importe | Notas |
+|---|---|---|
+| Desarrollo — preparación (meses 0–2) | 18.000 € | ≈ 400 h × 45 €/h: cuentas y nube, sincronización, suscripciones, código y marca de clínica, cambios del paso 6 |
+| Desarrollo — mejoras y mantenimiento (meses 3–12) | 16.000 € | ≈ 40 h/mes × 9 meses × 45 €/h |
+| Prueba de seguridad externa | 4.000 € | Antes del piloto |
+| Nube, tiendas y herramientas | 1.500 € | Base de datos y servidor en la UE, compilación, cuentas de Apple y Google, dominio y correo |
+| Asistente con IA | 1.500 € | Provisión; se ajusta con el uso real (datos mínimos por pregunta) |
+| Consultora: producto sanitario + RGPD | 12.000 € | Análisis de producto sanitario, evaluación de impacto, textos legales, contratos y delegado de protección de datos |
+| Estudio del piloto | 4.000 € | Tasas del comité de ética, análisis estadístico, publicación |
+| Asesor médico | 3.600 € | ≈ 300 €/mes + participación |
+| Nutricionista (contenido) | 6.000 € | Meses 3–12 |
+| Contenido y marketing | 8.000 € | Diseño, vídeo, material para clínicas y farmacias, campañas pequeñas en los meses 9–12 |
+| Empresa y administración | 5.000 € | Constitución de la sociedad, gestoría, seguro de responsabilidad civil, registro de la marca Towigo |
+| Viajes y eventos | 2.000 € | Clínicas, farmacias, congresos |
+| **Subtotal** | **81.600 €** | |
+| Imprevistos (10 %) | 8.200 € | |
+| **Total primer año** | **≈ 90.000 €** | **Sin sueldo del fundador** |
+
+**El sueldo de Javi** (p. ej. 1.500 €/mes = 18.000 €/año) llevaría el total a ≈ 108.000 €. Para quedarse por debajo de
+100.000 € hay que cubrirlo con ayudas o capitalización de la prestación por desempleo (si aplica), o empezar a cobrar
+cuando entre la financiación. Se decide en el paso 8.
+
+**Ingresos del primer año** (paso 4): pequeños (≈ 300 suscriptores al mes 12 ≈ 20.000 €/año a ese ritmo). El primer año
+se financia con fondos propios, ayudas y una ronda pequeña.
+
+### Métricas clave (las que miramos cada semana)
+**Métrica principal:** **pacientes activos cada semana que siguen su tratamiento** (registran su inyección o su
+mantenimiento). Une la misión (hábitos acompañados) con el negocio.
+
+| Área | Métrica | Objetivo inicial |
+|---|---|---|
+| Activación | % que en la primera semana conecta con su clínica y hace 3 registros | ≥ 70 % |
+| Retención | % que sigue usando la app en la semana 4 y en la semana 12 | ≥ 70 % / ≥ 60 % |
+| Persistencia | % que sigue el tratamiento a 3 y 6 meses (estudio) | Mejor que la referencia de la clínica |
+| Conversión | % de pruebas gratuitas que pasan a pago | ≥ 30 % |
+| Bajas | % de suscriptores que se dan de baja cada mes | ≤ 6 % |
+| Clínicas | Clínicas activas y profesionales que usan el panel cada semana | 2 en el piloto → 5–10 al mes 12 |
+| Satisfacción | Recomendación de pacientes y profesionales (NPS) | ≥ 40 |
+| Eficiencia | Coste por usuario captado (canales con gasto) y coste de nube + IA por usuario activo | Por debajo de lo que deja cada suscriptor |
+| Caja | Meses de caja que quedan | Siempre ≥ 6 meses |
+
+*Por decidir:* nombres del asesor médico y del nutricionista; elegir freelance o agencia (pedir 2–3 presupuestos con el
+alcance de los meses 0–2).
+
+---
+
+## 8. Plan financiero y ronda *(siguiente paso)*
