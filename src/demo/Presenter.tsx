@@ -405,10 +405,19 @@ function Pillar({ icon, text, color }: { icon: IconName; text: string; color: st
   );
 }
 
+/** Marca: tile con degradado y el icono de señal (producto tecnológico; Owi no protagoniza la portada). */
+function BrandMark({ size = 72 }: { size?: number }) {
+  return (
+    <LinearGradient colors={['#7C6CFF', '#3DE0C8']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ width: size, height: size, borderRadius: size * 0.3, alignItems: 'center', justifyContent: 'center' }}>
+      <Icon name="signal" size={size * 0.5} color="#FFFFFF" stroke={2.4} />
+    </LinearGradient>
+  );
+}
+
 export function CoverSlide() {
   return (
     <Slide>
-      <OwiSprite mood="happy" size={240} />
+      <BrandMark />
       <T v="title" center style={{ fontSize: 40, lineHeight: 46 }}>
         Towigo
       </T>
@@ -416,8 +425,8 @@ export function CoverSlide() {
         {t('pres.cover.tag')}
       </T>
       <View style={{ alignSelf: 'stretch', gap: 10, marginTop: 6 }}>
-        <Pillar icon="smile" text={t('pres.cover.p1')} color="#7C6CFF" />
-        <Pillar icon="trophy" text={t('pres.cover.p2')} color="#14B8A6" />
+        <Pillar icon="signal" text={t('pres.cover.p1')} color="#7C6CFF" />
+        <Pillar icon="chat" text={t('pres.cover.p2')} color="#14B8A6" />
         <Pillar icon="steth" text={t('pres.cover.p3')} color="#E5487F" />
       </View>
     </Slide>
@@ -434,7 +443,7 @@ export function OwiShowSlide() {
   return (
     <Slide>
       <Pressable accessibilityRole="button" accessibilityLabel={t('pres.owi.tap')} onPress={() => setK((x) => x + 1)}>
-        <OwiSprite mood={mood} size={280} />
+        <OwiSprite mood={mood} size={220} />
       </Pressable>
       <Pop trigger={mood}>
         <T v="title" center>
@@ -472,7 +481,7 @@ export function OwiShowSlide() {
 export function EndSlide({ p }: { p: PresenterApi }) {
   return (
     <Slide>
-      <OwiSprite mood="celebrate" size={220} />
+      <BrandMark size={60} />
       <T v="title" center style={{ fontSize: 34, lineHeight: 40 }}>
         {t('pres.s.end.title')}
       </T>

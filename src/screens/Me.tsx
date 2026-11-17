@@ -198,7 +198,9 @@ export default function Me() {
           onPress={presenter.openSheet}
           style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 18, backgroundColor: colors.greenText, opacity: pressed ? 0.85 : 1 })}
         >
-          <OwiSticker mood="happy" size={44} />
+          <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' }}>
+            <Icon name="demo" size={22} color={colors.onAccent} />
+          </View>
           <View style={{ flex: 1 }}>
             <T v="label" color={colors.onAccent}>
               {t('pres.entry')}
@@ -207,7 +209,7 @@ export default function Me() {
               {t('pres.entrySub')}
             </T>
           </View>
-          <Icon name="play" size={22} color={colors.onAccent} />
+          <Icon name="next" size={22} color={colors.onAccent} />
         </Pressable>
       )}
       {FLAGS.demoScenarios && (

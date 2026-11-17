@@ -46,6 +46,12 @@ npx expo start --web
 
 ## Historial
 
+### 1.8 (más profesional: los datos mandan)
+- **Hoy** es un panel de datos: anillos del día y la cifra clave de cada perfil (próxima inyección, glucosa ahora con
+  tendencia, tiempo en rango o peso). Owi pasa a segundo plano como **asistente**, en una tarjeta pequeña con su dato del día.
+- Cabeceras de Registrar, Progreso, Equipo y Yo sin el Owi grande; su frase va en una línea discreta.
+- Modo presentación con portada de producto (sin Owi protagonista); la galería de Owi solo en el recorrido completo.
+
 ### 1.7 (modo presentación)
 - **Enseñar la demo**: recorrido guiado que mueve la app solo. En cada paso carga el perfil y la situación de ejemplo
   (GLP-1, tipo 1, efectos secundarios, glucosa baja, logro…), abre la pantalla y muestra qué contar.

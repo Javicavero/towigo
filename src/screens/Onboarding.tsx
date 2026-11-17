@@ -120,8 +120,8 @@ export default function Onboarding() {
           <View style={{ borderRadius: 28, overflow: 'hidden', borderWidth: 1, borderColor: colors.line }}>
             <LinearGradient colors={[gradients.hero[0], colors.cream]} style={{ alignItems: 'center', paddingTop: 8 }}>
               <Row style={{ justifyContent: 'center', alignItems: 'flex-end' }}>
-                {pair && <AvatarFace avatar={d.owiAvatar} size={130} expression={step === 'commit' ? 'big' : 'smile'} />}
-                <OwiAnimated mood={STEP_MOOD[step]} level={1} size={pair ? 200 : 250} label={t('owi.a11y', { name: owi })} />
+                {pair && <AvatarFace avatar={d.owiAvatar} size={100} expression={step === 'commit' ? 'big' : 'smile'} />}
+                <OwiAnimated mood={STEP_MOOD[step]} level={1} size={pair ? 140 : 170} label={t('owi.a11y', { name: owi })} />
               </Row>
             </LinearGradient>
           </View>

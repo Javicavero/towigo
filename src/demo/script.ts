@@ -45,7 +45,7 @@ export const STEPS: Step[] = [
   { id: 't1Log', chapter: 't1', view: 'log', section: 'insulin', profile: 't1', scenario: 'normal', reminder: null, secs: 9, audiences: ['full', 'patients'] },
   { id: 'team', chapter: 'team', view: 'team', profile: 'glp1', scenario: 'normal', reminder: null, secs: 10, audiences: ['full', 'patients', 'clinic'] },
   { id: 'me', chapter: 'team', view: 'me', profile: 'glp1', scenario: 'normal', secs: 9, audiences: ['full', 'patients'] },
-  { id: 'owiShow', chapter: 'owi', view: 'owiShow', secs: 14, audiences: ['full', 'patients', 'quick'] },
+  { id: 'owiShow', chapter: 'owi', view: 'owiShow', secs: 10, audiences: ['full'] },
   { id: 'pro', chapter: 'clinic', view: 'pro', profile: 'glp1', scenario: 'sideEffects', secs: 12, audiences: ['full', 'clinic', 'quick'] },
   { id: 'proPatient', chapter: 'clinic', view: 'proPatient', profile: 'glp1', scenario: 'sideEffects', secs: 12, audiences: ['full', 'clinic'] },
   { id: 'end', chapter: 'close', view: 'end', secs: 10, audiences: ALL },

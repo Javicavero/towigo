@@ -1,22 +1,24 @@
 /**
- * Hoy — Owi es el protagonista.
- * Escenario a pantalla completa: Owi animado (marioneta 2D tipo GIF) dentro de los anillos del día,
- * con su frase basada en tus datos y acciones rápidas. Debajo: lo que toca hoy y el resumen.
+ * Hoy — panel de datos del día.
+ * Arriba, los anillos del día y la cifra clave de cada perfil (glucosa, próxima inyección o peso).
+ * Owi queda como asistente discreto: una tarjeta con su frase basada en tus datos y acciones rápidas.
+ * Debajo: lo que toca hoy y el resumen.
  * Fase 1 (§8.2): datos, tendencias, hábitos y comunicación. Nunca indicaciones clínicas automáticas.
  */
 import { useEffect, useState } from 'react';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, ScrollView, View } from 'react-native';
+import Svg, { Circle } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AvatarBadge from '../components/AvatarBadge';
 import { CheckinCard } from '../components/checkin';
 import { CheerCard } from '../components/crew';
 import { Icon } from '../components/icons';
 import { Burst, FadeIn, Pop } from '../components/motion';
-import OwiAnimated from '../components/OwiAnimated';
-import OwiStage from '../components/OwiStage';
+import OwiSprite from '../components/OwiSprite';
 import { MaintenanceCard, SupportCard } from '../components/program';
 import { RING, useDayRings } from '../components/rings';
-import { T1Card } from '../components/t1';
+import { glucoseColor, T1Card, TREND_ARROW } from '../components/t1';
 import { SummaryGrid, TodayList } from '../components/today';
 import { Button, Row, SectionTitle, T } from '../components/ui';
 import { STEPS_TODAY } from '../data/mock';
@@ -24,7 +26,7 @@ import { owiLine } from '../owi/voice';
 import { t } from '../i18n';
 import { useNav } from '../nav';
 import { useStore } from '../state/store';
-import { isT1 } from '../state/types';
+import { hasDiabetes, isT1, usesGlp1 } from '../state/types';
 import { colors, fonts, isDark } from '../theme';
 
 function greeting() {
@@ -41,9 +43,6 @@ function useOwiLine(poke: number) {
   return { message, reminder };
 }
 
-/** Registros vistos la última vez que se abrió Hoy (para que Owi celebre al volver de Registrar). */
-let lastSeenLogs = -1;
-
 function Stat({ color, label, value, onPress }: { color: string; label: string; value: string; onPress: () => void }) {
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={`${label}: ${value}`} onPress={onPress} style={({ pressed }) => ({ flex: 1, alignItems: 'center', gap: 2, opacity: pressed ? 0.6 : 1 })}>
@@ -58,6 +57,62 @@ function Stat({ color, label, value, onPress }: { color: string; label: string; 
   );
 }
 
+const fmt1 = (n: number) => (Math.round(n * 10) / 10).toString().replace('.', ',');
+
+/** Anillos compactos del día (plan · movimiento · proteína). */
+function MiniRings({ rings, size = 124 }: { rings: { plan: number; move: number; food: number }; size?: number }) {
+  const c0 = size / 2;
+  const w = size * 0.085;
+  const arc = (r: number, v: number, color: string) => {
+    const c = 2 * Math.PI * r;
+    return (
+      <>
+        <Circle cx={c0} cy={c0} r={r} stroke={color} strokeOpacity={isDark ? 0.2 : 0.16} strokeWidth={w} fill="none" />
+        {v > 0.02 && <Circle cx={c0} cy={c0} r={r} stroke={color} strokeWidth={w} fill="none" strokeLinecap="round" strokeDasharray={`${Math.min(1, v) * c} ${c}`} transform={`rotate(-90 ${c0} ${c0})`} />}
+      </>
+    );
+  };
+  return (
+    <View accessible accessibilityLabel={t('rings.a11y', { p: Math.round(rings.plan * 100), m: Math.round(rings.move * 100), f: Math.round(rings.food * 100) })}>
+      <Svg width={size} height={size}>
+        {arc(c0 - w * 0.6, rings.plan, RING.plan)}
+        {arc(c0 - w * 1.85, rings.move, RING.move)}
+        {arc(c0 - w * 3.1, rings.food, RING.food)}
+      </Svg>
+    </View>
+  );
+}
+
+/** La cifra que más importa hoy según el perfil. */
+function useKeyMetric() {
+  const { state, d } = useStore();
+  const g = d.lastGlucose;
+  const ago = g ? Math.round((Date.now() - new Date(g.at).getTime()) / 60e3) : 0;
+  const weight = d.weightNow !== null ? { label: t('sum.weight'), value: fmt1(d.weightNow), unit: 'kg', sub: d.lostKg > 0 ? t('sum.lost', { kg: fmt1(d.lostKg) }) : '' } : null;
+  if (isT1(state.profile) && g)
+    return {
+      main: { label: t('home.glucoseNow'), value: String(g.v), unit: 'mg/dL', arrow: d.trend ? TREND_ARROW[d.trend] : '', color: glucoseColor(g.v), sub: ago <= 1 ? t('t1.now') : t('home.ago', { min: ago }) },
+      side: { label: t('home.tirShort'), value: `${d.tir24}`, unit: '%', sub: t('home.tir24') },
+    };
+  if (usesGlp1(state.profile) && !d.maintenance && d.nextInjectionAt) {
+    const when = new Date(d.nextInjectionAt);
+    return {
+      main: {
+        label: t('sum.injection'),
+        value: d.injectedToday ? t('home.injDone') : d.daysToInjection === 0 ? t('sum.today') : t('home.inDays', { n: d.daysToInjection ?? 0 }),
+        unit: '',
+        arrow: '',
+        color: d.injectionOverdue ? colors.coralText : colors.ink,
+        sub: d.injectedToday ? t('sum.injDone') : `${when.toLocaleDateString('es-ES', { weekday: 'long' })} · ${when.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`,
+      },
+      side: weight,
+    };
+  }
+  if (hasDiabetes(state.profile) && g)
+    return { main: { label: t('sum.glucose'), value: String(g.v), unit: 'mg/dL', arrow: '', color: glucoseColor(g.v), sub: t(`ctx.${g.context}`) }, side: weight };
+  return { main: weight ? { ...weight, arrow: '', color: colors.ink } : null, side: null };
+}
+
 export default function Home() {
   const { state, dispatch, d } = useStore();
   const { go } = useNav();
@@ -69,51 +124,30 @@ export default function Home() {
   const reminder = owi.reminder;
   const message = !reminder && rings.plan >= 1 && rings.move >= 1 && rings.food >= 1 && !poke ? t('owi.ringsDone') : owi.message;
   const rawDate = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
-  const [reactTick, setReactTick] = useState(0);
   const [burst, setBurst] = useState(0);
   const allRings = rings.plan >= 1 && rings.move >= 1 && rings.food >= 1;
-  const leveledUp = d.petLevel > state.petLevelSeen;
+  const km = useKeyMetric();
 
-  // Owi celebra cuando vuelves de registrar algo.
-  useEffect(() => {
-    if (lastSeenLogs >= 0 && state.logsToday > lastSeenLogs) {
-      const id = setTimeout(() => setReactTick((x) => x + 1), 350);
-      lastSeenLogs = state.logsToday;
-      return () => clearTimeout(id);
-    }
-    lastSeenLogs = state.logsToday;
-  }, [state.logsToday]);
-  // Tres anillos completos: confeti una vez al día.
+  // Tres anillos completos: confeti discreto una vez al día.
   useEffect(() => {
     if (allRings && state.ringsDoneOn !== state.day) {
       dispatch({ type: 'ringsDone', day: state.day });
       setBurst((x) => x + 1);
-      setReactTick((x) => x + 1);
     }
   }, [allRings, state.ringsDoneOn, state.day]); // eslint-disable-line react-hooks/exhaustive-deps
-  // Datos antiguos con un nivel visto mayor que el actual: se ajusta sin celebrar.
+  // El nivel de Owi se actualiza sin interrumpir (se ve en Yo → Owi).
   useEffect(() => {
-    if (state.petLevelSeen > d.petLevel) dispatch({ type: 'seenLevel', level: d.petLevel });
-    if (leveledUp) setBurst((x) => x + 1);
+    if (state.petLevelSeen !== d.petLevel) dispatch({ type: 'seenLevel', level: d.petLevel });
   }, [d.petLevel]); // eslint-disable-line react-hooks/exhaustive-deps
-  const lvName = t(`bond.lv${d.petLevel}`);
 
+  const panel = isDark ? 'rgba(255,255,255,0.045)' : 'rgba(255,255,255,0.82)';
+  const border = isDark ? 'rgba(255,255,255,0.09)' : 'rgba(27,22,48,0.07)';
   return (
     <View style={{ flex: 1, backgroundColor: colors.cream }}>
       <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
-        <OwiStage
-          mood={d.petMood}
-          level={d.petLevel}
-          rings={rings}
-          size={300}
-          top={insets.top + 64}
-          reactKey={reactTick}
-          onPressOwi={() => setPoke((p) => p + 1)}
-          label={t(`owi.mood.${d.petMood}`, { name: state.pet.name })}
-          levelInfo={{ label: t('owi.level', { n: d.petLevel, name: lvName }), progress: d.petProgress, a11y: t('owi.levelA11y', { owi: state.pet.name, n: d.petLevel, name: lvName, pct: Math.round(d.petProgress * 100) }) }}
-        >
-          {/* Cabecera flotante sobre el escenario */}
-          <View style={{ position: 'absolute', top: insets.top + 12, left: 0, right: 0, paddingHorizontal: 18, maxWidth: 560, alignSelf: 'center', width: '100%' }}>
+        <LinearGradient colors={isDark ? ['#141A3A', colors.cream] : ['#E9E3FF', colors.cream]} style={{ paddingTop: insets.top + 12, paddingBottom: 6 }}>
+          <View style={{ width: '100%', maxWidth: 560, alignSelf: 'center', paddingHorizontal: 16, gap: 14 }}>
+            {/* Cabecera */}
             <Row style={{ justifyContent: 'space-between' }}>
               <View>
                 <T v="small" color={colors.secondary} style={{ fontFamily: fonts.medium, letterSpacing: 0.6, fontSize: 11 }}>
@@ -126,7 +160,7 @@ export default function Home() {
                   accessibilityRole="button"
                   accessibilityLabel={t('home.streakA11y', { n: d.streak })}
                   onPress={() => go('progress')}
-                  style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.7)', paddingHorizontal: 10, height: 34, borderRadius: 17, opacity: pressed ? 0.7 : 1 })}
+                  style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: panel, borderWidth: 1, borderColor: border, paddingHorizontal: 10, height: 34, borderRadius: 17, opacity: pressed ? 0.7 : 1 })}
                 >
                   <Icon name="flame" size={16} color={colors.coralDark} />
                   <T v="label">{d.streak}</T>
@@ -134,54 +168,111 @@ export default function Home() {
                 <AvatarBadge avatar={d.owiAvatar} size={36} onPress={() => go('me')} label={t('avatar.you', { name })} />
               </Row>
             </Row>
-          </View>
 
-          {/* Frase de Owi */}
-          <View style={{ width: '100%', maxWidth: 560, paddingHorizontal: 18, gap: 12, marginTop: -6, paddingBottom: 18 }}>
-            <Pop trigger={message}>
-              <View style={{ alignItems: 'center', gap: 4 }}>
-                <T v="small" color={colors.greenText} style={{ fontFamily: fonts.semibold, letterSpacing: 0.6, fontSize: 11 }}>
-                  {state.pet.name.toUpperCase()}
-                </T>
-                <T v="h2" center style={{ fontSize: 20, lineHeight: 27 }}>
-                  {message}
-                </T>
+            {/* Panel del día: anillos + cifra clave */}
+            <FadeIn>
+              <View style={{ backgroundColor: panel, borderWidth: 1, borderColor: border, borderRadius: 24, padding: 16, gap: 14 }}>
+                <Row gap={16}>
+                  <MiniRings rings={rings} />
+                  <View style={{ flex: 1, gap: 10 }}>
+                    {km.main && (
+                      <Pressable accessibilityRole="button" accessibilityLabel={`${km.main.label}: ${km.main.value} ${km.main.unit}`} onPress={() => go(isT1(state.profile) ? 'progress' : usesGlp1(state.profile) ? 'log' : 'progress', usesGlp1(state.profile) && !isT1(state.profile) ? 'injection' : undefined)}>
+                        <T v="small" color={colors.secondary} style={{ fontFamily: fonts.semibold, fontSize: 11, letterSpacing: 0.6 }}>
+                          {km.main.label.toUpperCase()}
+                        </T>
+                        <Row gap={6} style={{ alignItems: 'flex-end' }}>
+                          <T v="display" color={km.main.color} style={{ fontSize: 34, lineHeight: 40 }}>
+                            {km.main.value}
+                          </T>
+                          {!!km.main.arrow && (
+                            <T v="h2" color={km.main.color} style={{ paddingBottom: 5 }}>
+                              {km.main.arrow}
+                            </T>
+                          )}
+                          {!!km.main.unit && (
+                            <T v="small" color={colors.secondary} style={{ paddingBottom: 7 }}>
+                              {km.main.unit}
+                            </T>
+                          )}
+                        </Row>
+                        {!!km.main.sub && (
+                          <T v="small" color={colors.secondary}>
+                            {km.main.sub}
+                          </T>
+                        )}
+                      </Pressable>
+                    )}
+                    {km.side && (
+                      <Row gap={8} style={{ paddingTop: 8, borderTopWidth: 1, borderTopColor: border }}>
+                        <T v="small" color={colors.secondary} style={{ flex: 1 }}>
+                          {km.side.label}
+                        </T>
+                        <T v="label" style={{ fontFamily: fonts.semibold }}>
+                          {km.side.value}
+                          {km.side.unit ? ` ${km.side.unit}` : ''}
+                        </T>
+                      </Row>
+                    )}
+                  </View>
+                </Row>
+                <Row style={{ borderTopWidth: 1, borderTopColor: border, paddingTop: 12 }}>
+                  <Stat color={RING.plan} label={t('rings.plan')} value={`${rings.tasksDone}/${rings.tasksTotal}`} onPress={() => go('log')} />
+                  <Stat color={RING.move} label={t('rings.move')} value={STEPS_TODAY.toLocaleString('es-ES')} onPress={() => go('progress')} />
+                  <Stat color={RING.food} label={t('rings.food')} value={`${d.proteinToday}/${state.goals.proteinG} g`} onPress={() => go('log', 'intake')} />
+                </Row>
               </View>
-            </Pop>
-            {reminder ? (
-              <Row gap={8}>
-                <Button
-                  style={{ flex: 1, minHeight: 44 }}
-                  label={t(`rem.done.${reminder.kind}`)}
-                  onPress={() => {
-                    dispatch({ type: 'reminderDone', id: reminder.id, kind: reminder.kind });
-                    if (reminder.kind === 'injection') go('log', 'injection');
-                    if (reminder.kind === 'weigh') go('log', 'weight');
-                    if (reminder.kind === 'meal') go('log', 'intake');
-                    if (reminder.kind === 'meds') go('log', 'meds');
-                    if (reminder.kind === 'insulin') go('log', 'insulin');
-                  }}
-                />
-                <Button style={{ flex: 1, minHeight: 44 }} kind="secondary" label={t('rem.later')} onPress={() => dispatch({ type: 'snooze', id: reminder.id, minutes: 15 })} />
-              </Row>
-            ) : (
-              <Row gap={8} style={{ justifyContent: 'center' }}>
-                <Button style={{ minHeight: 44, paddingHorizontal: 22 }} label={t('home.talkOwi', { owi: state.pet.name })} onPress={() => go('owi')} icon={<Icon name="chat" size={18} color={colors.onAccent} />} />
-                <Button style={{ minHeight: 44, paddingHorizontal: 18 }} kind="secondary" label={t('home.quickLog')} onPress={() => go('log')} icon={<Icon name="plus" size={18} color={colors.greenText} />} />
-              </Row>
-            )}
-            <Row style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.65)', borderRadius: 16, paddingVertical: 10 }}>
-              <Stat color={RING.plan} label={t('rings.plan')} value={t('rings.planValue', { a: rings.tasksDone, b: rings.tasksTotal })} onPress={() => go('log')} />
-              <Stat color={RING.move} label={t('rings.move')} value={STEPS_TODAY.toLocaleString('es-ES')} onPress={() => go('progress')} />
-              <Stat color={RING.food} label={t('rings.food')} value={`${d.proteinToday}/${state.goals.proteinG} g`} onPress={() => go('log', 'intake')} />
-            </Row>
-          </View>
-        </OwiStage>
+            </FadeIn>
 
-        <View style={{ width: '100%', maxWidth: 560, alignSelf: 'center', paddingHorizontal: 16, gap: 12, marginTop: 6 }}>
+            {/* Asistente: Owi en segundo plano, con su frase basada en tus datos */}
+            <View style={{ backgroundColor: panel, borderWidth: 1, borderColor: border, borderRadius: 20, padding: 14, gap: 12 }}>
+              <Row gap={12} style={{ alignItems: 'flex-start' }}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={t('home.nextTip', { owi: state.pet.name })}
+                  onPress={() => setPoke((p) => p + 1)}
+                  style={{ width: 48, height: 48, borderRadius: 16, backgroundColor: colors.softGreen, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}
+                >
+                  <OwiSprite mood={d.petMood} size={54} />
+                </Pressable>
+                <View style={{ flex: 1, gap: 2 }}>
+                  <T v="small" color={colors.greenText} style={{ fontFamily: fonts.semibold, letterSpacing: 0.5, fontSize: 11 }}>
+                    {t('home.assistant', { owi: state.pet.name }).toUpperCase()}
+                  </T>
+                  <Pop trigger={message}>
+                    <T style={{ fontSize: 15, lineHeight: 21 }}>{message}</T>
+                  </Pop>
+                </View>
+              </Row>
+              {reminder ? (
+                <Row gap={8}>
+                  <Button
+                    style={{ flex: 1, minHeight: 42 }}
+                    label={t(`rem.done.${reminder.kind}`)}
+                    onPress={() => {
+                      dispatch({ type: 'reminderDone', id: reminder.id, kind: reminder.kind });
+                      if (reminder.kind === 'injection') go('log', 'injection');
+                      if (reminder.kind === 'weigh') go('log', 'weight');
+                      if (reminder.kind === 'meal') go('log', 'intake');
+                      if (reminder.kind === 'meds') go('log', 'meds');
+                      if (reminder.kind === 'insulin') go('log', 'insulin');
+                    }}
+                  />
+                  <Button style={{ flex: 1, minHeight: 42 }} kind="secondary" label={t('rem.later')} onPress={() => dispatch({ type: 'snooze', id: reminder.id, minutes: 15 })} />
+                </Row>
+              ) : (
+                <Row gap={8}>
+                  <Button style={{ flex: 1, minHeight: 42 }} label={t('home.quickLog')} onPress={() => go('log')} icon={<Icon name="plus" size={18} color={colors.onAccent} />} />
+                  <Button style={{ flex: 1, minHeight: 42 }} kind="secondary" label={t('home.ask')} onPress={() => go('owi')} icon={<Icon name="chat" size={18} color={colors.greenText} />} />
+                </Row>
+              )}
+            </View>
+          </View>
+        </LinearGradient>
+
+        <View style={{ width: '100%', maxWidth: 560, alignSelf: 'center', paddingHorizontal: 16, gap: 12, marginTop: 10 }}>
           {/* "Ahora": una sola cosa importante cada vez (apoyo > ánimo de tu gente > check-in). */}
           {d.supportReason ? <SupportCard /> : state.cheers.some((c) => !c.read) ? <CheerCard /> : !d.checkinToday ? <CheckinCard /> : null}
-          {isT1(state.profile) && <T1Card />}
+          {isT1(state.profile) && <T1Card compact />}
           {d.maintenance && <MaintenanceCard />}
           <SectionTitle>{t('home.forToday')}</SectionTitle>
           <FadeIn delay={100}>
@@ -193,20 +284,6 @@ export default function Home() {
           </FadeIn>
         </View>
       </ScrollView>
-      {leveledUp && (
-        <View style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(6,10,22,0.55)', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-          <View accessibilityViewIsModal accessibilityLiveRegion="polite" style={{ width: '100%', maxWidth: 360, backgroundColor: colors.white, borderRadius: 28, borderWidth: 1, borderColor: colors.line, padding: 22, alignItems: 'center', gap: 10 }}>
-            <OwiAnimated mood="celebrate" level={d.petLevel} size={170} shadow={false} />
-            <T v="title" center>
-              {t('owi.levelUp.title', { owi: state.pet.name })}
-            </T>
-            <T center color={colors.secondary}>
-              {t('owi.levelUp.text', { level: t('owi.level', { n: d.petLevel, name: lvName }) })}
-            </T>
-            <Button style={{ alignSelf: 'stretch' }} label={t('owi.levelUp.ok')} onPress={() => dispatch({ type: 'seenLevel', level: d.petLevel })} />
-          </View>
-        </View>
-      )}
       <Burst fire={burst} />
     </View>
   );

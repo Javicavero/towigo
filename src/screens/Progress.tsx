@@ -297,7 +297,7 @@ export default function Progress() {
         <Card>
           <T v="h2">{t('progress.owiEvolution', { owi: state.pet.name })}</T>
           <View style={{ alignItems: 'center' }}>
-            <OwiAnimated mood={d.petMood} level={d.petLevel} size={170} label={t('owi.a11y', { name: state.pet.name })} />
+            <OwiAnimated mood={d.petMood} level={d.petLevel} size={120} label={t('owi.a11y', { name: state.pet.name })} />
           </View>
           <Row style={{ justifyContent: 'space-between' }}>
             {([1, 2, 3, 4] as PetLevel[]).map((l) => (

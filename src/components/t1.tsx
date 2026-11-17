@@ -156,7 +156,8 @@ export function TirBar({ days = 7 }: { days?: number }) {
 }
 
 /** Tarjeta principal de tipo 1: glucosa ahora con tendencia, el día en una gráfica y accesos rápidos. */
-export function T1Card() {
+/** compact: sin la cifra grande (cuando Hoy ya la muestra arriba). */
+export function T1Card({ compact = false }: { compact?: boolean } = {}) {
   const { state, d } = useStore();
   const { go } = useNav();
   const g = d.lastGlucose;
@@ -172,7 +173,7 @@ export function T1Card() {
           {t('t1.tirToday', { n: d.tir24 })}
         </T>
       </Row>
-      {g ? (
+      {compact ? null : g ? (
         <Row gap={10} style={{ alignItems: 'flex-end' }}>
           <T v="big" color={glucoseColor(g.v)}>
             {g.v}
