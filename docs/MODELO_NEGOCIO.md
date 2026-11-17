@@ -6,8 +6,8 @@ Documento vivo: lo construimos paso a paso. Cada paso recoge las decisiones toma
 |---|---|---|
 | 1 | Identidad: propósito, misión, visión y valores | ✅ Decidido |
 | 2 | Clientes: a quién servimos y quién paga | ✅ Decidido |
-| 3 | Propuesta de valor por cliente y alternativas | ⏳ Siguiente |
-| 4 | Modelo de ingresos y precios | Pendiente |
+| 3 | Propuesta de valor por cliente y alternativas | ✅ Decidido |
+| 4 | Modelo de ingresos y precios | ⏳ Siguiente |
 | 5 | Canales y salida al mercado (piloto, primeros 1.000 usuarios) | Pendiente |
 | 6 | Regulación y confianza (Fase 1 vs. producto sanitario, RGPD, evidencia) | Pendiente |
 | 7 | Costes, equipo y métricas clave | Pendiente |
@@ -114,4 +114,71 @@ notarán la ayuda.
 
 ---
 
-## 3. Propuesta de valor *(siguiente paso)*
+## 3. Propuesta de valor
+
+### Las dos promesas
+| A quién | Promesa | Por qué es creíble |
+|---|---|---|
+| **Paciente con GLP-1** | **"Saca todo el partido a tu tratamiento y mantén el resultado después."** | Quien sigue el tratamiento pierde mucho más peso (≈10 % frente a ≈2 % a los 12 meses, Cleveland Clinic). Towigo ataca las causas del abandono y acompaña también al dejarlo. |
+| **Clínica / endocrino** | **"Tus pacientes siguen el tratamiento y vuelven a consulta."** | La mitad abandona en el primer año: cada paciente que sigue es un paciente que vuelve. El panel avisa de quién necesita apoyo antes de que lo deje. |
+
+### Frase de posicionamiento
+> Para personas con obesidad que empiezan un tratamiento con GLP-1 en una clínica, **Towigo es la app que les acompaña
+> cada día y les conecta con su equipo**, para que el tratamiento funcione y el resultado dure. A diferencia de los
+> registros de inyecciones o las apps de dieta, **Towigo une paciente y clínica en la misma plataforma** y lo resume
+> todo en **una cifra que se entiende: el Índice Towigo**.
+
+### Lienzo de valor — paciente
+| Lo que quiere conseguir | Lo que le duele | Cómo lo resuelve Towigo |
+|---|---|---|
+| Perder peso y no recuperarlo | Miedo al "efecto rebote" al dejar el fármaco | Modo mantenimiento; tendencias de peso; hábitos que siguen sin fármaco |
+| Aguantar el tratamiento | Náuseas y efectos al subir dosis; no saber si es normal | Registro de efectos en segundos; consejos generales del equipo; aviso a la clínica cuando se repiten |
+| Ver que merece la pena (y lo que paga) | Meseta: "no bajo, ¿para qué sigo?" | Índice Towigo y "Tu semana": se ve lo que sí mejora (constancia, ánimo, músculo, adherencia) |
+| No perder músculo | No saber cuánta proteína o qué ejercicio | Anillo de proteína, rutinas de fuerza de 10 min, composición corporal |
+| Sentirse acompañado | Esperar semanas a la próxima cita | Mensajes y audios del equipo, check-in de ánimo, su gente (familia) |
+
+### Lienzo de valor — clínica
+| Lo que quiere conseguir | Lo que le duele | Cómo lo resuelve Towigo |
+|---|---|---|
+| Que el paciente continúe (y vuelva) | Abandonos silenciosos que solo se ven cuando no viene | Panel con pacientes ordenados por prioridad y motivo (efectos, inyección olvidada, ánimo bajo) |
+| Consultas más útiles | Llegar a consulta sin datos de lo ocurrido | Ficha con tendencias, Índice Towigo, informe PDF para la consulta |
+| Seguimiento sin más carga | WhatsApp y llamadas sin orden | Bandeja de mensajes con plantillas; pautas y objetivos que llegan a la app |
+| Diferenciarse | Programas de obesidad muy parecidos | Programa con app propia y datos de resultados que puede enseñar |
+
+### Diferencias que destacamos
+1. **Equipo conectado.** Paciente y clínica en la misma plataforma: el paciente registra y pregunta; el profesional ve,
+   prioriza, responde y ajusta pautas y objetivos que llegan directamente a la app. Las apps de seguimiento de GLP-1 se
+   quedan en el paciente; los chats con el nutricionista no tienen datos.
+2. **Índice Towigo.** Una cifra de 0 a 100, como la puntuación de sueño, que resume tratamiento, peso, actividad,
+   constancia, bienestar y nutrición. Para el paciente es motivación; para el profesional, una señal rápida de quién
+   va bien y quién necesita ayuda. Incluye lo emocional y lo familiar, que las demás no miden.
+
+*También cuentan (aunque no son el titular):* modo después del GLP-1, foco en músculo (proteína y fuerza), y Owi como
+asistente cercano y sin juicios.
+
+### Alternativas actuales
+| Alternativa | Qué ofrece | Qué le falta frente a Towigo |
+|---|---|---|
+| **No hacer nada / libreta** | Lo más común | Sin seguimiento, sin aviso al equipo; de aquí sale buena parte del abandono |
+| **WhatsApp con el nutricionista o la clínica** | Cercanía | Sin datos ordenados, no escala, depende de la disponibilidad del profesional |
+| **Registros de inyecciones (p. ej. Shotsy, GLPeak)** | Dosis, zonas, efectos y peso; Shotsy ~5,79 $/mes en EE. UU. | Solo para el paciente, sin equipo; en inglés |
+| **Programas de apps de dieta con GLP-1 (p. ej. Noom GLP-1 Companion)** | Seguimiento de medicación y efectos, proteína, entreno para conservar músculo | Pensado para EE. UU. y sus propios médicos; no conecta con la clínica del paciente |
+| **Apps de calorías (MyFitnessPal, Fitia…)** | Registro de comida | No entienden el tratamiento ni sus efectos; sin equipo |
+| **Programas de la farmacéutica** | — | No hemos encontrado una app de apoyo de Wegovy en España; además, en España Wegovy no está financiado: lo paga el paciente |
+
+### Lo que NO prometemos (Fase 1)
+- No ajustamos ni recomendamos dosis, ni sustituimos al médico.
+- No prometemos un número de kilos: prometemos ayudar a que el tratamiento se siga y el resultado se mantenga.
+- El Índice Towigo es una medida de hábitos, no un diagnóstico.
+
+**Fuentes:** [Noom – GLP-1 Companion](https://www.noom.com/support/faqs/using-the-app/daily-features/2025/10/glp-1-companion/) ·
+[Nutrition Insight – actualización de Noom](https://www.nutritioninsight.com/news/noom-upgrades-glp-1-weight-management-app-features-as-digital-therapeutics-gain-us-market-traction.html) ·
+[Shotsy – App Store](https://apps.apple.com/us/app/-/id6499510249) ·
+[GLPeak – App Store](https://apps.apple.com/us/app/glpeak-glp-1-shot-tracker/id6744581459) ·
+[MyTherapy – comparativa de apps GLP-1](https://www.mytherapyapp.com/glp1-apps) ·
+[Vozpópuli – Novo Nordisk España, Wegovy oral](https://www.vozpopuli.com/sanitatem/francisco-pajuelo-director-medico-de-novo-espana-la-llegada-de-wegovy-oral-amplia-las-opciones-para-individualizar-el-tratamiento-de-la-obesidad.html) ·
+[Science Media Centre – Wegovy en España](https://sciencemediacentre.es/en/anti-obesity-drug-wegovy-be-sold-spain-starting-tomorrow)
+
+---
+
+## 4. Modelo de ingresos y precios *(siguiente paso)*
