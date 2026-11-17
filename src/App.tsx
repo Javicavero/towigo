@@ -131,7 +131,7 @@ function Root() {
       sub.remove();
       offNotif();
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
   if (isProRoute()) return <ProApp />;
   return (
     <NavContext.Provider value={{ tab, section, go }}>

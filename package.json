@@ -44,7 +44,9 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit && tsc -p tests",
     "test": "tsx --test tests/*.test.ts",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "lint:ci": "eslint . --max-warnings 100",
+    "check": "npm run typecheck && npm test && npm run lint:ci"
   },
   "private": true
 }

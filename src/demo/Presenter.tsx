@@ -165,10 +165,16 @@ export function PresenterProvider({ go, children }: { go: (t: Tab, s?: LogSectio
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement | null)?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA') return;
-      if (e.key === 'ArrowRight' || e.key === 'PageDown') (setAuto(false), next());
-      else if (e.key === 'ArrowLeft' || e.key === 'PageUp') (setAuto(false), prev());
-      else if (e.key === ' ') (e.preventDefault(), setAuto((a) => !a));
-      else if (e.key === 'h' || e.key === 'H') setMini((m) => !m);
+      if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+        setAuto(false);
+        next();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        setAuto(false);
+        prev();
+      } else if (e.key === ' ') {
+        e.preventDefault();
+        setAuto((a) => !a);
+      } else if (e.key === 'h' || e.key === 'H') setMini((m) => !m);
       else if (e.key === 'Escape') setMini(true);
     };
     window.addEventListener('keydown', onKey);
@@ -408,7 +414,12 @@ function Pillar({ icon, text, color }: { icon: IconName; text: string; color: st
 /** Marca: tile con degradado y el icono de señal (producto tecnológico; Owi no protagoniza la portada). */
 function BrandMark({ size = 72 }: { size?: number }) {
   return (
-    <LinearGradient colors={['#7C6CFF', '#3DE0C8']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ width: size, height: size, borderRadius: size * 0.3, alignItems: 'center', justifyContent: 'center' }}>
+    <LinearGradient
+      colors={['#7C6CFF', '#3DE0C8']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={{ width: size, height: size, borderRadius: size * 0.3, alignItems: 'center', justifyContent: 'center' }}
+    >
       <Icon name="signal" size={size * 0.5} color="#FFFFFF" stroke={2.4} />
     </LinearGradient>
   );
