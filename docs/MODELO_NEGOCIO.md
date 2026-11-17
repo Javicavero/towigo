@@ -7,8 +7,8 @@ Documento vivo: lo construimos paso a paso. Cada paso recoge las decisiones toma
 | 1 | Identidad: propósito, misión, visión y valores | ✅ Decidido |
 | 2 | Clientes: a quién servimos y quién paga | ✅ Decidido |
 | 3 | Propuesta de valor por cliente y alternativas | ✅ Decidido |
-| 4 | Modelo de ingresos y precios | ⏳ Siguiente |
-| 5 | Canales y salida al mercado (piloto, primeros 1.000 usuarios) | Pendiente |
+| 4 | Modelo de ingresos y precios | ✅ Decidido |
+| 5 | Canales y salida al mercado (piloto, primeros 1.000 usuarios) | ⏳ Siguiente |
 | 6 | Regulación y confianza (Fase 1 vs. producto sanitario, RGPD, evidencia) | Pendiente |
 | 7 | Costes, equipo y métricas clave | Pendiente |
 | 8 | Plan financiero y ronda | Pendiente |
@@ -181,4 +181,78 @@ asistente cercano y sin juicios.
 
 ---
 
-## 4. Modelo de ingresos y precios *(siguiente paso)*
+## 4. Modelo de ingresos y precios
+
+### Decisión
+| Pregunta | Decisión |
+|---|---|
+| Modelo | **Freemium**: registro gratis para siempre; **Towigo Plus** de pago |
+| Precio | **9,99 €/mes** o **79,99 €/año** (≈ 6,67 €/mes), IVA incluido |
+| Prueba gratuita | **30 días** (cubre el primer mes de tratamiento); **3 meses** si llega desde una clínica del piloto |
+| Clínica | **Panel profesional gratis durante el piloto**, a cambio de recomendar la app y compartir resultados anónimos |
+
+**Referencia de precio:** el paciente ya paga de su bolsillo el fármaco, entre unos 180 € y 450 € al mes según el
+medicamento y la dosis (Wegovy, Mounjaro; sin financiación pública para la obesidad). Towigo Plus cuesta **menos del
+5 %** de eso: es fácil de justificar si ayuda a no abandonar un tratamiento en el que ya invierte tanto.
+
+### Qué es gratis y qué es de pago
+| Gratis (siempre) | Towigo Plus |
+|---|---|
+| Registrar inyección, peso, efectos, comida, fuerza | **Índice Towigo** completo (desglose y evolución) |
+| Avisos (inyección, medicación, pesaje) | **Tu semana** y Progreso → Datos (tendencias y comparativas) |
+| Pantalla Hoy con la cifra clave | **Asistente con IA** (preguntas, registro escribiendo, preguntas para la consulta) |
+| **Mensajes con tu equipo** y check-in de ánimo | **Rutinas de fuerza** y objetivos de proteína personalizados |
+| Tu gente (familia) | **Informe PDF** para la consulta |
+| | **Modo mantenimiento** "después del GLP-1" |
+
+**Regla de oro (valor "rigor clínico"):** nada que tenga que ver con la seguridad o con la comunicación con el equipo va
+detrás del pago. Avisos, registro y mensajes con la clínica son siempre gratis. Así la clínica puede recomendar la app a
+todos sus pacientes, paguen o no.
+
+### Qué deja cada suscripción (estimación)
+| Concepto | Mensual | Anual |
+|---|---|---|
+| Precio (IVA incl.) | 9,99 € | 79,99 € |
+| Sin IVA (21 %) | 8,26 € | 66,11 € |
+| Comisión tienda (15 %, programa para pequeñas empresas de Apple y Google) | −1,24 € | −9,92 € |
+| **Neto para Towigo** | **7,02 €/mes** | **56,19 €/año (4,68 €/mes)** |
+
+Si el 60 % elige el plan anual y el 40 % el mensual: **≈ 5,60 €/mes por suscriptor ≈ 67 € al año**.
+
+### El piloto no es para ganar dinero, es para aprender
+Ejemplo con 2 clínicas: ~200 pacientes nuevos con GLP-1 en 6 meses → ~140 instalan la app → si el 30 % paga tras la
+prueba, ~42 suscriptores ≈ **2.800 €/año**. Lo que vale del piloto son los datos: uso, persistencia del tratamiento,
+conversión y opinión de la clínica (paso 2). La referencia del sector en apps de salud y deporte es que **≈ 35–40 % de
+las pruebas gratuitas acaba pagando** (mediana); nuestro objetivo del 30 % es prudente.
+
+### A escala (orden de magnitud)
+| Suscriptores de pago | Ingresos netos al año |
+|---|---|
+| 1.000 | ≈ 67.000 € |
+| 10.000 | ≈ 670.000 € |
+| 50.000 | ≈ 3,4 M€ |
+
+Costes, punto de equilibrio y ronda: pasos 7 y 8.
+
+### Después del piloto: nuevas fuentes de ingresos (por orden)
+1. **Clínicas:** cuota del panel profesional (propuesta: **49 €/mes por profesional**, o un precio por paciente activo
+   si la clínica quiere incluir Towigo Plus en su programa de obesidad y que el paciente no pague).
+2. **Aseguradoras y mutuas:** licencias para sus asegurados, cuando haya datos de resultados del piloto.
+3. **Otros perfiles:** tipo 2 + GLP-1, tipo 2 y tipo 1 (la app ya los soporta) con el mismo modelo.
+4. **Farmacéuticas:** programas de apoyo al paciente, con mucho cuidado de independencia y cumplimiento (decisión futura).
+
+*Nunca:* vender datos personales ni publicidad de productos de salud.
+
+### Riesgo principal y cómo lo cubrimos
+**El paciente deja de pagar cuando deja el fármaco.** Por eso el **modo mantenimiento** es de pago y es una pieza clave:
+alarga la vida del cliente justo en el momento de más riesgo de recuperar peso (y es coherente con la misión).
+
+**Fuentes:** [OCU – Mounjaro, precios](https://www.ocu.org/salud/medicamentos/noticias/tirzepatida-mounjaro-adelgazar) ·
+[OCU – inyecciones para adelgazar](https://www.ocu.org/alimentacion/adelgazar/informe/inyecciones-adelgazar) ·
+[Cuánto me cuesta – precios GLP-1 2026](https://cuantomecuesta.com/es/tratamiento-glp1-ozempic-adelgazar/) ·
+[Athletech News – conversión en apps de salud (RevenueCat 2025)](https://athletechnews.com/fitness-apps-monetizable-winner-take-all-or-most/) ·
+[Adapty – benchmarks Health & Fitness](https://adapty.io/blog/health-fitness-app-subscription-benchmarks/)
+
+---
+
+## 5. Canales y salida al mercado *(siguiente paso)*
