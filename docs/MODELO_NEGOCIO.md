@@ -8,8 +8,8 @@ Documento vivo: lo construimos paso a paso. Cada paso recoge las decisiones toma
 | 2 | Clientes: a quién servimos y quién paga | ✅ Decidido |
 | 3 | Propuesta de valor por cliente y alternativas | ✅ Decidido |
 | 4 | Modelo de ingresos y precios | ✅ Decidido |
-| 5 | Canales y salida al mercado (piloto, primeros 1.000 usuarios) | ⏳ Siguiente |
-| 6 | Regulación y confianza (Fase 1 vs. producto sanitario, RGPD, evidencia) | Pendiente |
+| 5 | Canales y salida al mercado (piloto, primeros 1.000 usuarios) | ✅ Decidido |
+| 6 | Regulación y confianza (Fase 1 vs. producto sanitario, RGPD, evidencia) | ⏳ Siguiente |
 | 7 | Costes, equipo y métricas clave | Pendiente |
 | 8 | Plan financiero y ronda | Pendiente |
 
@@ -255,4 +255,64 @@ alarga la vida del cliente justo en el momento de más riesgo de recuperar peso 
 
 ---
 
-## 5. Canales y salida al mercado *(siguiente paso)*
+## 5. Canales y salida al mercado
+
+### Decisión
+| Pregunta | Decisión |
+|---|---|
+| Ciudad del piloto | **Valencia** (mercado mediano: más fácil destacar; allí están los contactos) |
+| Qué ofrecemos a la clínica | **Panel gratis + soporte** y **su marca dentro de la app** |
+| Canales directos a pacientes | **Contenido útil, comunidades, farmacias y recomendación entre usuarios** |
+| Ritmo | **Prudente**: preparar → piloto → crecer |
+
+### Canal principal: la clínica recomienda
+**Lo que recibe la clínica**
+- Panel profesional gratis durante el piloto, formación de 30 minutos y una persona de contacto directa (respuesta en el día).
+- **"Programa de obesidad de Clínica X con Towigo"**: el logo, el nombre y el equipo de la clínica aparecen dentro de la app
+  del paciente (pantalla Equipo, mensajes, informe). Para la clínica es su programa; Towigo es la tecnología.
+
+**El recorrido del paciente**
+1. En consulta, al empezar el GLP-1, el profesional le recomienda Towigo y le da el **código de la clínica** (QR).
+2. El paciente instala la app, introduce el código y queda **conectado con su equipo** (y con la marca de la clínica).
+3. Tiene **3 meses de Towigo Plus gratis** (los de mayor riesgo de abandono).
+4. A los 3 meses decide si sigue con Plus; lo gratis (registro, avisos, mensajes con la clínica) sigue siempre.
+
+**Lo que NO hacemos:** pagar a la clínica o al profesional por cada paciente que se suscribe. Recomendar un producto a
+cambio de dinero choca con la deontología médica y restaría credibilidad; el incentivo de la clínica es que sus pacientes
+sigan el tratamiento (y vuelvan).
+
+### Canales directos a pacientes
+| Canal | Cómo | Para qué |
+|---|---|---|
+| **Contenido útil** | Guías y vídeos cortos (Instagram, TikTok, web) sobre lo que se busca al empezar: náuseas, qué comer, proteína, fuerza, meseta, qué pasa al dejarlo. Revisado por profesionales. | Atraer a quien busca respuestas y llevarlo a la app; posicionar a Towigo como referencia seria |
+| **Comunidades** | Asociaciones de pacientes con obesidad y grupos de personas en tratamiento (con tu acceso a pacientes): charlas, sesiones de preguntas, prueba gratuita ampliada | Confianza y primeros usuarios muy implicados |
+| **Farmacias** | La farmacia dispensa el fármaco cada mes: QR en el mostrador y un folleto "Saca todo el partido a tu tratamiento" | Llegar justo en el momento clave, también a quien no va a una clínica del piloto |
+| **Recomendación entre usuarios** | Invitar a alguien da **1 mes de Towigo Plus gratis a los dos** | Crecimiento barato; las personas en tratamiento suelen conocer a otras |
+
+### Calendario (ritmo prudente)
+| Meses | Qué hacemos | Hito |
+|---|---|---|
+| **0–2 · Preparar** | Cuentas y datos en la nube seguros, RGPD (contrato de encargado del tratamiento con la clínica), código de clínica y marca de la clínica en la app, suscripciones en App Store y Google Play, medición de uso | App lista para pacientes reales |
+| **3–8 · Piloto en Valencia** | 1–2 clínicas; formación; seguimiento semanal con la clínica; primeros contenidos y una farmacia de prueba | Datos de las 4 hipótesis del paso 2 |
+| **9–12 · Crecer** | 5–10 clínicas en Valencia y alrededores; contenido constante; farmacias; comunidades; recomendación entre usuarios | **Primeros 1.000 usuarios** |
+
+### De dónde salen los primeros 1.000 usuarios (estimación)
+| Origen | Usuarios |
+|---|---|
+| Piloto (2 clínicas, meses 3–8) | ≈ 140 |
+| Nuevas clínicas (≈ 8 clínicas × ≈ 8 pacientes nuevos al mes × 4 meses × 70 % instalan) | ≈ 180 |
+| Contenido, comunidades y farmacias | ≈ 500 |
+| Recomendación entre usuarios | ≈ 180 |
+| **Total al mes 12** | **≈ 1.000 usuarios** (≈ 300 de pago si convierte el 30 %) |
+
+Las clínicas solas no llegan a 1.000 en un año: **el contenido y las farmacias son imprescindibles** desde el mes 9.
+
+### Qué medimos en cada canal
+Instalaciones · % que conecta con su clínica · uso semanal a los 30 y 90 días · paso a pago · coste por usuario
+(en los canales con gasto) · recomendaciones por usuario.
+
+*Por decidir:* nombres de las clínicas y farmacias del piloto; quién crea el contenido (y quién lo revisa clínicamente).
+
+---
+
+## 6. Regulación y confianza *(siguiente paso)*
