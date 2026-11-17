@@ -34,6 +34,7 @@ import {
   type InsulinKind,
   usesGlp1,
   type AppState,
+  type HomeLayout,
   type Avatar,
   type CheckIn,
   type CrewPerms,
@@ -242,6 +243,7 @@ export type Action =
   | { type: 'seenLevel'; level: number }
   | { type: 'ringsDone'; day: string }
   | { type: 'checkinPrompted'; day: string }
+  | { type: 'setHomeLayout'; layout: HomeLayout }
   | { type: 'setNotifications'; patch: Partial<AppState['notifications']> }
   | { type: 'hydrate'; state: AppState }
   | { type: 'setConsents'; consents: Consents }
@@ -314,6 +316,8 @@ export function reducer(s: AppState, a: Action): AppState {
       return { ...s, notifications: { ...s.notifications, ...a.patch } };
     case 'seenLevel':
       return { ...s, petLevelSeen: a.level };
+    case 'setHomeLayout':
+      return { ...s, homeLayout: a.layout };
     case 'checkinPrompted':
       return { ...s, checkinPromptedOn: a.day };
     case 'ringsDone':

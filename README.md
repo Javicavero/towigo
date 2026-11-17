@@ -46,6 +46,14 @@ npx expo start --web
 
 ## Historial
 
+### 1.11 (7 diseños de la pantalla Hoy)
+- Hoy tiene un selector arriba con 7 diseños, y Owi está en todos como asistente: **Panel** (por defecto), **Índice**
+  (puntuación del día en grande), **Tratamiento** (próxima dosis, calendario de 12 semanas y peso con cada dosis),
+  **Programa** (semana del programa, lección de 3 min y lista del día), **Diario** (proteína que te queda y comidas),
+  **Línea** (todo el día por horas con tu gente, tu equipo y el resumen de Owi) y **Resumen** (tarjetas fijadas).
+  Inspirados en formatos conocidos de apps de salud, con la identidad y los datos de Towigo (`src/screens/home/layouts.tsx`).
+- 8 lecciones cortas de educación general (proteína, náuseas, fuerza, meseta, agua, sueño, saciedad, el después).
+
 ### 1.10 (Índice Towigo y check-in al entrar)
 - **Índice Towigo (0–100)**: una cifra, como la puntuación de sueño, que resume los últimos 7 días combinando
   tratamiento (20), glucosa (20), peso (15), actividad (15), constancia (10), bienestar (10) y nutrición (10); si de un área

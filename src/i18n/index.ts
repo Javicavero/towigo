@@ -5,9 +5,10 @@
  */
 import { es as base } from './es';
 import { demoEs } from './demo.es';
+import { layoutsEs } from './layouts.es';
 import { proEs } from './pro.es';
 
-const es: Record<string, string> = { ...base, ...proEs, ...demoEs };
+const es: Record<string, string> = { ...base, ...proEs, ...demoEs, ...layoutsEs };
 
 export type Locale = 'es' | 'en';
 type Dict = Record<string, string>;

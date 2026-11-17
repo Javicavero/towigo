@@ -6,6 +6,7 @@
  * Fase 1 (§8.2): datos, tendencias, hábitos y comunicación. Nunca indicaciones clínicas automáticas.
  */
 import { useEffect, useState } from 'react';
+import { DiaryLayout, LayoutPicker, ProgramLayout, ScoreLayout, SummaryLayout, TimelineLayout, TreatmentLayout } from './home/layouts';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -48,7 +49,12 @@ function useOwiLine(poke: number) {
 
 function Stat({ color, label, value, onPress }: { color: string; label: string; value: string; onPress: () => void }) {
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={`${label}: ${value}`} onPress={onPress} style={({ pressed }) => ({ flex: 1, alignItems: 'center', gap: 2, opacity: pressed ? 0.6 : 1 })}>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`${label}: ${value}`}
+      onPress={onPress}
+      style={({ pressed }) => ({ flex: 1, alignItems: 'center', gap: 2, opacity: pressed ? 0.6 : 1 })}
+    >
       <Row gap={6}>
         <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: color }} />
         <T v="small" color={colors.secondary} style={{ fontFamily: fonts.semibold, letterSpacing: 0.4, fontSize: 11 }}>
@@ -67,12 +73,28 @@ function useKeyMetric() {
   const { state, d } = useStore();
   const g = d.lastGlucose;
   const ago = g ? Math.round((Date.now() - new Date(g.at).getTime()) / 60e3) : 0;
-  const sensor24 = state.glucose.filter((x) => Date.now() - new Date(x.at).getTime() < 24 * 3600e3).sort((a, b) => a.at.localeCompare(b.at)).map((x) => x.v);
-  const wSeries = [...state.weights].sort((a, b) => a.at.localeCompare(b.at)).slice(-12).map((w) => w.kg);
-  const weight = d.weightNow !== null ? { label: t('sum.weight'), value: fmt1(d.weightNow), unit: 'kg', sub: d.lostKg > 0 ? t('sum.lost', { kg: fmt1(d.lostKg) }) : '' } : null;
+  const sensor24 = state.glucose
+    .filter((x) => Date.now() - new Date(x.at).getTime() < 24 * 3600e3)
+    .sort((a, b) => a.at.localeCompare(b.at))
+    .map((x) => x.v);
+  const wSeries = [...state.weights]
+    .sort((a, b) => a.at.localeCompare(b.at))
+    .slice(-12)
+    .map((w) => w.kg);
+  const weight =
+    d.weightNow !== null
+      ? { label: t('sum.weight'), value: fmt1(d.weightNow), unit: 'kg', sub: d.lostKg > 0 ? t('sum.lost', { kg: fmt1(d.lostKg) }) : '' }
+      : null;
   if (isT1(state.profile) && g)
     return {
-      main: { label: t('home.glucoseNow'), value: String(g.v), unit: 'mg/dL', arrow: d.trend ? TREND_ARROW[d.trend] : '', color: ago > 60 ? colors.secondary : glucoseColor(g.v), sub: ago > 60 ? `${t('home.stale')} · ${agoText(ago)}` : agoText(ago) },
+      main: {
+        label: t('home.glucoseNow'),
+        value: String(g.v),
+        unit: 'mg/dL',
+        arrow: d.trend ? TREND_ARROW[d.trend] : '',
+        color: ago > 60 ? colors.secondary : glucoseColor(g.v),
+        sub: ago > 60 ? `${t('home.stale')} · ${agoText(ago)}` : agoText(ago),
+      },
       series: sensor24,
       seriesLabel: t('home.spark24'),
       side: { label: t('home.tirShort'), value: sensor24.length ? `${d.tir24}` : '—', unit: sensor24.length ? '%' : '', sub: t('home.tir24') },
@@ -86,7 +108,9 @@ function useKeyMetric() {
         unit: '',
         arrow: '',
         color: d.injectionOverdue ? colors.coralText : colors.ink,
-        sub: d.injectedToday ? t('sum.injDone') : `${when.toLocaleDateString('es-ES', { weekday: 'long' })} · ${when.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`,
+        sub: d.injectedToday
+          ? t('sum.injDone')
+          : `${when.toLocaleDateString('es-ES', { weekday: 'long' })} · ${when.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`,
       },
       side: weight,
       series: wSeries,
@@ -94,7 +118,12 @@ function useKeyMetric() {
     };
   }
   if (hasDiabetes(state.profile) && g)
-    return { main: { label: t('sum.glucose'), value: String(g.v), unit: 'mg/dL', arrow: '', color: glucoseColor(g.v), sub: t(`ctx.${g.context}`) }, side: weight, series: wSeries, seriesLabel: t('home.sparkWeight') };
+    return {
+      main: { label: t('sum.glucose'), value: String(g.v), unit: 'mg/dL', arrow: '', color: glucoseColor(g.v), sub: t(`ctx.${g.context}`) },
+      side: weight,
+      series: wSeries,
+      seriesLabel: t('home.sparkWeight'),
+    };
   return { main: weight ? { ...weight, arrow: '', color: colors.ink } : null, side: null, series: wSeries, seriesLabel: t('home.sparkWeight') };
 }
 
@@ -126,6 +155,7 @@ export default function Home() {
     return () => clearTimeout(id);
   }, [state.day]); // eslint-disable-line react-hooks/exhaustive-deps
   const [sparkW, setSparkW] = useState(300);
+  const layout = state.homeLayout ?? 'panel';
 
   // Tres anillos completos: confeti discreto una vez al día.
   useEffect(() => {
@@ -159,7 +189,18 @@ export default function Home() {
                   accessibilityRole="button"
                   accessibilityLabel={t('home.streakA11y', { n: d.streak })}
                   onPress={() => go('progress')}
-                  style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: panel, borderWidth: 1, borderColor: border, paddingHorizontal: 10, height: 34, borderRadius: 17, opacity: pressed ? 0.7 : 1 })}
+                  style={({ pressed }) => ({
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 4,
+                    backgroundColor: panel,
+                    borderWidth: 1,
+                    borderColor: border,
+                    paddingHorizontal: 10,
+                    height: 34,
+                    borderRadius: 17,
+                    opacity: pressed ? 0.7 : 1,
+                  })}
                 >
                   <Icon name="flame" size={16} color={colors.coralDark} />
                   <T v="label">{d.streak}</T>
@@ -168,142 +209,209 @@ export default function Home() {
               </Row>
             </Row>
 
-            {/* Panel del día: anillos + cifra clave */}
-            <FadeIn>
-              <View style={{ backgroundColor: panel, borderWidth: 1, borderColor: border, borderRadius: 24, padding: 16, gap: 14 }}>
-                <Row gap={16}>
-                  <ScoreGauge score={score} onPress={() => setScoreOpen(true)} />
-                  <View style={{ flex: 1, gap: 10 }}>
-                    {km.main && (
-                      <Pressable accessibilityRole="button" accessibilityLabel={`${km.main.label}: ${km.main.value} ${km.main.unit}`} onPress={() => go(isT1(state.profile) ? 'progress' : usesGlp1(state.profile) ? 'log' : 'progress', usesGlp1(state.profile) && !isT1(state.profile) ? 'injection' : undefined)}>
-                        <T v="small" color={colors.secondary} style={{ fontFamily: fonts.semibold, fontSize: 11, letterSpacing: 0.6 }}>
-                          {km.main.label.toUpperCase()}
-                        </T>
-                        <Row gap={6} style={{ alignItems: 'flex-end' }}>
-                          <T v="display" color={km.main.color} style={{ fontSize: 34, lineHeight: 40 }}>
-                            {km.main.value}
+            <LayoutPicker />
+
+            {/* Panel del día: índice + cifra clave (diseño por defecto) */}
+            {layout === 'panel' && (
+              <FadeIn>
+                <View style={{ backgroundColor: panel, borderWidth: 1, borderColor: border, borderRadius: 24, padding: 16, gap: 14 }}>
+                  <Row gap={16}>
+                    <ScoreGauge score={score} onPress={() => setScoreOpen(true)} />
+                    <View style={{ flex: 1, gap: 10 }}>
+                      {km.main && (
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel={`${km.main.label}: ${km.main.value} ${km.main.unit}`}
+                          onPress={() =>
+                            go(
+                              isT1(state.profile) ? 'progress' : usesGlp1(state.profile) ? 'log' : 'progress',
+                              usesGlp1(state.profile) && !isT1(state.profile) ? 'injection' : undefined,
+                            )
+                          }
+                        >
+                          <T v="small" color={colors.secondary} style={{ fontFamily: fonts.semibold, fontSize: 11, letterSpacing: 0.6 }}>
+                            {km.main.label.toUpperCase()}
                           </T>
-                          {!!km.main.arrow && (
-                            <T v="h2" color={km.main.color} style={{ paddingBottom: 5 }}>
-                              {km.main.arrow}
+                          <Row gap={6} style={{ alignItems: 'flex-end' }}>
+                            <T v="display" color={km.main.color} style={{ fontSize: 34, lineHeight: 40 }}>
+                              {km.main.value}
+                            </T>
+                            {!!km.main.arrow && (
+                              <T v="h2" color={km.main.color} style={{ paddingBottom: 5 }}>
+                                {km.main.arrow}
+                              </T>
+                            )}
+                            {!!km.main.unit && (
+                              <T v="small" color={colors.secondary} style={{ paddingBottom: 7 }}>
+                                {km.main.unit}
+                              </T>
+                            )}
+                          </Row>
+                          {!!km.main.sub && (
+                            <T v="small" color={colors.secondary}>
+                              {km.main.sub}
                             </T>
                           )}
-                          {!!km.main.unit && (
-                            <T v="small" color={colors.secondary} style={{ paddingBottom: 7 }}>
-                              {km.main.unit}
-                            </T>
-                          )}
+                        </Pressable>
+                      )}
+                      {km.side && (
+                        <Row gap={8} style={{ paddingTop: 8, borderTopWidth: 1, borderTopColor: border }}>
+                          <T v="small" color={colors.secondary} style={{ flex: 1 }}>
+                            {km.side.label}
+                          </T>
+                          <T v="label" style={{ fontFamily: fonts.semibold }}>
+                            {km.side.value}
+                            {km.side.unit ? ` ${km.side.unit}` : ''}
+                          </T>
                         </Row>
-                        {!!km.main.sub && (
-                          <T v="small" color={colors.secondary}>
-                            {km.main.sub}
-                          </T>
-                        )}
-                      </Pressable>
-                    )}
-                    {km.side && (
-                      <Row gap={8} style={{ paddingTop: 8, borderTopWidth: 1, borderTopColor: border }}>
-                        <T v="small" color={colors.secondary} style={{ flex: 1 }}>
-                          {km.side.label}
+                      )}
+                    </View>
+                  </Row>
+                  {km.series.length > 2 && (
+                    <View accessible accessibilityLabel={km.seriesLabel} onLayout={(e) => setSparkW(e.nativeEvent.layout.width)} style={{ gap: 4 }}>
+                      <Row style={{ justifyContent: 'space-between' }}>
+                        <T v="small" color={colors.secondary} style={{ fontSize: 11, letterSpacing: 0.4, fontFamily: fonts.semibold }}>
+                          {km.seriesLabel.toUpperCase()}
                         </T>
-                        <T v="label" style={{ fontFamily: fonts.semibold }}>
-                          {km.side.value}
-                          {km.side.unit ? ` ${km.side.unit}` : ''}
+                        <T v="small" color={colors.secondary} style={{ fontSize: 11 }}>
+                          {fmt1(Math.min(...km.series))}–{fmt1(Math.max(...km.series))}
+                          {isT1(state.profile) ? ' mg/dL' : ' kg'}
                         </T>
                       </Row>
-                    )}
-                  </View>
-                </Row>
-                {km.series.length > 2 && (
-                  <View accessible accessibilityLabel={km.seriesLabel} onLayout={(e) => setSparkW(e.nativeEvent.layout.width)} style={{ gap: 4 }}>
-                    <Row style={{ justifyContent: 'space-between' }}>
-                      <T v="small" color={colors.secondary} style={{ fontSize: 11, letterSpacing: 0.4, fontFamily: fonts.semibold }}>
-                        {km.seriesLabel.toUpperCase()}
-                      </T>
-                      <T v="small" color={colors.secondary} style={{ fontSize: 11 }}>
-                        {fmt1(Math.min(...km.series))}–{fmt1(Math.max(...km.series))}
-                        {isT1(state.profile) ? ' mg/dL' : ' kg'}
-                      </T>
-                    </Row>
-                    <Sparkline values={km.series} color={isT1(state.profile) ? (isDark ? '#3DE0C8' : '#0FA394') : isDark ? '#A58FFF' : '#6A4FE0'} width={sparkW} height={44} band={isT1(state.profile) ? [70, 180] : undefined} />
-                  </View>
-                )}
-                <Row style={{ borderTopWidth: 1, borderTopColor: border, paddingTop: 12 }}>
-                  <Stat color={RING.plan} label={t('rings.plan')} value={`${rings.tasksDone}/${rings.tasksTotal}`} onPress={() => go('log')} />
-                  <Stat color={RING.move} label={t('rings.move')} value={STEPS_TODAY.toLocaleString('es-ES')} onPress={() => go('progress')} />
-                  <Stat color={RING.food} label={t('rings.food')} value={`${d.proteinToday}/${state.goals.proteinG} g`} onPress={() => go('log', 'intake')} />
-                </Row>
-              </View>
-            </FadeIn>
+                      <Sparkline
+                        values={km.series}
+                        color={isT1(state.profile) ? (isDark ? '#3DE0C8' : '#0FA394') : isDark ? '#A58FFF' : '#6A4FE0'}
+                        width={sparkW}
+                        height={44}
+                        band={isT1(state.profile) ? [70, 180] : undefined}
+                      />
+                    </View>
+                  )}
+                  <Row style={{ borderTopWidth: 1, borderTopColor: border, paddingTop: 12 }}>
+                    <Stat color={RING.plan} label={t('rings.plan')} value={`${rings.tasksDone}/${rings.tasksTotal}`} onPress={() => go('log')} />
+                    <Stat color={RING.move} label={t('rings.move')} value={STEPS_TODAY.toLocaleString('es-ES')} onPress={() => go('progress')} />
+                    <Stat color={RING.food} label={t('rings.food')} value={`${d.proteinToday}/${state.goals.proteinG} g`} onPress={() => go('log', 'intake')} />
+                  </Row>
+                </View>
+              </FadeIn>
+            )}
+            {layout !== 'panel' && (
+              <FadeIn key={layout}>
+                {layout === 'score' && <ScoreLayout onOpenScore={() => setScoreOpen(true)} />}
+                {layout === 'treatment' && <TreatmentLayout />}
+                {layout === 'program' && <ProgramLayout />}
+                {layout === 'diary' && <DiaryLayout />}
+                {layout === 'timeline' && <TimelineLayout owiMessage={message} />}
+                {layout === 'summary' && <SummaryLayout onOpenScore={() => setScoreOpen(true)} />}
+              </FadeIn>
+            )}
 
             {/* Asistente: Owi en segundo plano, con su frase basada en tus datos */}
-            <View style={{ backgroundColor: panel, borderWidth: 1, borderColor: border, borderRadius: 20, padding: 14, gap: 12 }}>
-              <Row gap={12} style={{ alignItems: 'flex-start' }}>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel={t('home.nextTip', { owi: state.pet.name })}
-                  onPress={() => setPoke((p) => p + 1)}
-                  style={{ width: 48, height: 48, borderRadius: 16, backgroundColor: colors.softGreen, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}
-                >
-                  <OwiSticker mood={d.petMood} size={50} />
-                </Pressable>
-                <View style={{ flex: 1, gap: 2 }}>
-                  <T v="small" color={colors.greenText} style={{ fontFamily: fonts.semibold, letterSpacing: 0.5, fontSize: 11 }}>
-                    {t('home.assistant', { owi: state.pet.name }).toUpperCase()}
-                  </T>
-                  <Pop trigger={message}>
-                    <T style={{ fontSize: 15, lineHeight: 21 }}>{message}</T>
-                  </Pop>
-                </View>
-              </Row>
-              {reminder ? (
-                <Row gap={8}>
-                  <Button
-                    style={{ flex: 1, minHeight: 42 }}
-                    label={t(`rem.done.${reminder.kind}`)}
-                    onPress={() => {
-                      dispatch({ type: 'reminderDone', id: reminder.id, kind: reminder.kind });
-                      if (reminder.kind === 'injection') go('log', 'injection');
-                      if (reminder.kind === 'weigh') go('log', 'weight');
-                      if (reminder.kind === 'meal') go('log', 'intake');
-                      if (reminder.kind === 'meds') go('log', 'meds');
-                      if (reminder.kind === 'insulin') go('log', 'insulin');
+            {(layout !== 'timeline' || reminder) && (
+              <View style={{ backgroundColor: panel, borderWidth: 1, borderColor: border, borderRadius: 20, padding: 14, gap: 12 }}>
+                <Row gap={12} style={{ alignItems: 'flex-start' }}>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={t('home.nextTip', { owi: state.pet.name })}
+                    onPress={() => setPoke((p) => p + 1)}
+                    style={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: 16,
+                      backgroundColor: colors.softGreen,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      overflow: 'hidden',
                     }}
-                  />
-                  <Button style={{ flex: 1, minHeight: 42 }} kind="secondary" label={t('rem.later')} onPress={() => dispatch({ type: 'snooze', id: reminder.id, minutes: 15 })} />
+                  >
+                    <OwiSticker mood={d.petMood} size={50} />
+                  </Pressable>
+                  <View style={{ flex: 1, gap: 2 }}>
+                    <T v="small" color={colors.greenText} style={{ fontFamily: fonts.semibold, letterSpacing: 0.5, fontSize: 11 }}>
+                      {t('home.assistant', { owi: state.pet.name }).toUpperCase()}
+                    </T>
+                    <Pop trigger={message}>
+                      <T style={{ fontSize: 15, lineHeight: 21 }}>{message}</T>
+                    </Pop>
+                  </View>
                 </Row>
-              ) : (
-                <Row gap={8}>
-                  <Button style={{ flex: 1, minHeight: 42 }} label={t('home.quickLog')} onPress={() => go('log')} icon={<Icon name="plus" size={18} color={colors.onAccent} />} />
-                  <Button style={{ flex: 1, minHeight: 42 }} kind="secondary" label={t('home.ask')} onPress={() => go('owi')} icon={<Icon name="chat" size={18} color={colors.greenText} />} />
-                </Row>
-              )}
-            </View>
+                {reminder ? (
+                  <Row gap={8}>
+                    <Button
+                      style={{ flex: 1, minHeight: 42 }}
+                      label={t(`rem.done.${reminder.kind}`)}
+                      onPress={() => {
+                        dispatch({ type: 'reminderDone', id: reminder.id, kind: reminder.kind });
+                        if (reminder.kind === 'injection') go('log', 'injection');
+                        if (reminder.kind === 'weigh') go('log', 'weight');
+                        if (reminder.kind === 'meal') go('log', 'intake');
+                        if (reminder.kind === 'meds') go('log', 'meds');
+                        if (reminder.kind === 'insulin') go('log', 'insulin');
+                      }}
+                    />
+                    <Button
+                      style={{ flex: 1, minHeight: 42 }}
+                      kind="secondary"
+                      label={t('rem.later')}
+                      onPress={() => dispatch({ type: 'snooze', id: reminder.id, minutes: 15 })}
+                    />
+                  </Row>
+                ) : (
+                  <Row gap={8}>
+                    <Button
+                      style={{ flex: 1, minHeight: 42 }}
+                      label={t('home.quickLog')}
+                      onPress={() => go('log')}
+                      icon={<Icon name="plus" size={18} color={colors.onAccent} />}
+                    />
+                    <Button
+                      style={{ flex: 1, minHeight: 42 }}
+                      kind="secondary"
+                      label={t('home.ask')}
+                      onPress={() => go('owi')}
+                      icon={<Icon name="chat" size={18} color={colors.greenText} />}
+                    />
+                  </Row>
+                )}
+              </View>
+            )}
           </View>
         </LinearGradient>
 
         <View style={{ width: '100%', maxWidth: 560, alignSelf: 'center', paddingHorizontal: 16, gap: 12, marginTop: 10 }}>
-          <Row style={{ justifyContent: 'space-between', alignItems: 'flex-end' }}>
-            <SectionTitle>{t('home.week')}</SectionTitle>
-            <Pressable accessibilityRole="button" onPress={() => go('progress')} hitSlop={8}>
-              <T v="small" color={colors.greenText} style={{ fontFamily: fonts.semibold }}>
-                {t('home.seeAll')}
-              </T>
-            </Pressable>
-          </Row>
-          <KpiStrip />
+          {layout === 'panel' && (
+            <Row style={{ justifyContent: 'space-between', alignItems: 'flex-end' }}>
+              <SectionTitle>{t('home.week')}</SectionTitle>
+              <Pressable accessibilityRole="button" onPress={() => go('progress')} hitSlop={8}>
+                <T v="small" color={colors.greenText} style={{ fontFamily: fonts.semibold }}>
+                  {t('home.seeAll')}
+                </T>
+              </Pressable>
+            </Row>
+          )}
+          {layout === 'panel' && <KpiStrip />}
           {/* "Ahora": una sola cosa importante cada vez (apoyo > ánimo de tu gente > check-in). */}
-          {d.supportReason ? <SupportCard /> : state.cheers.some((c) => !c.read) ? <CheerCard /> : !d.checkinToday ? <CheckinPill onPress={() => setCheckinOpen(true)} /> : null}
-          {isT1(state.profile) && <T1Card compact />}
+          {d.supportReason ? (
+            <SupportCard />
+          ) : state.cheers.some((c) => !c.read) ? (
+            <CheerCard />
+          ) : !d.checkinToday ? (
+            <CheckinPill onPress={() => setCheckinOpen(true)} />
+          ) : null}
+          {layout === 'panel' && isT1(state.profile) && <T1Card compact />}
           {d.maintenance && <MaintenanceCard />}
-          <SectionTitle>{t('home.forToday')}</SectionTitle>
-          <FadeIn delay={100}>
-            <TodayList />
-          </FadeIn>
-          <SectionTitle>{t('home.summary')}</SectionTitle>
-          <FadeIn delay={140}>
-            <SummaryGrid />
-          </FadeIn>
+          {layout === 'panel' && (
+            <>
+              <SectionTitle>{t('home.forToday')}</SectionTitle>
+              <FadeIn delay={100}>
+                <TodayList />
+              </FadeIn>
+              <SectionTitle>{t('home.summary')}</SectionTitle>
+              <FadeIn delay={140}>
+                <SummaryGrid />
+              </FadeIn>
+            </>
+          )}
         </View>
       </ScrollView>
       <Burst fire={burst} />

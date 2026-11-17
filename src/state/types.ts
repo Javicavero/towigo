@@ -3,6 +3,8 @@ import type { AccessoryId, BODY_TYPES, BROWS, FACE_SHAPES, FACIAL_HAIR, GLASSES,
 /** Los tres caminos de la app. */
 /** Los cuatro caminos de la app. */
 export type Profile = 't1' | 't2' | 'glp1' | 't2_glp1';
+/** Diseño elegido para la pantalla Hoy. */
+export type HomeLayout = 'panel' | 'score' | 'treatment' | 'program' | 'diary' | 'timeline' | 'summary';
 export const usesGlp1 = (p: Profile) => p === 'glp1' || p === 't2_glp1';
 /** Lleva control de glucosa (tipo 1 o tipo 2). */
 export const hasDiabetes = (p: Profile) => p !== 'glp1';
@@ -215,6 +217,8 @@ export type AppState = {
   demoReminder: ReminderKind | null;
   /** Día en que se mostró la ventana del check-in (para no repetirla). */
   checkinPromptedOn?: string | null;
+  /** Diseño de la pantalla Hoy (por defecto, el panel). */
+  homeLayout?: HomeLayout;
   lastOpenAt: string | null;
   previousOpenAt: string | null;
   dataSource: 'demo' | 'dexcom';
