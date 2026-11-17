@@ -9,8 +9,8 @@ Documento vivo: lo construimos paso a paso. Cada paso recoge las decisiones toma
 | 3 | Propuesta de valor por cliente y alternativas | ✅ Decidido |
 | 4 | Modelo de ingresos y precios | ✅ Decidido |
 | 5 | Canales y salida al mercado (piloto, primeros 1.000 usuarios) | ✅ Decidido |
-| 6 | Regulación y confianza (Fase 1 vs. producto sanitario, RGPD, evidencia) | ⏳ Siguiente |
-| 7 | Costes, equipo y métricas clave | Pendiente |
+| 6 | Regulación y confianza (Fase 1 vs. producto sanitario, RGPD, evidencia) | ✅ Decidido |
+| 7 | Costes, equipo y métricas clave | ⏳ Siguiente |
 | 8 | Plan financiero y ronda | Pendiente |
 
 ---
@@ -315,4 +315,100 @@ Instalaciones · % que conecta con su clínica · uso semanal a los 30 y 90 día
 
 ---
 
-## 6. Regulación y confianza *(siguiente paso)*
+## 6. Regulación y confianza
+
+> Este apartado es un planteamiento de trabajo, no asesoramiento legal. Las conclusiones deben confirmarlas la consultora
+> de producto sanitario y protección de datos (ver "Quién nos ayuda").
+
+### Decisión
+| Pregunta | Decisión |
+|---|---|
+| Estrategia regulatoria | **Fuera de producto sanitario en la Fase 1; marcado CE en la Fase 2** |
+| Asistente con IA | **Datos mínimos**, sin identificadores, con contrato, sin que el proveedor los guarde, con consentimiento y aviso de IA |
+| Evidencia | **Estudio observacional aprobado por un comité de ética (CEIm)** con la clínica del piloto |
+| Quién nos ayuda | **Consultora externa** de producto sanitario y protección de datos (incluido delegado de protección de datos) |
+
+### 6.1 Producto sanitario: dónde está la línea
+En la UE, un software es producto sanitario cuando su **finalidad prevista** es médica: diagnosticar, prevenir, vigilar,
+predecir o tratar una enfermedad, o dar información para tomar decisiones de diagnóstico o tratamiento (Reglamento
+(UE) 2017/745, MDR). La guía europea **MDCG 2019-11** (revisada en junio de 2025) explica cómo decidirlo, y la **regla 11**
+clasifica ese software, normalmente como **clase IIa o superior**, lo que exige un organismo notificado.
+
+**Fase 1 — lo que Towigo SÍ es:** una app de hábitos, registro y comunicación con el equipo. Guarda lo que la persona
+apunta, lo muestra de forma clara, recuerda lo que el equipo ha pautado y facilita hablar con la clínica.
+
+**Lo que Towigo NO hace en la Fase 1 (y ya está así en la app):** calcular o sugerir dosis, dar indicaciones clínicas
+automáticas, diagnosticar, sustituir las alarmas del sensor.
+
+**Funciones a revisar con la consultora antes del piloto** (están en la frontera):
+| Función | Riesgo | Ajuste propuesto para la Fase 1 |
+|---|---|---|
+| **Panel profesional: "prioridad alta" por señales clínicas** (efectos, glucosa, ánimo) | Ordenar pacientes por riesgo clínico puede verse como apoyo a decisiones clínicas | Ordenar por **hechos, no por riesgo**: el paciente pidió ayuda, mensajes sin responder, inyección no registrada, días sin registrar. Filtros que elige el profesional |
+| **Índice Towigo con área de glucosa** | Una puntuación que integra tiempo en rango puede leerse como vigilancia de la enfermedad | En la Fase 1, **el índice mide hábitos** (tratamiento registrado, actividad, constancia, bienestar, nutrición, peso) y la glucosa se muestra aparte como dato |
+| **Reacción a glucosa baja o alta** (Owi preocupado, frase) | Una "alerta" clínica es función de producto sanitario | Mostrar el dato tal cual + "sigue el plan de tu equipo" + recordatorio de que no sustituye las alarmas del sensor (ya está así) |
+| **Asistente con IA** | Respuestas personalizadas que orienten el tratamiento | Límites ya activos (sin dosis ni indicaciones); derivar lo clínico al equipo; probar con casos límite antes del piloto |
+
+**Fase 2 — marcado CE:** con el piloto hecho, preparar la versión clínica (priorización de riesgo, índice con glucosa,
+avisos) como producto sanitario: sistema de calidad **ISO 13485**, ciclo de vida del software **IEC 62304**, gestión de
+riesgos **ISO 14971**, usabilidad **IEC 62366**, evaluación clínica y revisión de un organismo notificado. Plazo
+orientativo: 12–18 meses. Abre la puerta a aseguradoras, hospitales y sanidad pública (visión).
+
+### 6.2 Protección de datos (RGPD y LOPDGDD)
+Los datos de salud son una **categoría especial** (art. 9 RGPD): solo se tratan con una base legal reforzada.
+
+| Obligación | Cómo lo cumplimos |
+|---|---|
+| **Base legal** | **Consentimiento explícito** de la persona para cada finalidad: usar la app, compartir con su clínica, compartir con su gente, asistente con IA (separados y revocables; ya están separados en la app) |
+| **Papeles** | Towigo responsable de los datos de la app; la relación con la clínica (responsables independientes o encargado del tratamiento) la define la consultora y se firma en un **contrato** antes del piloto |
+| **Evaluación de impacto (EIPD)** | **Obligatoria** antes de empezar: datos de salud a gran escala (art. 35 RGPD y lista de la AEPD) |
+| **Delegado de protección de datos** | Muy probablemente obligatorio (tratar datos de salud a gran escala es la actividad principal); lo asume la consultora |
+| **Minimización** | Solo los datos necesarios para cada función; el análisis de uso, sin datos de salud y opcional (ya es opcional en la app) |
+| **Derechos** | Ver, exportar y borrar los datos desde la app (ya existe en Yo → Privacidad; falta conectarlo a la nube) |
+| **Brechas** | Procedimiento para notificar a la AEPD en 72 horas y avisar a las personas afectadas |
+| **Ubicación** | Datos alojados en la UE |
+
+### 6.3 Asistente con IA
+- **Datos mínimos:** a la IA solo le llega lo imprescindible de cada pregunta (p. ej. "semana 12, náuseas leves, 0 de 2
+  sesiones de fuerza"), **sin nombre ni identificadores**.
+- **Proveedor:** contrato de encargado del tratamiento, **sin conservación de los datos** ni uso para entrenar, y garantías
+  para la transferencia internacional (el proveedor puede estar fuera de la UE).
+- **Consentimiento propio** para activar el asistente; sin él, la app usa el asistente local del móvil.
+- **Transparencia (Ley Europea de IA, art. 50):** desde el **2 de agosto de 2026** es obligatorio avisar de que se habla
+  con una IA. La app ya lo indica en el chat ("no da indicaciones médicas"); añadir un aviso explícito de IA.
+
+### 6.4 Seguridad
+Cifrado en tránsito y en reposo · cuentas con verificación · acceso a los datos de cada paciente solo para él y su
+clínica (reglas en la base de datos) · registro de accesos del panel profesional · copias de seguridad · pruebas de
+seguridad externas antes del piloto · camino a **ISO 27001** cuando lleguen aseguradoras.
+
+### 6.5 Evidencia: estudio del piloto
+| Elemento | Propuesta |
+|---|---|
+| Tipo | Estudio **observacional prospectivo** en la clínica del piloto, aprobado por un **CEIm**; investigador principal: un médico de la clínica |
+| Participantes | Adultos que empiezan un GLP-1 para la obesidad y aceptan participar (consentimiento del estudio aparte del de la app) |
+| Resultado principal | **Persistencia en el tratamiento a 3 y 6 meses**, frente a la referencia histórica de la clínica |
+| Otros resultados | Cambio de peso y cintura, uso de la app, ánimo (check-ins), calidad de vida con un cuestionario validado, satisfacción del paciente y del profesional |
+| Para qué sirve | Publicar, convencer a nuevas clínicas, preparar la evaluación clínica del marcado CE y negociar con aseguradoras |
+
+### 6.6 Cambios en la app que salen de este paso (para los meses 0–2)
+1. Panel profesional: ordenar por hechos (no por riesgo) en la versión del piloto.
+2. Índice Towigo de la Fase 1 sin área de glucosa (la glucosa, aparte).
+3. Aviso explícito de IA en el chat y consentimiento propio para el asistente.
+4. Envío a la IA solo de datos mínimos y sin identificadores (función del servidor).
+5. Exportar y borrar datos conectado a la nube; registro de accesos del panel.
+
+### Quién nos ayuda
+Una **consultora externa** que: firme el análisis de si Towigo es o no producto sanitario en la Fase 1, haga la EIPD,
+redacte los textos legales y los contratos con clínicas y proveedores, actúe como delegado de protección de datos y
+prepare la hoja de ruta del marcado CE.
+
+**Fuentes:** [MDCG 2019-11, explicada (OpenRegulatory)](https://openregulatory.com/mdcg/mdcg-2019-11) ·
+[Emergo – revisión 1 de MDCG 2019-11](https://www.emergobyul.com/news/european-revision-primary-software-guidance-mdcg-2019-11-revision-1-small-changes-meaningful) ·
+[Bristows – regla 11](https://www.bristows.com/news/deciphering-rule-11-new-guidance-on-the-classification-of-software-medical-devices-under-the-eu-mdr) ·
+[Cooley – Ley de IA, art. 50 desde el 2 de agosto de 2026](https://cooley.com/news/insight/2026/2026-08-03-eu-ai-act-transparency-obligations-take-effect-2-august-2026) ·
+[Stibbe – obligaciones de transparencia](https://www.stibbe.com/publications-and-insights/the-ai-acts-transparency-obligations-rules-scope-and-timeline) ·
+[AEPD – lista de tratamientos que requieren EIPD](https://www.aepd.es/es/prensa-y-comunicacion/notas-de-prensa/la-aepd-publica-el-listado-de-tratamientos-en-los-que-es)
+
+---
+
+## 7. Costes, equipo y métricas clave *(siguiente paso)*
