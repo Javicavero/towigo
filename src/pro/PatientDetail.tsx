@@ -8,6 +8,7 @@ import TrendChart from '../components/TrendChart';
 import { Button, Choice, Row, Segmented, T } from '../components/ui';
 import { TEAM } from '../data/mock';
 import { KpiGrid } from '../components/kpi';
+import { ScoreBreakdown } from '../components/score';
 import { t } from '../i18n';
 import { buildReportHtml } from '../report/buildReport';
 import { exportReport } from '../report/exportReport';
@@ -141,6 +142,12 @@ export default function PatientDetail({ id, tab: initial, onBack }: { id: string
               {t('pro.weekChanges')}
             </T>
             <KpiGrid of={s} tileWidth={196} />
+          </View>
+          <View style={{ borderRadius: 18, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.white, padding: 16, gap: 8, maxWidth: 640 }}>
+            <T v="label" color={colors.secondary}>
+              {t('score.title')}
+            </T>
+            <ScoreBreakdown of={s} />
           </View>
 
           <View style={{ flexDirection: wide ? 'row' : 'column', gap: 12, alignItems: 'stretch' }}>

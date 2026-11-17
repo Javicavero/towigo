@@ -16,6 +16,13 @@ import { Button, Card, Row, T } from './ui';
 const HOUR = 3600e3;
 const hhmm = (x: string | number) => new Date(x).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 export const TREND_ARROW = { up2: '⇈', up: '↑', flat: '→', down: '↓', down2: '⇊' } as const;
+/** "hace 5 min", "hace 3 h", "hace 2 d". */
+export function agoText(mins: number) {
+  if (mins <= 1) return t('t1.now');
+  if (mins < 60) return t('home.ago', { min: mins });
+  if (mins < 48 * 60) return t('home.agoHours', { n: Math.round(mins / 60) });
+  return t('home.agoDays', { n: Math.round(mins / 1440) });
+}
 export const glucoseColor = (v: number) => (v < 70 ? colors.low : v > 180 ? colors.coralText : colors.greenText);
 
 /** Gráfica del día: glucosa (sensor), franja 70–180, insulina (abajo) y carbohidratos (arriba). */
@@ -186,7 +193,7 @@ export function T1Card({ compact = false }: { compact?: boolean } = {}) {
             </View>
           )}
           <T v="small" color={colors.secondary} style={{ paddingBottom: 12, flex: 1 }}>
-            mg/dL · {mins <= 1 ? t('t1.now') : t('t1.minsAgo', { n: mins })}
+            mg/dL · {agoText(mins)}
           </T>
         </Row>
       ) : (

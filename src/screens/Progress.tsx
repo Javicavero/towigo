@@ -16,6 +16,7 @@ import OwiSticker from '../components/OwiSticker';
 import TrendChart from '../components/TrendChart';
 import { Button, Card, ProgressBar, Row, Screen, Segmented, T } from '../components/ui';
 import { KpiGrid } from '../components/kpi';
+import { ScoreBreakdown } from '../components/score';
 import { ACCESSORIES } from '../data/avatarOptions';
 import { t } from '../i18n';
 import { dayKeyAgo } from '../state/dates';
@@ -153,6 +154,17 @@ export default function Progress() {
       {tab === 'habits' && <StrengthCard />}
       {tab === 'habits' && <MoodHistory />}
 
+      {tab === 'health' && (
+        <Card>
+          <View style={{ gap: 2 }}>
+            <T v="h2">{t('score.title')}</T>
+            <T v="small" color={colors.secondary}>
+              {t('score.sub')}
+            </T>
+          </View>
+          <ScoreBreakdown />
+        </Card>
+      )}
       {tab === 'health' && (
         <View style={{ gap: 10 }}>
           <View style={{ gap: 2 }}>

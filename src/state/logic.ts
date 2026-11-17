@@ -136,6 +136,19 @@ export function rollDay(s: AppState, today: string): AppState {
   return { ...s, day: today, habitHistory: history, habitsToday: { log: false, walk: false, listen: false }, logsToday: 0, freezeActiveToday: false, remindersDone: {}, snoozedUntil: {} };
 }
 
+/**
+ * Prototipo: el sensor simulado "sigue enviando" lecturas. Al abrir la app, si la última lectura de ejemplo
+ * tiene más de 20 min, se regeneran las lecturas simuladas hasta ahora (las que apuntó la persona se conservan).
+ */
+export function refreshDemoSensor(s: AppState, now = Date.now()): AppState {
+  if (s.dataSource !== 'demo' || !isT1(s.profile)) return s;
+  const sim = s.glucose.filter((g) => g.context === 'sensor' && /^c/.test(g.id));
+  const last = sim.reduce((m, g) => Math.max(m, new Date(g.at).getTime()), 0);
+  if (!sim.length || now - last < 20 * 60e3) return s;
+  const mine = s.glucose.filter((g) => !(g.context === 'sensor' && /^c/.test(g.id)));
+  return { ...s, glucose: [...demoCgm(s.scenario, now), ...mine] };
+}
+
 /** Adapta datos guardados por versiones anteriores al modelo actual. Devuelve null si no se pueden aprovechar. */
 export function migrate(saved: Partial<AppState> | null, now = Date.now()): AppState | null {
   if (!saved || !saved.profile || !saved.goals) return null;
@@ -228,6 +241,7 @@ export type Action =
   | { type: 'newDay'; day: string }
   | { type: 'seenLevel'; level: number }
   | { type: 'ringsDone'; day: string }
+  | { type: 'checkinPrompted'; day: string }
   | { type: 'setNotifications'; patch: Partial<AppState['notifications']> }
   | { type: 'hydrate'; state: AppState }
   | { type: 'setConsents'; consents: Consents }
@@ -300,6 +314,8 @@ export function reducer(s: AppState, a: Action): AppState {
       return { ...s, notifications: { ...s.notifications, ...a.patch } };
     case 'seenLevel':
       return { ...s, petLevelSeen: a.level };
+    case 'checkinPrompted':
+      return { ...s, checkinPromptedOn: a.day };
     case 'ringsDone':
       return { ...s, ringsDoneOn: a.day };
     case 'newDay':
@@ -307,7 +323,7 @@ export function reducer(s: AppState, a: Action): AppState {
     case 'hydrate':
       return a.state;
     case 'opened':
-      return { ...s, previousOpenAt: s.lastOpenAt, lastOpenAt: now };
+      return { ...refreshDemoSensor(s), previousOpenAt: s.lastOpenAt, lastOpenAt: now };
     case 'setConsents':
       return { ...s, consents: a.consents };
     case 'setSensor':

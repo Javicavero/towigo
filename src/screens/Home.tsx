@@ -8,10 +8,12 @@
 import { useEffect, useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, ScrollView, View } from 'react-native';
-import Svg, { Circle } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AvatarBadge from '../components/AvatarBadge';
-import { CheckinCard } from '../components/checkin';
+import { CheckinModal, CheckinPill } from '../components/checkin';
+import { ScoreGauge, ScoreSheet } from '../components/score';
+import { usePresenter } from '../demo/Presenter';
+import { towigoScore } from '../state/score';
 import { CheerCard } from '../components/crew';
 import { Icon } from '../components/icons';
 import { KpiStrip, Sparkline } from '../components/kpi';
@@ -19,7 +21,7 @@ import { Burst, FadeIn, Pop } from '../components/motion';
 import OwiSticker from '../components/OwiSticker';
 import { MaintenanceCard, SupportCard } from '../components/program';
 import { RING, useDayRings } from '../components/rings';
-import { glucoseColor, T1Card, TREND_ARROW } from '../components/t1';
+import { agoText, glucoseColor, T1Card, TREND_ARROW } from '../components/t1';
 import { SummaryGrid, TodayList } from '../components/today';
 import { Button, Row, SectionTitle, T } from '../components/ui';
 import { STEPS_TODAY } from '../data/mock';
@@ -60,30 +62,6 @@ function Stat({ color, label, value, onPress }: { color: string; label: string; 
 
 const fmt1 = (n: number) => (Math.round(n * 10) / 10).toString().replace('.', ',');
 
-/** Anillos compactos del día (plan · movimiento · proteína). */
-function MiniRings({ rings, size = 124 }: { rings: { plan: number; move: number; food: number }; size?: number }) {
-  const c0 = size / 2;
-  const w = size * 0.085;
-  const arc = (r: number, v: number, color: string) => {
-    const c = 2 * Math.PI * r;
-    return (
-      <>
-        <Circle cx={c0} cy={c0} r={r} stroke={color} strokeOpacity={isDark ? 0.2 : 0.16} strokeWidth={w} fill="none" />
-        {v > 0.02 && <Circle cx={c0} cy={c0} r={r} stroke={color} strokeWidth={w} fill="none" strokeLinecap="round" strokeDasharray={`${Math.min(1, v) * c} ${c}`} transform={`rotate(-90 ${c0} ${c0})`} />}
-      </>
-    );
-  };
-  return (
-    <View accessible accessibilityLabel={t('rings.a11y', { p: Math.round(rings.plan * 100), m: Math.round(rings.move * 100), f: Math.round(rings.food * 100) })}>
-      <Svg width={size} height={size}>
-        {arc(c0 - w * 0.6, rings.plan, RING.plan)}
-        {arc(c0 - w * 1.85, rings.move, RING.move)}
-        {arc(c0 - w * 3.1, rings.food, RING.food)}
-      </Svg>
-    </View>
-  );
-}
-
 /** La cifra que más importa hoy según el perfil. */
 function useKeyMetric() {
   const { state, d } = useStore();
@@ -94,10 +72,10 @@ function useKeyMetric() {
   const weight = d.weightNow !== null ? { label: t('sum.weight'), value: fmt1(d.weightNow), unit: 'kg', sub: d.lostKg > 0 ? t('sum.lost', { kg: fmt1(d.lostKg) }) : '' } : null;
   if (isT1(state.profile) && g)
     return {
-      main: { label: t('home.glucoseNow'), value: String(g.v), unit: 'mg/dL', arrow: d.trend ? TREND_ARROW[d.trend] : '', color: glucoseColor(g.v), sub: ago <= 1 ? t('t1.now') : t('home.ago', { min: ago }) },
+      main: { label: t('home.glucoseNow'), value: String(g.v), unit: 'mg/dL', arrow: d.trend ? TREND_ARROW[d.trend] : '', color: ago > 60 ? colors.secondary : glucoseColor(g.v), sub: ago > 60 ? `${t('home.stale')} · ${agoText(ago)}` : agoText(ago) },
       series: sensor24,
       seriesLabel: t('home.spark24'),
-      side: { label: t('home.tirShort'), value: `${d.tir24}`, unit: '%', sub: t('home.tir24') },
+      side: { label: t('home.tirShort'), value: sensor24.length ? `${d.tir24}` : '—', unit: sensor24.length ? '%' : '', sub: t('home.tir24') },
     };
   if (usesGlp1(state.profile) && !d.maintenance && d.nextInjectionAt) {
     const when = new Date(d.nextInjectionAt);
@@ -134,6 +112,19 @@ export default function Home() {
   const [burst, setBurst] = useState(0);
   const allRings = rings.plan >= 1 && rings.move >= 1 && rings.food >= 1;
   const km = useKeyMetric();
+  const presenter = usePresenter();
+  const score = towigoScore(state);
+  const [scoreOpen, setScoreOpen] = useState(false);
+  const [checkinOpen, setCheckinOpen] = useState(false);
+  // Check-in del día: ventana al entrar (una vez al día y nunca durante la presentación).
+  useEffect(() => {
+    if (presenter.active || d.checkinToday || state.checkinPromptedOn === state.day) return;
+    const id = setTimeout(() => {
+      setCheckinOpen(true);
+      dispatch({ type: 'checkinPrompted', day: state.day });
+    }, 700);
+    return () => clearTimeout(id);
+  }, [state.day]); // eslint-disable-line react-hooks/exhaustive-deps
   const [sparkW, setSparkW] = useState(300);
 
   // Tres anillos completos: confeti discreto una vez al día.
@@ -181,7 +172,7 @@ export default function Home() {
             <FadeIn>
               <View style={{ backgroundColor: panel, borderWidth: 1, borderColor: border, borderRadius: 24, padding: 16, gap: 14 }}>
                 <Row gap={16}>
-                  <MiniRings rings={rings} />
+                  <ScoreGauge score={score} onPress={() => setScoreOpen(true)} />
                   <View style={{ flex: 1, gap: 10 }}>
                     {km.main && (
                       <Pressable accessibilityRole="button" accessibilityLabel={`${km.main.label}: ${km.main.value} ${km.main.unit}`} onPress={() => go(isT1(state.profile) ? 'progress' : usesGlp1(state.profile) ? 'log' : 'progress', usesGlp1(state.profile) && !isT1(state.profile) ? 'injection' : undefined)}>
@@ -302,7 +293,7 @@ export default function Home() {
           </Row>
           <KpiStrip />
           {/* "Ahora": una sola cosa importante cada vez (apoyo > ánimo de tu gente > check-in). */}
-          {d.supportReason ? <SupportCard /> : state.cheers.some((c) => !c.read) ? <CheerCard /> : !d.checkinToday ? <CheckinCard /> : null}
+          {d.supportReason ? <SupportCard /> : state.cheers.some((c) => !c.read) ? <CheerCard /> : !d.checkinToday ? <CheckinPill onPress={() => setCheckinOpen(true)} /> : null}
           {isT1(state.profile) && <T1Card compact />}
           {d.maintenance && <MaintenanceCard />}
           <SectionTitle>{t('home.forToday')}</SectionTitle>
@@ -316,6 +307,8 @@ export default function Home() {
         </View>
       </ScrollView>
       <Burst fire={burst} />
+      <ScoreSheet open={scoreOpen} onClose={() => setScoreOpen(false)} />
+      <CheckinModal open={checkinOpen} onClose={() => setCheckinOpen(false)} />
     </View>
   );
 }

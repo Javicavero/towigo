@@ -46,6 +46,15 @@ npx expo start --web
 
 ## Historial
 
+### 1.10 (Índice Towigo y check-in al entrar)
+- **Índice Towigo (0–100)**: una cifra, como la puntuación de sueño, que resume los últimos 7 días combinando
+  tratamiento (20), glucosa (20), peso (15), actividad (15), constancia (10), bienestar (10) y nutrición (10); si de un área
+  no hay datos, su peso se reparte. Va en el panel de Hoy (al tocarlo, desglose por áreas y evolución de 14 días),
+  en Progreso → Datos y en la ficha del panel profesional. No es una valoración clínica. Cálculo en `src/state/score.ts`.
+- **"¿Cómo te encuentras hoy?"** sale como ventana al entrar (una vez al día; "Ahora no" la deja para luego) y las caras
+  son **Owi de triste a contento** (`tools/owi/rig2d/scale.py`).
+- El sensor de ejemplo se pone al día al abrir la app, y los tiempos largos se muestran como "hace 3 h" o "hace 1 d".
+
 ### 1.9 (análisis de datos)
 - **Tu semana** (Hoy) y **Progreso → Datos**: indicadores de los últimos 7 días frente a los 7 anteriores, con su tendencia
   (▲/▼ en verde si mejora, en rosa si empeora) y mini gráfica: peso, adherencia GLP-1, tiempo en rango, glucosa media,

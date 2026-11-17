@@ -42,7 +42,7 @@ export const demoEs: Record<string, string> = {
   'pres.s.cover.title': 'Towigo',
   'pres.s.cover.say': 'Plataforma de seguimiento diario para diabetes tipo 1, tipo 2 y obesidad con GLP-1: datos del día, registro en segundos, asistente con IA y conexión con el equipo sanitario.',
   'pres.s.today.title': 'Hoy: el día de un vistazo',
-  'pres.s.today.say': 'Arriba, la cifra que más importa según el perfil (próxima inyección, glucosa o peso) y los anillos del día: plan, movimiento y proteína. Debajo, el asistente resume un dato relevante cada día y "Tu semana" compara los indicadores con la semana anterior.',
+  'pres.s.today.say': 'Arriba, el Índice Towigo (0–100, como la puntuación de sueño): resume tratamiento, glucosa, peso, actividad, constancia, bienestar y nutrición. Al lado, la cifra que más importa según el perfil. Debajo, el asistente resume un dato relevante cada día y "Tu semana" compara los indicadores con la semana anterior.',
   'pres.s.remind.title': 'Avisos que no agobian',
   'pres.s.remind.say': 'Día de inyección: el asistente lo recuerda con un botón. "Hecho" lo registra; "Más tarde" lo pospone. Los avisos también llegan al móvil, con texto discreto si se quiere.',
   'pres.s.logInjection.title': 'Registrar en segundos',

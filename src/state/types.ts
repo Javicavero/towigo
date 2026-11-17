@@ -213,6 +213,8 @@ export type AppState = {
   remindersDoneCount: number;
   snoozedUntil: Record<string, number>;
   demoReminder: ReminderKind | null;
+  /** Día en que se mostró la ventana del check-in (para no repetirla). */
+  checkinPromptedOn?: string | null;
   lastOpenAt: string | null;
   previousOpenAt: string | null;
   dataSource: 'demo' | 'dexcom';
