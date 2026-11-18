@@ -46,6 +46,18 @@ npx expo start --web
 
 ## Historial
 
+### 1.18 (funcional: Apple Salud y Dexcom)
+- **Apple Salud** (app nativa de iPhone, `@kingstinct/react-native-healthkit`): pasos, sueño, peso con grasa y masa
+  magra, glucosa (distingue sensor y glucómetro), insulina lenta/rápida, carbohidratos y proteína de los últimos 30
+  días. Se sincroniza al abrir la app y al volver a ella. Los pasos y el sueño reales entran en el Índice Towigo, en
+  Rendimiento (el diario responde solo "¿dormiste 7 h?") y en Hoy. Solo lectura; los datos se quedan en el móvil.
+- **Dexcom**: las lecturas descargadas ya se usan en toda la app (antes se guardaban sin mostrarse). Primera
+  sincronización de 14 días y después solo lo nuevo, acumulado hasta 30 días. En el móvil, el permiso de Dexcom se da
+  en una ventana segura del sistema y vuelve a la app (`towigo://dexcom`); la sesión con el servidor se guarda en el
+  dispositivo.
+- Hoy indica cuándo la glucosa viene de Salud y su retraso ("Última glucosa · hace 3 h").
+- Guía de la app nativa en `docs/PUESTA_EN_MARCHA.md` (paso 6). Pruebas en `tests/health.test.ts`.
+
 ### 1.17 (Towigo en el móvil)
 - **Instalable desde el navegador** (Safari → Compartir → Añadir a pantalla de inicio; Chrome → Instalar app): se abre a
   pantalla completa y el fondo de arranque, el color del navegador y la barra de estado siguen el tema elegido.

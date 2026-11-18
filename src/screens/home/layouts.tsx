@@ -22,7 +22,8 @@ import { T1Card } from '../../components/t1';
 import { ResultsPanel, SemiGauge } from '../../components/treatment';
 import { TodayList } from '../../components/today';
 import { Button, Row, T } from '../../components/ui';
-import { STEPS_GOAL, STEPS_TODAY } from '../../data/mock';
+import { STEPS_GOAL } from '../../data/mock';
+import { stepsToday } from '../../state/steps';
 import { t } from '../../i18n';
 import { useNav } from '../../nav';
 import { dayKey } from '../../state/dates';
@@ -692,7 +693,7 @@ export function DiaryLayout() {
         <Row gap={8}>
           <Mini v={`${f1(d.waterToday / 4)} L`} l={t('layout.diary.water')} />
           <Mini
-            v={isT1(state.profile) ? `${d.carbsToday} g` : `${STEPS_TODAY.toLocaleString('es-ES')}`}
+            v={isT1(state.profile) ? `${d.carbsToday} g` : `${stepsToday(state).toLocaleString('es-ES')}`}
             l={isT1(state.profile) ? t('sum.carbs') : t('rings.move')}
           />
           <Mini v={worst ? t(`layout.diary.level${worst.level}`) : t('layout.diary.none')} l={worst ? t(`sym.${worst.id}`) : t('layout.diary.effects')} />
@@ -985,7 +986,7 @@ export function SummaryLayout({ onOpenScore }: { onOpenScore: () => void }) {
           <HalfTile
             title={t('layout.summary.steps')}
             color={good}
-            value={STEPS_TODAY.toLocaleString('es-ES')}
+            value={stepsToday(state).toLocaleString('es-ES')}
             unit=""
             sub={t('layout.summary.stepsGoal', { n: STEPS_GOAL.toLocaleString('es-ES') })}
           />

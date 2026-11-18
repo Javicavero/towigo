@@ -28,6 +28,7 @@ import Team from './screens/Team';
 import { onNotificationOpen } from './services/notifications';
 import { useDexcomSync } from './services/useDexcomSync';
 import { useNotificationSync } from './services/useNotificationSync';
+import { useHealthSync } from './services/useHealthSync';
 import { useWidgetSync } from './widgets/useWidgetSync';
 import { StoreProvider, useStore } from './state/store';
 import { colors, isDark } from './theme';
@@ -108,6 +109,7 @@ function Root() {
   useDexcomSync();
   useWidgetSync();
   useNotificationSync();
+  useHealthSync();
   const [tab, setTab] = useState<Tab>('home');
   const [section, setSection] = useState<LogSection | null>(null);
   const go = (t: Tab, sec?: LogSection) => {

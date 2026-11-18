@@ -14,10 +14,16 @@ export function useDexcomSync() {
   const failures = useRef(0);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const active = state.dataSource === 'dexcom' && backendConfigured;
+  // Si ya hay lecturas de Dexcom guardadas, basta con las últimas horas; si no, se traen 14 días.
+  const hasHistory = useRef(false);
+  const history = state.glucose.some((g) => g.id.startsWith('d'));
+  useEffect(() => {
+    hasHistory.current = history;
+  }, [history]);
 
   const sync = useCallback(async () => {
     try {
-      const r = await dexcomReadings(24);
+      const r = await dexcomReadings(hasHistory.current ? 6 : 24 * 14);
       failures.current = 0;
       dispatch({
         type: 'dexcom',

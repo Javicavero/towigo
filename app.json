@@ -47,6 +47,14 @@
         }
       ],
       "expo-document-picker",
+      [
+        "@kingstinct/react-native-healthkit",
+        {
+          "NSHealthShareUsageDescription": "Towigo lee de Salud tus pasos, peso, sueño, glucosa, insulina y comidas para mostrarte tu día y tus tendencias. No comparte estos datos con nadie sin tu permiso.",
+          "NSHealthUpdateUsageDescription": false,
+          "background": false
+        }
+      ],
       "@bacons/apple-targets",
       [
         "react-native-android-widget",

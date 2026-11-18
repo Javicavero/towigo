@@ -28,7 +28,7 @@ import { RING, useDayRings } from '../components/rings';
 import { agoText, glucoseColor, T1Card, TREND_ARROW } from '../components/t1';
 import { SummaryGrid, TodayList } from '../components/today';
 import { Button, Row, T } from '../components/ui';
-import { STEPS_TODAY } from '../data/mock';
+import { stepsToday } from '../state/steps';
 import { owiLine } from '../owi/voice';
 import { t } from '../i18n';
 import { useNav } from '../nav';
@@ -76,6 +76,8 @@ function useKeyMetric() {
   const { state, d } = useStore();
   const g = d.lastGlucose;
   const ago = g ? Math.round((Date.now() - new Date(g.at).getTime()) / 60e3) : 0;
+  // Con Apple Salud la glucosa llega con 3 h de retraso: no es "ahora".
+  const viaHealth = state.dataSource === 'health';
   const sensor24 = state.glucose
     .filter((x) => Date.now() - new Date(x.at).getTime() < 24 * 3600e3)
     .sort((a, b) => a.at.localeCompare(b.at))
@@ -91,12 +93,12 @@ function useKeyMetric() {
   if (isT1(state.profile) && g)
     return {
       main: {
-        label: t('home.glucoseNow'),
+        label: viaHealth ? t('home.glucoseLast') : t('home.glucoseNow'),
         value: String(g.v),
         unit: 'mg/dL',
-        arrow: d.trend ? TREND_ARROW[d.trend] : '',
+        arrow: d.trend && ago <= 60 ? TREND_ARROW[d.trend] : '',
         color: ago > 60 ? colors.secondary : glucoseColor(g.v),
-        sub: ago > 60 ? `${t('home.stale')} · ${agoText(ago)}` : agoText(ago),
+        sub: viaHealth ? t('health.delay', { ago: agoText(ago) }) : ago > 60 ? `${t('home.stale')} · ${agoText(ago)}` : agoText(ago),
       },
       series: sensor24,
       seriesLabel: t('home.spark24'),
@@ -394,7 +396,7 @@ export default function Home() {
               <DrillRow
                 icon="steps"
                 title={t('home.more.rings')}
-                value={`${STEPS_TODAY.toLocaleString('es-ES')} · ${d.proteinToday}/${state.goals.proteinG} g`}
+                value={`${stepsToday(state).toLocaleString('es-ES')} · ${d.proteinToday}/${state.goals.proteinG} g`}
                 onPress={() => setMore('rings')}
               />
               {isT1(state.profile) && <DrillRow icon="drop" title={t('home.more.glucose')} value={`${d.tir24} %`} onPress={() => setMore('glucose')} />}
@@ -435,7 +437,7 @@ export default function Home() {
           )}
           <Row style={{ borderTopWidth: 1, borderTopColor: border, paddingTop: 12 }}>
             <Stat color={RING.plan} label={t('rings.plan')} value={`${rings.tasksDone}/${rings.tasksTotal}`} onPress={() => go('log')} />
-            <Stat color={RING.move} label={t('rings.move')} value={STEPS_TODAY.toLocaleString('es-ES')} onPress={() => go('progress')} />
+            <Stat color={RING.move} label={t('rings.move')} value={stepsToday(state).toLocaleString('es-ES')} onPress={() => go('progress')} />
             <Stat color={RING.food} label={t('rings.food')} value={`${d.proteinToday}/${state.goals.proteinG} g`} onPress={() => go('log', 'intake')} />
           </Row>
         </View>

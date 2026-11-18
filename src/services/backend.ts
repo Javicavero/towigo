@@ -4,6 +4,7 @@
  *   EXPO_PUBLIC_SUPABASE_URL, EXPO_PUBLIC_SUPABASE_ANON_KEY
  * (la "anon key" es pública por diseño; los secretos de Dexcom viven solo en el servidor).
  */
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { Platform } from 'react-native';
 import type { Reading } from '../state/types';
@@ -16,7 +17,12 @@ export const backendConfigured = Boolean(URL_ && KEY);
 let client: SupabaseClient | null = null;
 function sb(): SupabaseClient {
   if (!backendConfigured) throw new Error('backend_not_configured');
-  if (!client) client = createClient(URL_, KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false } });
+  // En el móvil la sesión se guarda en el dispositivo (si no, cada vez que se abre la app sería un usuario nuevo y
+  // Dexcom aparecería desconectado). En la web, el navegador ya la guarda.
+  if (!client)
+    client = createClient(URL_, KEY, {
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, ...(Platform.OS !== 'web' ? { storage: AsyncStorage } : {}) },
+    });
   return client;
 }
 

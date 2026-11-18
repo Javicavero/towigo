@@ -27,6 +27,7 @@ import {
   STEPS_TODAY,
 } from '../data/mock';
 import { defaultPlan, dueReminders } from '../data/reminders';
+import type { HealthSnapshot } from '../services/healthTypes';
 import { dayKey, dayKeyAgo } from './dates';
 import {
   hasDiabetes,
@@ -286,6 +287,8 @@ export type Action =
   | { type: 'snooze'; id: string; minutes: number }
   | { type: 'setDemoReminder'; kind: ReminderKind | null }
   | { type: 'setDataSource'; source: AppState['dataSource'] }
+  | { type: 'healthSync'; snapshot: HealthSnapshot; at: string }
+  | { type: 'healthDisconnect' }
   | { type: 'importSensor'; glucose: { at: number; v: number }[]; insulin: { at: number; units: number; kind: 'rapid' | 'basal' }[]; carbs: { at: number; g: number }[]; shiftDays: number }
   | { type: 'dexcom'; patch: Partial<AppState['dexcom']> }
   | { type: 'reset' };
@@ -309,7 +312,7 @@ export function reducer(s: AppState, a: Action): AppState {
       return { ...s, userName: a.name };
     case 'setProfile':
       // Cambiar de perfil vuelve a los datos de ejemplo (también si había datos importados).
-      return { ...s, profile: a.profile, ...demoData(a.profile, s.scenario), messages: initialMessages(a.profile), ...(s.dataSource === 'import' ? { dataSource: 'demo' as const, imported: null } : {}) };
+      return { ...s, profile: a.profile, ...demoData(a.profile, s.scenario), messages: initialMessages(a.profile), ...(s.dataSource === 'import' || s.dataSource === 'health' ? { dataSource: 'demo' as const, imported: null } : {}) };
     case 'setAvatar':
       return { ...s, avatar: { ...s.avatar, ...a.patch } };
     case 'toggleAccessory':
@@ -349,7 +352,7 @@ export function reducer(s: AppState, a: Action): AppState {
       return { ...s, textScale: a.scale };
     case 'setScenario':
       // Prototipo: el escenario regenera los datos de demostración.
-      return { ...s, scenario: a.scenario, demoReminder: null, ...demoData(s.profile, a.scenario), ...(s.dataSource === 'import' ? { dataSource: 'demo' as const, imported: null } : {}) };
+      return { ...s, scenario: a.scenario, demoReminder: null, ...demoData(s.profile, a.scenario), ...(s.dataSource === 'import' || s.dataSource === 'health' ? { dataSource: 'demo' as const, imported: null } : {}) };
     case 'setGlp1':
       return { ...s, glp1: { ...s.glp1, ...a.patch } };
     case 'addInjection':
@@ -459,6 +462,33 @@ export function reducer(s: AppState, a: Action): AppState {
       return { ...s, snoozedUntil: { ...s.snoozedUntil, [a.id]: Date.now() + a.minutes * 60000 }, demoReminder: null };
     case 'setDemoReminder':
       return { ...s, demoReminder: a.kind, remindersDone: {}, snoozedUntil: {} };
+    case 'healthSync': {
+      // Apple Salud manda sobre los datos de ejemplo; Dexcom conectado (API oficial) manda sobre la glucosa de Salud.
+      const h = a.snapshot;
+      const next: AppState = { ...s, health: { connected: true, lastSyncAt: a.at, stepsByDay: h.stepsByDay, sleepByDay: h.sleepByDay } };
+      if (h.weights.length) next.weights = h.weights.map((w) => ({ at: w.at, kg: w.kg, ...(w.fatPct !== undefined ? { fatPct: w.fatPct } : {}), ...(w.musclePct !== undefined ? { musclePct: w.musclePct } : {}) }));
+      if (h.glucose.length && s.dataSource !== 'dexcom') {
+        next.glucose = h.glucose.map((g) => ({ id: `h${g.at}`, at: g.at, v: g.v, context: g.context }));
+        next.dataSource = 'health';
+        next.imported = null;
+      }
+      if (h.insulin.length) next.insulin = h.insulin.map((x) => ({ id: `hi${x.at}`, at: x.at, units: x.units, kind: x.kind }));
+      if (h.carbs.length) next.carbs = h.carbs.map((x) => ({ id: `hc${x.at}`, at: x.at, g: x.g }));
+      const days = Object.keys(h.proteinByDay);
+      if (days.length) {
+        const intake = [...s.intake];
+        for (const day of days) {
+          const i = intake.findIndex((x) => x.date === day);
+          if (i >= 0) intake[i] = { ...intake[i], protein: Math.max(intake[i].protein, h.proteinByDay[day]) };
+          else intake.push({ date: day, protein: h.proteinByDay[day], water: 0 });
+        }
+        next.intake = intake;
+      }
+      return next;
+    }
+    case 'healthDisconnect':
+      // Vuelve a los datos de ejemplo de su perfil (los permisos se retiran en Ajustes → Salud).
+      return { ...s, health: null, ...(s.dataSource === 'health' ? { dataSource: 'demo' as const, ...demoData(s.profile, s.scenario) } : {}) };
     case 'importSensor': {
       // Se guardan los últimos 30 días (lo que usan Hoy, el índice y las tendencias); nada que quede en el futuro.
       const shift = a.shiftDays * DAY;
@@ -473,8 +503,23 @@ export function reducer(s: AppState, a: Action): AppState {
     }
     case 'setDataSource':
       return { ...s, dataSource: a.source };
-    case 'dexcom':
-      return { ...s, dexcom: { ...s.dexcom, ...a.patch } };
+    case 'dexcom': {
+      const dexcom = { ...s.dexcom, ...a.patch };
+      // Con Dexcom conectado, sus lecturas pasan a ser la glucosa del sensor de la app (antes se descargaban pero no se usaban).
+      // Se acumulan: la primera sincronización trae 14 días y las siguientes solo lo nuevo (se guardan 30 días).
+      if (s.dataSource === 'dexcom' && a.patch.readings?.length) {
+        const byT = new Map<number, number>();
+        for (const g of s.glucose) if (g.id.startsWith('d')) byT.set(new Date(g.at).getTime(), g.v);
+        for (const r of a.patch.readings) byT.set(r.t, Math.round(r.v));
+        const from = Date.now() - 30 * DAY;
+        const glucose = [...byT.entries()]
+          .filter(([t]) => t >= from)
+          .sort((x, y) => x[0] - y[0])
+          .map(([t, v]) => ({ id: `d${t}`, at: new Date(t).toISOString(), v, context: 'sensor' as const }));
+        return { ...s, dexcom: { ...dexcom, readings: [] }, glucose };
+      }
+      return { ...s, dexcom };
+    }
     case 'reset':
       return initialState();
   }

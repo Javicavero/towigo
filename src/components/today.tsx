@@ -4,7 +4,8 @@
  * - "Resumen": cuadrícula de datos clave; el detalle y las gráficas están en Progreso.
  */
 import { Pressable, View } from 'react-native';
-import { STEPS_TODAY, TEAM } from '../data/mock';
+import { TEAM } from '../data/mock';
+import { stepsToday } from '../state/steps';
 import { t } from '../i18n';
 import { useNav } from '../nav';
 import { dayKey } from '../state/dates';
@@ -246,7 +247,7 @@ export function SummaryGrid() {
       key="steps"
       label={t('sum.steps')}
       color={colors.greenText}
-      value={STEPS_TODAY.toLocaleString('es-ES')}
+      value={stepsToday(state).toLocaleString('es-ES')}
       sub={t('sum.stepsSub')}
       onPress={() => go('progress')}
     />,

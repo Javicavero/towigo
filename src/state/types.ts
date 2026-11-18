@@ -226,7 +226,9 @@ export type AppState = {
   lastOpenAt: string | null;
   previousOpenAt: string | null;
   /** Origen de las lecturas del sensor: ejemplo, Dexcom conectado o importadas de un archivo (solo en este dispositivo). */
-  dataSource: 'demo' | 'dexcom' | 'import';
+  dataSource: 'demo' | 'dexcom' | 'import' | 'health';
+  /** Apple Salud: conexión, última sincronización, pasos y sueño por día. */
+  health?: { connected: boolean; lastSyncAt: string | null; stepsByDay: Record<string, number>; sleepByDay: Record<string, number> } | null;
   /** Resumen de la última importación. */
   imported?: { from: string; to: string; count: number; shiftDays: number } | null;
   dexcom: { connected: boolean; readings: Reading[]; lastSyncAt: string | null; error: string | null };

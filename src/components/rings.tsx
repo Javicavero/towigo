@@ -4,7 +4,8 @@
  */
 import { View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
-import { STEPS_GOAL, STEPS_TODAY } from '../data/mock';
+import { STEPS_GOAL } from '../data/mock';
+import { stepsToday } from '../state/steps';
 import { t } from '../i18n';
 import { useNav } from '../nav';
 import { useStore } from '../state/store';
@@ -21,7 +22,7 @@ export function useDayRings() {
   if (usesGlp1(state.profile) && !d.maintenance && d.daysToInjection === 0) tasks.push(d.injectedToday);
   if (hasT2(state.profile) && d.medsToday.length) tasks.push(d.medsToday.every((m) => m.taken));
   const plan = tasks.filter(Boolean).length / tasks.length;
-  const move = Math.min(1, STEPS_TODAY / STEPS_GOAL);
+  const move = Math.min(1, stepsToday(state) / STEPS_GOAL);
   const food = Math.min(1, d.proteinToday / state.goals.proteinG);
   return { plan, move, food, tasksDone: tasks.filter(Boolean).length, tasksTotal: tasks.length };
 }
@@ -54,7 +55,7 @@ export function DayRings() {
   const r = useDayRings();
   const rows = [
     { k: 'plan', color: RING.plan, label: t('rings.plan'), value: t('rings.planValue', { a: r.tasksDone, b: r.tasksTotal }), to: () => go('log') },
-    { k: 'move', color: RING.move, label: t('rings.move'), value: t('rings.moveValue', { n: STEPS_TODAY.toLocaleString('es-ES') }), to: () => go('progress') },
+    { k: 'move', color: RING.move, label: t('rings.move'), value: t('rings.moveValue', { n: stepsToday(state).toLocaleString('es-ES') }), to: () => go('progress') },
     {
       k: 'food',
       color: RING.food,

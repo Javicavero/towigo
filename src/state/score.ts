@@ -8,7 +8,8 @@
  * Es una medida de hábitos y tendencias para motivar y para conversar con el equipo. No es una valoración clínica
  * ni sirve para tomar decisiones de tratamiento (Fase 1). Función pura: se prueba en tests/score.test.ts.
  */
-import { STEPS_GOAL, STEPS_TODAY } from '../data/mock';
+import { STEPS_GOAL } from '../data/mock';
+import { stepsOn } from './steps';
 import { DAY_MS, dayKey, dayKeyAgo } from './dates';
 import { hasDiabetes, hasT2, isT1, usesGlp1, type AppState } from './types';
 
@@ -93,7 +94,7 @@ export function towigoScore(s: AppState, end = Date.now()): Score {
 
   // Actividad: fuerza frente al objetivo + pasos.
   const strength = s.strength.filter((x) => within(x.at, end, 7)).length;
-  add('activity', 0.6 * Math.min(100, (strength / Math.max(1, s.goals.strengthPerWeek)) * 100) + 0.4 * Math.min(100, (STEPS_TODAY / STEPS_GOAL) * 100));
+  add('activity', 0.6 * Math.min(100, (strength / Math.max(1, s.goals.strengthPerWeek)) * 100) + 0.4 * Math.min(100, (stepsOn(s, dayKey(end), dayKey(Date.now())) / STEPS_GOAL) * 100));
 
   // Constancia: días con algún registro (historial + hoy).
   let logDays = 0;

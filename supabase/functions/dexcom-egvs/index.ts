@@ -27,7 +27,8 @@ Deno.serve(async (req) => {
     }
     const token = await validAccessToken(userId);
     if (!token) return json({ connected: false, readings: [] });
-    const hours = Math.min(Math.max(Number(body.hours) || 24, 1), 24 * 7);
+    // La API v3 de Dexcom admite hasta 30 días por petición.
+    const hours = Math.min(Math.max(Number(body.hours) || 24, 1), 24 * 30);
     const end = new Date();
     const start = new Date(end.getTime() - hours * 3600e3);
     const res = await fetch(`${DEXCOM_BASE()}/v3/users/self/egvs?startDate=${fmt(start)}&endDate=${fmt(end)}`, {

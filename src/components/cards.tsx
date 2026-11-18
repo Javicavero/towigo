@@ -8,7 +8,8 @@ import { Bouncy, Pop, useCountUp } from './motion';
 import { ProteinFoods } from './program';
 import TrendChart from './TrendChart';
 import { Button, Card, ProgressBar, Row, T } from './ui';
-import { STEPS_GOAL, STEPS_TODAY, TEAM } from '../data/mock';
+import { STEPS_GOAL, TEAM } from '../data/mock';
+import { stepsToday } from '../state/steps';
 import { t } from '../i18n';
 import { useNav } from '../nav';
 import { useStore, type HabitId } from '../state/store';
@@ -299,7 +300,7 @@ const HABIT: Record<HabitId, { icon: IconName; tone: string; bg: string; to: 'lo
 };
 
 export function HabitsCard() {
-  const { d } = useStore();
+  const { state, d } = useStore();
   const { go } = useNav();
   const done = Object.values(d.habitsToday).filter(Boolean).length;
   return (
@@ -334,9 +335,9 @@ export function HabitsCard() {
         })}
       </View>
       <View style={{ gap: 4 }}>
-        <ProgressBar value={(STEPS_TODAY / STEPS_GOAL) * 100} color={colors.blue} height={12} />
+        <ProgressBar value={(stepsToday(state) / STEPS_GOAL) * 100} color={colors.blue} height={12} />
         <T v="small" color={colors.secondary}>
-          {t('home.steps', { n: STEPS_TODAY.toLocaleString('es-ES'), goal: STEPS_GOAL.toLocaleString('es-ES') })}
+          {t('home.steps', { n: stepsToday(state).toLocaleString('es-ES'), goal: STEPS_GOAL.toLocaleString('es-ES') })}
         </T>
       </View>
       <T v="small" color={colors.secondary}>

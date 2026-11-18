@@ -2,6 +2,7 @@
  * Conexión con Dexcom (API oficial). El usuario da permiso en la web de Dexcom;
  * los tokens se guardan solo en el servidor (Supabase, UE).
  */
+import * as WebBrowser from 'expo-web-browser';
 import { useState } from 'react';
 import { ActivityIndicator, Platform, View } from 'react-native';
 import { t } from '../i18n';
@@ -23,7 +24,18 @@ export default function DexcomCard() {
     setErr(null);
     try {
       const url = await dexcomStart();
-      if (Platform.OS === 'web') window.location.assign(url);
+      if (Platform.OS === 'web') {
+        window.location.assign(url);
+        return;
+      }
+      // Móvil: ventana segura del sistema; Dexcom vuelve a towigo://dexcom?dexcom=connected|denied|error.
+      const res = await WebBrowser.openAuthSessionAsync(url, 'towigo://dexcom');
+      const result = res.type === 'success' ? new URL(res.url).searchParams.get('dexcom') : null;
+      if (result === 'connected') {
+        dispatch({ type: 'dexcom', patch: { connected: true, error: null } });
+        dispatch({ type: 'setDataSource', source: 'dexcom' });
+      } else if (result) setErr(t(result === 'denied' ? 'dexcom.denied' : 'dexcom.errStart'));
+      setBusy(false);
     } catch {
       setErr(t('dexcom.errStart'));
       setBusy(false);

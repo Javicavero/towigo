@@ -4,10 +4,13 @@
  * Todo describe datos y hábitos (Fase 1): son asociaciones para motivar y hablar con el equipo, no causas ni consejos clínicos.
  * Función pura: se prueba en tests/journal.test.ts.
  */
-import { STEPS_GOAL, STEPS_TODAY } from '../data/mock';
+import { STEPS_GOAL } from '../data/mock';
+import { stepsOn } from './steps';
 import { DAY_MS, dayKey, dayKeyAgo } from './dates';
 import { scoreHistory, towigoScore } from './score';
 import { hasDiabetes, isT1, type AppState, type JournalQ } from './types';
+
+export { stepsOn, stepsToday } from './steps';
 
 /** Preguntas del diario. `good`: true si responder "sí" es el hábito que se busca. */
 export const JOURNAL: { id: JournalQ; good: boolean }[] = [
@@ -32,14 +35,6 @@ const rng = (seed: number) => {
   };
 };
 
-/** Pasos de días pasados (prototipo: datos simulados estables por día; hoy, el dato del móvil). */
-export function stepsOn(day: string, today = dayKey(Date.now())): number {
-  if (day === today) return STEPS_TODAY;
-  let h = 0;
-  for (let i = 0; i < day.length; i++) h = (h * 31 + day.charCodeAt(i)) >>> 0;
-  return Math.round(3500 + rng(h)() * 6500);
-}
-
 /**
  * Diario de los últimos 30 días: lo que la persona ha respondido y, en el prototipo, respuestas de ejemplo para días
  * anteriores (coherentes con su índice de cada día, para que el análisis tenga sentido en la demo).
@@ -55,7 +50,9 @@ export function journalDays(s: AppState, now = Date.now(), days = 30): Record<st
   const spread = Math.max(0.5, Math.sqrt(local.reduce((x, y) => x + y * y, 0) / Math.max(1, local.length)));
   for (let i = 0; i < days; i++) {
     const day = dayKeyAgo(days - 1 - i, now);
-    const own = s.journal?.[day];
+    // Lo que sabe Apple Salud responde solo: dormir 7 h o más (si la persona no lo ha contestado ella misma).
+    const slept = s.health?.sleepByDay?.[day];
+    const own: Partial<Record<JournalQ, boolean>> | undefined = slept !== undefined && s.journal?.[day]?.sleep7 === undefined ? { ...(s.journal?.[day] ?? {}), sleep7: slept >= 7 } : s.journal?.[day];
     if (own && Object.keys(own).length) {
       out[day] = own;
       continue;
@@ -100,7 +97,7 @@ export function journalImpact(s: AppState, now = Date.now()): Impact[] {
 /** Carga de actividad del día, de 0 a 21 (pasos + sesiones de fuerza; crece cada vez más despacio). */
 export function activityLoad(s: AppState, daysAgo = 0, now = Date.now()): number {
   const day = dayKeyAgo(daysAgo, now);
-  const steps = stepsOn(day, dayKey(now));
+  const steps = stepsOn(s, day, dayKey(now));
   const strength = s.strength.filter((x) => dayKey(new Date(x.at).getTime()) === day).length;
   const raw = (steps / 1000) * 1.1 + strength * 5;
   return Math.round(21 * (1 - Math.exp(-raw / 11)) * 10) / 10;
@@ -132,8 +129,8 @@ export function keyStats(s: AppState, now = Date.now()): KeyStat[] {
   const today = dayKey(now);
   const prot = s.intake.find((x) => x.date === today)?.protein ?? 0;
   out.push({ id: 'protein', value: prot, baseline: avg(s.intake.filter((x) => x.date !== today && x.date > dayKeyAgo(30, now)).map((x) => x.protein)), unit: 'g', decimals: 0, betterUp: true });
-  const pastSteps = Array.from({ length: 29 }, (_, i) => stepsOn(dayKeyAgo(i + 1, now), today));
-  out.push({ id: 'steps', value: STEPS_TODAY, baseline: avg(pastSteps), unit: `/ ${STEPS_GOAL.toLocaleString('es-ES')}`, decimals: 0, betterUp: true });
+  const pastSteps = Array.from({ length: 29 }, (_, i) => stepsOn(s, dayKeyAgo(i + 1, now), today));
+  out.push({ id: 'steps', value: stepsOn(s, today, today), baseline: avg(pastSteps), unit: `/ ${STEPS_GOAL.toLocaleString('es-ES')}`, decimals: 0, betterUp: true });
   const moods = s.checkins.filter((c) => c.date > dayKeyAgo(30, now));
   const last = [...s.checkins].sort((a, b) => b.date.localeCompare(a.date))[0];
   if (last) out.push({ id: 'mood', value: last.v, baseline: avg(moods.map((c) => c.v)), unit: '/5', decimals: 1, betterUp: true });

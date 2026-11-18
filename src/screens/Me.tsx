@@ -8,6 +8,7 @@ import AvatarBadge from '../components/AvatarBadge';
 import AvatarEditor from '../components/AvatarEditor';
 import DexcomCard from '../components/DexcomCard';
 import ImportCard from '../components/ImportCard';
+import HealthCard from '../components/HealthCard';
 import { Glyph, Icon } from '../components/icons';
 import OwiAnimated from '../components/OwiAnimated';
 import OwiSticker from '../components/OwiSticker';
@@ -28,7 +29,22 @@ import { colors, fonts, MIN_TOUCH, readAppearancePref, setAppearancePref, type A
 import { openPro } from '../pro/openPro';
 import { usePresenter } from '../demo/Presenter';
 
-type Section = 'import' | 'appearance' | 'pro' | 'crew' | 'avatar' | 'owi' | 'widgets' | 'profile' | 'plan' | 'report' | 'sensor' | 'text' | 'privacy' | 'demo';
+type Section =
+  | 'health'
+  | 'import'
+  | 'appearance'
+  | 'pro'
+  | 'crew'
+  | 'avatar'
+  | 'owi'
+  | 'widgets'
+  | 'profile'
+  | 'plan'
+  | 'report'
+  | 'sensor'
+  | 'text'
+  | 'privacy'
+  | 'demo';
 const SCENARIOS: Scenario[] = ['normal', 'injectionDay', 'missedInjection', 'sideEffects', 'plateau', 'milestone', 'highGlucose', 'lowGlucose', 'night'];
 const DEMO_REMINDERS: ReminderKind[] = ['injection', 'insulin', 'meds', 'weigh', 'meal', 'sport', 'water'];
 
@@ -186,6 +202,15 @@ export default function Me() {
         onToggle={() => toggle('report')}
       >
         <ReportCard embedded />
+      </Disclosure>
+      <Disclosure
+        icon={<Glyph name="heart" bg="#E5487F" />}
+        title={t('health.title')}
+        subtitle={state.health?.connected ? t('health.subOn') : t('health.sub')}
+        open={open === 'health'}
+        onToggle={() => toggle('health')}
+      >
+        <HealthCard />
       </Disclosure>
       <Disclosure
         icon={<Glyph name="sync" bg="#0E8F7E" />}
