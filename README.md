@@ -46,6 +46,12 @@ npx expo start --web
 
 ## Historial
 
+### 1.17 (Towigo en el móvil)
+- **Instalable desde el navegador** (Safari → Compartir → Añadir a pantalla de inicio; Chrome → Instalar app): se abre a
+  pantalla completa y el fondo de arranque, el color del navegador y la barra de estado siguen el tema elegido.
+- **App nativa**: el tema oscuro ya funciona también (`userInterfaceStyle: automatic`); la preferencia se guarda en un
+  archivo de la app y se aplica al volver a abrirla. Perfil `preview` de EAS con APK instalable en Android.
+
 ### 1.16 (importar también desde el móvil)
 - La importación de Dexcom Clarity funciona en **iPhone y Android**: selector de documentos del sistema
   (`expo-document-picker`) y lectura con `expo-file-system` (`src/services/pickFile.ts`); en la web, el selector del

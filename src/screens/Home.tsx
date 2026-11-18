@@ -140,7 +140,7 @@ export default function Home() {
   const owi = useOwiLine(poke);
   const reminder = owi.reminder;
   const message = !reminder && rings.plan >= 1 && rings.move >= 1 && rings.food >= 1 && !poke ? t('owi.ringsDone') : owi.message;
-  const rawDate = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+  const rawDate = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'short' }).replace('.', '');
   const [burst, setBurst] = useState(0);
   const allRings = rings.plan >= 1 && rings.move >= 1 && rings.food >= 1;
   const km = useKeyMetric();

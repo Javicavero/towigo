@@ -23,7 +23,7 @@ shutil.rmtree(f'{d}/_expo'); shutil.rmtree(f'{d}/assets')
 html = open(f'{d}/index.html', encoding='utf-8').read()
 html = re.sub(r'src="/_expo/static/js/web/[^"]+"', f'src="./{jsname}"', html)
 html = html.replace('href="/favicon.ico"', 'href="./favicon.ico"').replace('<html lang="en">', '<html lang="es">')
-html = html.replace('</style>', '      body { background: #FFF8F1; }\n    </style>', 1)
+html = html.replace('</style>', '      html, body { background: var(--towigo-bg, #F4F1FA); }\n    </style>', 1)
 # Instalable en el iPhone: "Compartir → Añadir a pantalla de inicio" la abre a pantalla completa.
 pwa = (
     '<link rel="manifest" href="./manifest.json">\n'
@@ -32,6 +32,14 @@ pwa = (
     '<meta name="mobile-web-app-capable" content="yes">\n'
     '<meta name="apple-mobile-web-app-status-bar-style" content="default">\n'
     '<meta name="apple-mobile-web-app-title" content="Towigo">\n'
+    # Mismo tema que la app (Yo → Apariencia o el botón de sol/luna): fondo de arranque, color del navegador y
+    # barra de estado del iPhone en claro u oscuro, sin mezclar.
+    '<script>(function(){try{var p=localStorage.getItem("towigo.appearance")||"system";'
+    'var d=p==="dark"||(p==="system"&&window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches);'
+    'var bg=d?"#0A0F1E":"#F4F1FA";var r=document.documentElement;r.style.setProperty("--towigo-bg",bg);r.style.colorScheme=d?"dark":"light";'
+    'var m=document.querySelector("meta[name=theme-color]");if(m)m.setAttribute("content",bg);'
+    'var s=document.querySelector("meta[name=apple-mobile-web-app-status-bar-style]");if(s)s.setAttribute("content",d?"black-translucent":"default");'
+    '}catch(e){}})();</script>\n'
 )
 html = html.replace('</head>', pwa + '</head>', 1)
 html = html.replace('width=device-width, initial-scale=1, shrink-to-fit=no', 'width=device-width, initial-scale=1, viewport-fit=cover')

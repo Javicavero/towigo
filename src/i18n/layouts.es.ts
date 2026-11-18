@@ -129,6 +129,8 @@ export const layoutsEs: Record<string, string> = {
   'journal.short.alcohol': 'Alcohol',
   'journal.short.stress': 'Estrés alto',
   'journal.short.eatOut': 'Comer fuera',
+  'theme.savedTitle': 'Modo guardado',
+  'theme.restart': 'Cierra y vuelve a abrir Towigo para verlo en toda la app.',
   'theme.toLight': 'Cambiar a modo claro',
   'theme.toDark': 'Cambiar a modo oscuro',
   'import.title': 'Importar mis datos del sensor',

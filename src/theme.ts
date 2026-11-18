@@ -2,30 +2,22 @@
  * Sistema visual de Towigo v2: "Holo" en claro y "Aurora" en oscuro.
  * El tema (claro/oscuro) se decide al arrancar: sistema o preferencia del usuario (Yo → Apariencia).
  */
-import { Appearance, Platform } from 'react-native';
+import { Appearance } from 'react-native';
+import { loadAppearance, saveAppearance } from './services/appearanceStore';
 
 export type Appearance_ = 'system' | 'light' | 'dark';
-const PREF_KEY = 'towigo.appearance';
 
 export function readAppearancePref(): Appearance_ {
-  try {
-    if (Platform.OS === 'web' && typeof localStorage !== 'undefined') return (localStorage.getItem(PREF_KEY) as Appearance_) || 'system';
-  } catch {
-    /* sin almacenamiento */
-  }
-  return 'system';
+  const v = loadAppearance();
+  return v === 'light' || v === 'dark' ? v : 'system';
 }
 
-/** Guarda la preferencia y recarga (en web) para aplicar el tema en toda la app. */
-export function setAppearancePref(p: Appearance_) {
-  try {
-    if (Platform.OS === 'web' && typeof localStorage !== 'undefined') {
-      localStorage.setItem(PREF_KEY, p);
-      window.location.reload();
-    }
-  } catch {
-    /* sin almacenamiento */
-  }
+/**
+ * Guarda la preferencia. En la web recarga y se aplica al momento (devuelve true);
+ * en el móvil se aplica al volver a abrir la app (devuelve false).
+ */
+export function setAppearancePref(p: Appearance_): boolean {
+  return saveAppearance(p);
 }
 
 const pref = readAppearancePref();

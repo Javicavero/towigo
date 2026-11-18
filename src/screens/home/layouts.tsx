@@ -11,7 +11,7 @@
  * El diseño "panel" (por defecto) está en Home.tsx.
  */
 import { useState } from 'react';
-import { Modal, Pressable, ScrollView, View } from 'react-native';
+import { Alert, Modal, Pressable, ScrollView, View } from 'react-native';
 import { MoodFace } from '../../components/checkin';
 import { Icon, type IconName } from '../../components/icons';
 import { Sparkline } from '../../components/kpi';
@@ -59,7 +59,9 @@ export function ThemeButton() {
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={isDark ? t('theme.toLight') : t('theme.toDark')}
-      onPress={() => setAppearancePref(isDark ? 'light' : 'dark')}
+      onPress={() => {
+        if (!setAppearancePref(isDark ? 'light' : 'dark')) Alert.alert(t('theme.savedTitle'), t('theme.restart'));
+      }}
       style={({ pressed }) => ({
         width: 32,
         height: 32,

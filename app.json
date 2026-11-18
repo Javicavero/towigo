@@ -5,8 +5,8 @@
     "version": "0.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "backgroundColor": "#FFF8F1",
+    "userInterfaceStyle": "automatic",
+    "backgroundColor": "#F4F1FA",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "app.towigo",
@@ -34,7 +34,7 @@
       "favicon": "./assets/favicon.png",
       "output": "single",
       "name": "Towigo",
-      "themeColor": "#FFF8F1"
+      "themeColor": "#F4F1FA"
     },
     "plugins": [
       "expo-font",

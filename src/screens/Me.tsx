@@ -3,7 +3,7 @@
  * Avatar, Owi, perfil, plan y avisos, conexiones, letra, privacidad (RGPD §8.3) y demostración.
  */
 import { useState } from 'react';
-import { Pressable, ScrollView, TextInput, View } from 'react-native';
+import { Alert, Pressable, ScrollView, TextInput, View } from 'react-native';
 import AvatarBadge from '../components/AvatarBadge';
 import AvatarEditor from '../components/AvatarEditor';
 import DexcomCard from '../components/DexcomCard';
@@ -224,7 +224,15 @@ export default function Me() {
       >
         <Row gap={8}>
           {(['system', 'light', 'dark'] as Appearance_[]).map((a) => (
-            <Choice key={a} style={{ flex: 1 }} label={t(`me.appearance.${a}`)} selected={readAppearancePref() === a} onPress={() => setAppearancePref(a)} />
+            <Choice
+              key={a}
+              style={{ flex: 1 }}
+              label={t(`me.appearance.${a}`)}
+              selected={readAppearancePref() === a}
+              onPress={() => {
+                if (!setAppearancePref(a)) Alert.alert(t('theme.savedTitle'), t('theme.restart'));
+              }}
+            />
           ))}
         </Row>
         <T v="small" color={colors.secondary}>
